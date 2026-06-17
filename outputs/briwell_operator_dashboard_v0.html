@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Briwell Operator Dashboard v0</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #1c2430;
+      --muted: #667085;
+      --line: #d9dee8;
+      --green: #0f8f66;
+      --amber: #b7791f;
+      --red: #c24141;
+      --blue: #2364aa;
+      --teal: #167b8a;
+      --shadow: 0 1px 3px rgba(16, 24, 40, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 232px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      background: #18202c;
+      color: #eef2f6;
+      padding: 18px 14px;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 4px 8px 20px;
+    }
+
+    nav button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #cbd5e1;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    nav button.active,
+    nav button:hover {
+      background: #273244;
+      color: #fff;
+    }
+
+    main { padding: 18px 22px 32px; }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .metric {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    select,
+    input,
+    textarea {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: #fff;
+      color: var(--ink);
+      font: inherit;
+      min-height: 36px;
+    }
+
+    textarea { width: 100%; min-height: 92px; resize: vertical; }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-height: 36px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn.green { background: var(--green); border-color: var(--green); color: #fff; }
+    .btn.red { background: var(--red); border-color: var(--red); color: #fff; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 8px;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tag.green { background: #e7f7ef; color: var(--green); }
+    .tag.amber { background: #fff4db; color: var(--amber); }
+    .tag.red { background: #fdecec; color: var(--red); }
+    .tag.blue { background: #eaf2ff; color: var(--blue); }
+    .tag.teal { background: #e6f7f9; color: var(--teal); }
+
+    .scorebar {
+      height: 8px;
+      background: #edf1f6;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .scorebar span {
+      display: block;
+      height: 100%;
+      background: var(--green);
+    }
+
+    .queue {
+      display: grid;
+      gap: 10px;
+    }
+
+    .queue-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfcfe;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      aside { position: static; }
+      .span-3, .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 {
+        grid-column: span 12;
+      }
+      .topline { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand">Briwell Ops</div>
+      <nav>
+        <button class="active" data-tab="overview">Overview</button>
+        <button data-tab="discovery">Discovery</button>
+        <button data-tab="candidates">Candidates</button>
+        <button data-tab="campaigns">Campaigns</button>
+        <button data-tab="outreach">Outreach Queue</button>
+        <button data-tab="tracking">Tracking</button>
+      </nav>
+    </aside>
+
+    <main>
+      <div class="topline">
+        <div>
+          <h1>Mexico, Peru, Ecuador Creator Operations</h1>
+          <div class="muted">MVP dashboard prototype for compliant discovery, analysis, outreach, and campaign execution.</div>
+        </div>
+        <button class="btn primary">New Campaign</button>
+      </div>
+
+      <section id="overview" class="tab">
+        <div class="grid">
+          <div class="panel span-3"><div class="metric">3</div><div class="muted">Launch countries</div></div>
+          <div class="panel span-3"><div class="metric">87</div><div class="muted">Qualified candidates</div></div>
+          <div class="panel span-3"><div class="metric">14</div><div class="muted">DM drafts pending review</div></div>
+          <div class="panel span-3"><div class="metric">0</div><div class="muted">Automated sends</div></div>
+
+          <div class="panel span-7">
+            <h2>Priority Candidates</h2>
+            <table>
+              <thead><tr><th>Creator</th><th>Country</th><th>Fit</th><th>Risk</th><th>Segment</th></tr></thead>
+              <tbody>
+                <tr><td>@luzskincare</td><td>MX</td><td>91<div class="scorebar"><span style="width:91%"></span></div></td><td><span class="tag green">Low</span></td><td>Review creator</td></tr>
+                <tr><td>@pielconandrea</td><td>PE</td><td>84<div class="scorebar"><span style="width:84%"></span></div></td><td><span class="tag amber">Low/Medium</span></td><td>Beauty educator</td></tr>
+                <tr><td>@rutina.ec</td><td>EC</td><td>79<div class="scorebar"><span style="width:79%"></span></div></td><td><span class="tag green">Low</span></td><td>UGC creator</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="panel span-5">
+            <h2>Approval Queue</h2>
+            <div class="queue">
+              <div class="queue-item">
+                <div class="row"><strong>@luzskincare</strong><span class="tag green">Claims passed</span></div>
+                <p class="muted">SPF routine review draft ready for human approval.</p>
+                <button class="btn green">Approve</button>
+                <button class="btn">Request revision</button>
+              </div>
+              <div class="queue-item">
+                <div class="row"><strong>@pielconandrea</strong><span class="tag amber">Needs review</span></div>
+                <p class="muted">Contains anti-aging wording. Review product claims first.</p>
+                <button class="btn">Open claims check</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="discovery" class="tab hidden">
+        <div class="panel">
+          <h2>Discovery Plan</h2>
+          <div class="toolbar">
+            <select><option>MX</option><option>PE</option><option>EC</option></select>
+            <select><option>sunscreen</option><option>calming_serum</option><option>cleanser</option></select>
+            <select><option>TikTok</option><option>Instagram</option></select>
+            <button class="btn primary">Generate Plan</button>
+          </div>
+          <table>
+            <thead><tr><th>Query</th><th>Country</th><th>Intent</th><th>Allowed Source</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>#protectorsolar</td><td>MX</td><td>Discovery</td><td>manual, approved_provider</td><td><span class="tag blue">Ready</span></td></tr>
+              <tr><td>#kbeautyperu</td><td>PE</td><td>Commerce</td><td>manual, official_api</td><td><span class="tag blue">Ready</span></td></tr>
+              <tr><td>#skincareecuador</td><td>EC</td><td>Format</td><td>manual, creator_provided</td><td><span class="tag blue">Ready</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="candidates" class="tab hidden">
+        <div class="panel">
+          <h2>Candidate Review</h2>
+          <div class="toolbar">
+            <input placeholder="Search creator">
+            <select><option>All countries</option><option>MX</option><option>PE</option><option>EC</option></select>
+            <select><option>Score 70+</option><option>Score 80+</option></select>
+            <select><option>Low/Medium max</option><option>Low only</option></select>
+          </div>
+          <table>
+            <thead><tr><th>Creator</th><th>Followers</th><th>Score</th><th>Signals</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>@luzskincare</td><td>48.2K</td><td>91</td><td>SPF, K-beauty, review format</td><td><button class="btn">Add to campaign</button></td></tr>
+              <tr><td>@pielconandrea</td><td>32.8K</td><td>84</td><td>Education, sensitive skin, comments</td><td><button class="btn">Add to campaign</button></td></tr>
+              <tr><td>@rutina.ec</td><td>21.4K</td><td>79</td><td>UGC, routine demo, low risk</td><td><button class="btn">Add to campaign</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="campaigns" class="tab hidden">
+        <div class="grid">
+          <div class="panel span-5">
+            <h2>Campaign Setup</h2>
+            <input style="width:100%; margin-bottom:8px" value="MX SPF Soft Launch">
+            <div class="toolbar">
+              <select><option>MX</option><option>PE</option><option>EC</option></select>
+              <select><option>sunscreen</option><option>calming_serum</option></select>
+              <select><option>tiktok_shop</option><option>shopify</option><option>mercado_libre</option></select>
+            </div>
+            <textarea>Find Spanish-speaking skincare creators for honest K-beauty SPF reviews.</textarea>
+            <button class="btn primary">Save Campaign</button>
+          </div>
+          <div class="panel span-7">
+            <h2>Campaign Funnel</h2>
+            <table>
+              <thead><tr><th>Status</th><th>Count</th><th>Next Gate</th></tr></thead>
+              <tbody>
+                <tr><td>Candidate selected</td><td>24</td><td>DM draft</td></tr>
+                <tr><td>Claims check passed</td><td>11</td><td>Human approval</td></tr>
+                <tr><td>Approved</td><td>6</td><td>Manual send</td></tr>
+                <tr><td>Negotiating</td><td>2</td><td>Terms</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="outreach" class="tab hidden">
+        <div class="grid">
+          <div class="panel span-6">
+            <h2>DM Review</h2>
+            <textarea>Hola Luz, somos Briwell. Nos encanto tu contenido de skincare y nos gustaria proponerte una colaboracion K-beauty para una resena honesta de nuestro protector solar.</textarea>
+            <div class="toolbar">
+              <button class="btn">Run claims check</button>
+              <button class="btn green">Approve</button>
+              <button class="btn red">Reject</button>
+            </div>
+          </div>
+          <div class="panel span-6">
+            <h2>Status Transition</h2>
+            <table>
+              <thead><tr><th>Creator</th><th>Status</th><th>Allowed Next</th></tr></thead>
+              <tbody>
+                <tr><td>@luzskincare</td><td><span class="tag green">approved</span></td><td>manual dm_sent</td></tr>
+                <tr><td>@pielconandrea</td><td><span class="tag amber">reviewing</span></td><td>dm_drafted, approved, rejected</td></tr>
+                <tr><td>@rutina.ec</td><td><span class="tag teal">replied</span></td><td>negotiating, accepted, rejected</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="tracking" class="tab hidden">
+        <div class="grid">
+          <div class="panel span-6">
+            <h2>Performance Tracking</h2>
+            <table>
+              <thead><tr><th>Creator</th><th>Post URL</th><th>Views</th><th>Revenue</th></tr></thead>
+              <tbody>
+                <tr><td>@luzskincare</td><td>Pending</td><td>0</td><td>$0</td></tr>
+                <tr><td>@rutina.ec</td><td>Pending</td><td>0</td><td>$0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel span-6">
+            <h2>Settlement Queue</h2>
+            <table>
+              <thead><tr><th>Creator</th><th>Terms</th><th>Delivery</th><th>Payout</th></tr></thead>
+              <tbody>
+                <tr><td>@luzskincare</td><td>Sample + fee</td><td>Waiting post</td><td><span class="tag amber">Pending</span></td></tr>
+                <tr><td>@rutina.ec</td><td>Commission</td><td>Waiting link</td><td><span class="tag amber">Pending</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('nav button');
+    const tabs = document.querySelectorAll('.tab');
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        buttons.forEach((item) => item.classList.remove('active'));
+        tabs.forEach((tab) => tab.classList.add('hidden'));
+        button.classList.add('active');
+        document.getElementById(button.dataset.tab).classList.remove('hidden');
+      });
+    });
+  </script>
+</body>
+</html>

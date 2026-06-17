@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Briwell Global Creator Commerce OS</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">BR</div>
+        <div>
+          <div class="brand-name">Briwell</div>
+          <div class="brand-subtitle">Global Creator Commerce</div>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Briwell 운영 메뉴">
+        <button class="nav-item active" data-view="command">
+          <span>Executive Overview</span>
+          <small>경영 현황</small>
+        </button>
+        <button class="nav-item" data-view="discovery">
+          <span>Creator Discovery</span>
+          <small>인플루언서 발굴</small>
+        </button>
+        <button class="nav-item" data-view="candidates">
+          <span>Talent Intelligence</span>
+          <small>후보 검증</small>
+        </button>
+        <button class="nav-item" data-view="campaign">
+          <span>Campaign Studio</span>
+          <small>캠페인 설계</small>
+        </button>
+        <button class="nav-item" data-view="review">
+          <span>Brand Safety Desk</span>
+          <small>DM 및 표현 검수</small>
+        </button>
+        <button class="nav-item" data-view="tracking">
+          <span>Performance Analytics</span>
+          <small>성과 추적</small>
+        </button>
+        <button class="nav-item" data-view="settlement">
+          <span>Contracts & Payouts</span>
+          <small>계약 및 정산</small>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="status-dot" id="apiDot"></span>
+        <span id="apiStatus">API 연결 확인 중</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">LATAM K-BEAUTY CREATOR OPERATIONS</div>
+          <h1>글로벌 MCN 표준의 크리에이터 커머스 운영 콘솔</h1>
+          <p class="muted">멕시코, 페루, 에콰도르 인플루언서 발굴부터 브랜드 세이프티, 캠페인 실행, 성과와 정산까지 관리합니다.</p>
+        </div>
+        <div class="connection-panel">
+          <label>
+            <span>API Endpoint</span>
+            <input id="apiBaseInput" value="http://127.0.0.1:8030">
+          </label>
+          <label>
+            <span>Operator Role</span>
+            <select id="roleSelect">
+              <option value="admin">Admin</option>
+              <option value="operator">Operator</option>
+              <option value="campaign_manager">Campaign Manager</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </label>
+          <button class="button primary" id="refreshButton">Sync</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-command">
+        <div class="metric-grid">
+          <article class="metric-card">
+            <span class="metric-label">API Health</span>
+            <strong id="metricHealth">오프라인</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Production Readiness</span>
+            <strong id="metricReadiness">미확인</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Qualified Talent</span>
+            <strong id="metricCandidates">0</strong>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">Review Queue</span>
+            <strong id="metricQueue">0</strong>
+          </article>
+        </div>
+
+        <div class="content-grid">
+          <section class="panel span-8">
+            <div class="panel-heading">
+              <div>
+                <h2>Priority Talent Pipeline</h2>
+                <p class="panel-subtitle">브랜드 적합도와 리스크 기준으로 우선 접촉할 후보를 정렬합니다.</p>
+              </div>
+              <div class="segmented">
+                <button class="segment active" data-country="ALL">All</button>
+                <button class="segment" data-country="MX">MX</button>
+                <button class="segment" data-country="PE">PE</button>
+                <button class="segment" data-country="EC">EC</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Talent</th>
+                    <th>Market</th>
+                    <th>Fit Score</th>
+                    <th>Risk Tier</th>
+                    <th>Profile</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="priorityTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel span-4">
+            <div class="panel-heading">
+              <div>
+                <h2>Approval Desk</h2>
+                <p class="panel-subtitle">자동 발송 전 사람 검수를 유지합니다.</p>
+              </div>
+              <span class="badge amber">Human Gate</span>
+            </div>
+            <div class="queue-list" id="reviewQueue"></div>
+          </section>
+
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>Data Acquisition Policy</h2>
+                <p class="panel-subtitle">승인된 수집 경로만 후보 분석에 사용합니다.</p>
+              </div>
+              <span class="badge green">Compliant Sources</span>
+            </div>
+            <div id="sourcePolicy" class="policy-block"></div>
+          </section>
+
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>AI Operations Layer</h2>
+                <p class="panel-subtitle">Gemini 중심 분석 파이프라인의 준비 상태를 확인합니다.</p>
+              </div>
+              <span class="badge blue">Gemini First</span>
+            </div>
+            <div id="aiProvider" class="policy-block"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-discovery">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Creator Discovery Brief</h2>
+              <p class="panel-subtitle">시장, 제품군, 플랫폼 기준으로 합법적 후보 발굴 계획을 생성합니다.</p>
+            </div>
+            <button class="button primary" id="runDiscoveryButton">Generate Brief</button>
+          </div>
+          <div class="form-grid">
+            <label>
+              <span>Target Markets</span>
+              <select id="discoveryCountries" multiple>
+                <option value="MX" selected>Mexico</option>
+                <option value="PE" selected>Peru</option>
+                <option value="EC" selected>Ecuador</option>
+              </select>
+            </label>
+            <label>
+              <span>Product Category</span>
+              <select id="discoveryProduct">
+                <option value="sunscreen">Sunscreen</option>
+                <option value="calming_serum">Calming Serum</option>
+                <option value="cleanser">Cleanser</option>
+                <option value="sheet_mask">Sheet Mask</option>
+                <option value="cushion_foundation">Cushion Foundation</option>
+              </select>
+            </label>
+            <label>
+              <span>Channel</span>
+              <select id="discoveryPlatform">
+                <option value="tiktok">TikTok</option>
+                <option value="instagram">Instagram</option>
+              </select>
+            </label>
+            <label>
+              <span>Keyword Depth</span>
+              <input id="discoveryLimit" type="number" min="1" max="20" value="4">
+            </label>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Market</th>
+                  <th>Category</th>
+                  <th>Keyword</th>
+                  <th>Channel</th>
+                  <th>Acquisition Path</th>
+                </tr>
+              </thead>
+              <tbody id="discoveryTable"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-candidates">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Talent Intelligence Inbox</h2>
+              <p class="panel-subtitle">스코어, 시장, 콘텐츠 신호를 기준으로 협업 후보를 검증합니다.</p>
+            </div>
+            <div class="filters">
+              <input id="candidateSearch" placeholder="계정명 또는 콘텐츠 신호 검색">
+              <select id="candidateCountry">
+                <option value="ALL">All Markets</option>
+                <option value="MX">Mexico</option>
+                <option value="PE">Peru</option>
+                <option value="EC">Ecuador</option>
+              </select>
+              <select id="candidateScore">
+                <option value="70">Fit 70+</option>
+                <option value="80">Fit 80+</option>
+                <option value="90">Fit 90+</option>
+              </select>
+            </div>
+          </div>
+          <div class="candidate-layout">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Talent</th>
+                    <th>Audience</th>
+                    <th>Fit</th>
+                    <th>Signals</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="candidateTable"></tbody>
+              </table>
+            </div>
+            <aside class="detail-panel" id="candidateDetail"></aside>
+          </div>
+        </section>
+      </section>
+
+      <section class="view" id="view-campaign">
+        <div class="content-grid">
+          <section class="panel span-5">
+            <div class="panel-heading">
+              <div>
+                <h2>Campaign Studio</h2>
+                <p class="panel-subtitle">시장별 크리에이터 커머스 캠페인을 설계합니다.</p>
+              </div>
+              <span class="badge blue">Draft</span>
+            </div>
+            <div class="stacked-form">
+              <label><span>Campaign Name</span><input id="campaignName" value="MX Sunscreen Creator Launch"></label>
+              <label><span>Market</span><select id="campaignCountry"><option value="MX">Mexico</option><option value="PE">Peru</option><option value="EC">Ecuador</option></select></label>
+              <label><span>Product Category</span><select id="campaignProduct"><option value="sunscreen">Sunscreen</option><option value="calming_serum">Calming Serum</option><option value="cleanser">Cleanser</option></select></label>
+              <label><span>Commerce Channel</span><select id="campaignChannel"><option value="tiktok_shop">TikTok Shop</option><option value="shopify">Shopify</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
+              <label><span>Budget USD</span><input id="campaignBudget" type="number" min="0" value="1200"></label>
+              <label><span>Strategic Objective</span><textarea id="campaignGoal">K-뷰티 선스크린을 스페인어권 스킨케어 크리에이터의 솔직 리뷰와 커머스 링크로 검증합니다.</textarea></label>
+              <button class="button primary" id="saveCampaignButton">Save Campaign</button>
+            </div>
+            <div id="campaignSaveResult" class="result-box"></div>
+          </section>
+
+          <section class="panel span-7">
+            <div class="panel-heading">
+              <div>
+                <h2>Execution Funnel</h2>
+                <p class="panel-subtitle">선정, 검수, 승인, 답변 단계의 전환 흐름을 봅니다.</p>
+              </div>
+              <button class="button" id="prepareDraftsButton">Prepare Outreach</button>
+            </div>
+            <div class="funnel-row">
+              <div><strong>24</strong><span>Shortlisted</span></div>
+              <div><strong>14</strong><span>Drafted</span></div>
+              <div><strong>9</strong><span>Brand Safe</span></div>
+              <div><strong>6</strong><span>Approved</span></div>
+              <div><strong>2</strong><span>Replied</span></div>
+            </div>
+            <div id="draftResult" class="result-box"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-review">
+        <div class="content-grid">
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>Outreach Copy Review</h2>
+                <p class="panel-subtitle">협업 DM의 표현 리스크와 브랜드 세이프티를 검수합니다.</p>
+              </div>
+              <span class="badge amber">Claims Review</span>
+            </div>
+            <label class="full-label"><span>Product Category</span><select id="claimProduct"><option value="sunscreen">Sunscreen</option><option value="calming_serum">Calming Serum</option><option value="cleanser">Cleanser</option></select></label>
+            <label class="full-label"><span>Outreach Message</span><textarea id="dmMessage">안녕하세요 Luz님, Briwell입니다. 스킨케어 콘텐츠의 전문성과 톤이 인상 깊어 K-뷰티 선스크린 리뷰 협업을 제안드리고 싶습니다.</textarea></label>
+            <div class="action-row">
+              <button class="button primary" id="claimsCheckButton">Run Brand Safety Check</button>
+              <button class="button success" id="approveDmButton">Approve</button>
+              <button class="button danger" id="rejectDmButton">Reject</button>
+            </div>
+            <div id="claimsResult" class="result-box"></div>
+          </section>
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>Manual Send Control</h2>
+                <p class="panel-subtitle">외부 플랫폼 발송은 자동화하지 않고 승인 이력만 기록합니다.</p>
+              </div>
+              <span class="badge red">No Auto-Send</span>
+            </div>
+            <div class="timeline">
+              <div class="step done">Drafted</div>
+              <div class="step done">Brand Safe</div>
+              <div class="step done">Approved</div>
+              <div class="step">Manual Send</div>
+              <div class="step">Replied</div>
+              <div class="step">Accepted</div>
+            </div>
+            <button class="button" id="manualSendButton">Record Manual Send</button>
+            <div id="manualSendResult" class="result-box"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="view" id="view-tracking">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Performance Analytics</h2>
+              <p class="panel-subtitle">게시물, 쿠폰, 조회수, 매출 데이터를 캠페인 단위로 추적합니다.</p>
+            </div>
+            <button class="button primary" id="saveSnapshotButton">Save Snapshot</button>
+          </div>
+          <div class="form-grid">
+            <label><span>Campaign ID</span><input id="snapshotCampaign" value="campaign-1"></label>
+            <label><span>Talent ID</span><input id="snapshotCreator" value="creator-1"></label>
+            <label><span>Post URL</span><input id="snapshotPostUrl" value="https://example.com/post/1"></label>
+            <label><span>Coupon Code</span><input id="snapshotCoupon" value="BRI-MX-10"></label>
+            <label><span>Views</span><input id="snapshotViews" type="number" min="0" value="12000"></label>
+            <label><span>Revenue USD</span><input id="snapshotRevenue" type="number" min="0" value="320"></label>
+          </div>
+          <div id="snapshotResult" class="result-box"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-settlement">
+        <div class="content-grid">
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>Creator Contract Terms</h2>
+                <p class="panel-subtitle">납품 조건, 비용, 사용권 기간을 표준화합니다.</p>
+              </div>
+              <span class="badge blue">Deliverables</span>
+            </div>
+            <div class="stacked-form">
+              <label><span>Talent ID</span><input id="contractCreator" value="creator-1"></label>
+              <label><span>Campaign ID</span><input id="contractCampaign" value="campaign-1"></label>
+              <label><span>Fee USD</span><input id="contractFee" type="number" min="0" value="150"></label>
+              <label><span>Video Deliverables</span><input id="contractVideos" type="number" min="1" value="1"></label>
+              <button class="button primary" id="saveContractButton">Save Contract</button>
+            </div>
+            <div id="contractResult" class="result-box"></div>
+          </section>
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>Payout Operations</h2>
+                <p class="panel-subtitle">지급 전 인보이스, 세금 증빙, 게시물 URL을 확인합니다.</p>
+              </div>
+              <span class="badge amber">Evidence Required</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Talent</th><th>Amount</th><th>Status</th><th>Required Evidence</th></tr></thead>
+                <tbody id="payoutTable"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./api-client.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+!.env.db.example
+!.env.production.example
+*.pem
+*.key
+work/postgres_pw.txt
+
+# Local PostgreSQL runtime and backups
+work/postgres_data/
+work/postgresql-17.10-portable/
+work/postgresql-*-binaries.zip
+work/db_backups/
+work/postgres_server.log
+
+# Runtime logs and local process files
+*.log
+*.pid
+work/**/uvicorn_job_id.txt
+work/**/uvicorn_pid.txt
+work/**/uvicorn_stdout.log
+work/**/uvicorn_stderr.log
+outputs/*stdout.log
+outputs/*stderr.log
+
+# Build/package artifacts
+*.zip
+work/dashboard_zip_check/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

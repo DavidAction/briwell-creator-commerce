@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-label="Rutina EC demo channel image">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#431407"/>
+      <stop offset="0.48" stop-color="#b45309"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="360" rx="36" fill="url(#bg)"/>
+  <rect x="48" y="54" width="190" height="252" rx="28" fill="#ffffff" opacity="0.96"/>
+  <rect x="78" y="84" width="130" height="18" rx="9" fill="#b45309"/>
+  <rect x="78" y="124" width="96" height="14" rx="7" fill="#fed7aa"/>
+  <rect x="78" y="152" width="126" height="14" rx="7" fill="#fde68a"/>
+  <rect x="78" y="196" width="52" height="70" rx="14" fill="#fff7ed"/>
+  <rect x="148" y="178" width="50" height="88" rx="14" fill="#fed7aa"/>
+  <rect x="320" y="66" width="264" height="226" rx="36" fill="#ffffff" opacity="0.2"/>
+  <circle cx="452" cy="178" r="78" fill="#ffffff" opacity="0.93"/>
+  <rect x="417" y="126" width="70" height="104" rx="18" fill="#fff7ed"/>
+  <circle cx="452" cy="178" r="22" fill="#f59e0b"/>
+  <path d="M342 284h232" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.66"/>
+  <text x="48" y="340" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="700">UGC ROUTINE DEMO</text>
+</svg>

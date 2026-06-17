@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: briwell-postgres
+    environment:
+      POSTGRES_DB: briwell
+      POSTGRES_USER: briwell
+      POSTGRES_PASSWORD: ${BRIWELL_POSTGRES_PASSWORD:?Set BRIWELL_POSTGRES_PASSWORD before starting Postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - briwell_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U briwell -d briwell"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  briwell_postgres_data:

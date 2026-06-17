@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-label="Luz Skincare demo channel image">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="0.55" stop-color="#1d4ed8"/>
+      <stop offset="1" stop-color="#67e8f9"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="360" rx="36" fill="url(#bg)"/>
+  <rect x="44" y="44" width="278" height="272" rx="30" fill="#ffffff" opacity="0.96"/>
+  <rect x="78" y="76" width="210" height="28" rx="14" fill="#1d4ed8"/>
+  <rect x="78" y="124" width="150" height="16" rx="8" fill="#c7d2fe"/>
+  <rect x="78" y="154" width="188" height="16" rx="8" fill="#dbeafe"/>
+  <rect x="78" y="196" width="60" height="74" rx="14" fill="#eff6ff"/>
+  <rect x="154" y="180" width="58" height="90" rx="14" fill="#bfdbfe"/>
+  <rect x="228" y="208" width="58" height="62" rx="14" fill="#e0f2fe"/>
+  <circle cx="513" cy="180" r="104" fill="#ffffff" opacity="0.18"/>
+  <circle cx="512" cy="168" r="70" fill="#ffffff" opacity="0.95"/>
+  <rect x="472" y="124" width="82" height="128" rx="22" fill="#e0f2fe"/>
+  <rect x="493" y="146" width="40" height="12" rx="6" fill="#1d4ed8"/>
+  <path d="M424 278h174" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.68"/>
+  <text x="44" y="340" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="700">SPF REVIEW CHANNEL</text>
+</svg>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Rutina EC demo profile image">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7ed"/>
+      <stop offset="0.55" stop-color="#ffedd5"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e8b99a"/>
+      <stop offset="1" stop-color="#c78364"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b45309"/>
+      <stop offset="1" stop-color="#be123c"/>
+    </linearGradient>
+  </defs>
+  <rect width="240" height="240" rx="56" fill="url(#bg)"/>
+  <circle cx="184" cy="62" r="36" fill="#ffffff" opacity="0.68"/>
+  <circle cx="50" cy="178" r="38" fill="#fdba74" opacity="0.3"/>
+  <path d="M57 204c8-43 31-67 63-67s56 24 63 67H57z" fill="url(#top)"/>
+  <circle cx="120" cy="103" r="43" fill="url(#skin)"/>
+  <path d="M80 99c5-36 24-56 53-56 25 0 42 14 50 39-19-7-39-11-61-7-15 3-29 11-42 24z" fill="#171717"/>
+  <path d="M92 139c14 12 42 12 56 0 1 24-58 24-56 0z" fill="#e7a080" opacity="0.55"/>
+  <circle cx="106" cy="103" r="4" fill="#111827"/>
+  <circle cx="138" cy="103" r="4" fill="#111827"/>
+  <path d="M109 121c8 6 18 6 26 0" fill="none" stroke="#7f1d1d" stroke-width="4" stroke-linecap="round"/>
+  <rect x="162" y="151" width="39" height="46" rx="12" fill="#ffffff"/>
+  <circle cx="182" cy="174" r="12" fill="#fed7aa"/>
+  <path d="M174 180c5 5 12 5 17 0" fill="none" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,31 @@
+#!/bin/sh
+set -u
+
+if [ "${DISABLE_AUTO_PUSH:-}" = "1" ]; then
+  echo "auto-push skipped: DISABLE_AUTO_PUSH=1"
+  exit 0
+fi
+
+remote="${AUTO_PUSH_REMOTE:-origin}"
+
+if ! git remote get-url "$remote" >/dev/null 2>&1; then
+  echo "auto-push skipped: remote '$remote' is not configured"
+  exit 0
+fi
+
+branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"
+if [ -z "$branch" ] || [ "$branch" = "HEAD" ]; then
+  echo "auto-push skipped: detached HEAD"
+  exit 0
+fi
+
+echo "auto-push: pushing $branch to $remote"
+git push "$remote" "HEAD:$branch"
+status=$?
+
+if [ "$status" -ne 0 ]; then
+  echo "auto-push failed. Commit was created locally; run 'git push' after checking credentials/network."
+  exit 0
+fi
+
+exit 0

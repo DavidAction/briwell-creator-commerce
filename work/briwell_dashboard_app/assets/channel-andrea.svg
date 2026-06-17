@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-label="Andrea Piel demo channel image">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#052e2b"/>
+      <stop offset="0.5" stop-color="#047857"/>
+      <stop offset="1" stop-color="#86efac"/>
+    </linearGradient>
+  </defs>
+  <rect width="720" height="360" rx="36" fill="url(#bg)"/>
+  <circle cx="560" cy="112" r="92" fill="#ffffff" opacity="0.15"/>
+  <rect x="52" y="54" width="256" height="252" rx="30" fill="#ffffff" opacity="0.96"/>
+  <rect x="84" y="82" width="150" height="20" rx="10" fill="#047857"/>
+  <rect x="84" y="124" width="188" height="14" rx="7" fill="#bbf7d0"/>
+  <rect x="84" y="152" width="150" height="14" rx="7" fill="#ccfbf1"/>
+  <rect x="84" y="196" width="190" height="66" rx="18" fill="#ecfdf5"/>
+  <circle cx="438" cy="182" r="84" fill="#ffffff" opacity="0.94"/>
+  <path d="M393 184c24-48 71-48 95 0-27 34-68 34-95 0z" fill="#dcfce7"/>
+  <circle cx="440" cy="179" r="24" fill="#047857"/>
+  <path d="M360 284h248" stroke="#ffffff" stroke-width="10" stroke-linecap="round" opacity="0.66"/>
+  <text x="52" y="340" fill="#ffffff" font-family="Arial, sans-serif" font-size="28" font-weight="700">SKIN EDUCATION FORMAT</text>
+</svg>
