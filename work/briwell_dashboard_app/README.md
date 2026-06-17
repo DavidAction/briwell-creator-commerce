@@ -73,6 +73,14 @@ Authorization: Bearer <supabase-jwt>
 14. Performance snapshot capture
 15. Settlement contract capture
 
+## Executive Overview Standard
+
+The first screen is intentionally commerce-led instead of system-led. It should
+prioritize pipeline GMV forecast, recent-20 data coverage, outreach-ready
+talent, human review load, funnel bottlenecks, and operator next actions. API
+health remains visible as an operational signal, but it should not displace the
+commercial decision layer.
+
 ## Vercel
 
 Deploy this directory as a static project. The API base URL can later be moved

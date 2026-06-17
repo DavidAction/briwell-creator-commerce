@@ -62,8 +62,8 @@
       <header class="topbar">
         <div>
           <div class="eyebrow">LATAM K-BEAUTY CREATOR OPERATIONS</div>
-          <h1>Briwell Creator Commerce Intelligence</h1>
-          <p class="muted">LATAM K-Beauty Creator Commerce 운영 콘솔. 인플루언서 발굴, 브랜드 세이프티, 실행 관리, 성과 분석, 정산을 하나의 운영 흐름으로 관리</p>
+          <h1>LATAM Creator Commerce Command Center</h1>
+          <p class="muted">MX, PE, EC K-Beauty launch에서 후보 발굴, 최근 20개 게시물 스크리닝, DM 승인, 매출 추적까지 연결하는 글로벌 MCN 운영 콘솔</p>
         </div>
         <div class="connection-panel">
           <label>
@@ -83,59 +83,81 @@
         </div>
       </header>
 
-      <section class="ops-strip" aria-label="운영 상태 요약">
+      <section class="ops-strip" aria-label="커머스 운영 요약">
         <article>
-          <span>Target Markets</span>
-          <strong>MX · PE · EC</strong>
-          <small>LATAM launch cluster</small>
+          <span>GMV Objective</span>
+          <strong>USD 25K</strong>
+          <small>30-day pilot target</small>
         </article>
         <article>
-          <span>Compliance Mode</span>
-          <strong>Human Gate</strong>
-          <small>No auto-send policy</small>
+          <span>Creator Funnel</span>
+          <strong>Discovery → Paid</strong>
+          <small>Screen, outreach, deliver</small>
         </article>
         <article>
-          <span>Data Acquisition</span>
-          <strong>Approved Sources</strong>
-          <small>Manual, API, provider</small>
+          <span>Quality Gate</span>
+          <strong>Recent 20 Required</strong>
+          <small>No one-post approvals</small>
         </article>
         <article>
-          <span>AI Operations</span>
-          <strong>Gemini First</strong>
-          <small>Analysis-ready layer</small>
+          <span>Governance</span>
+          <strong>Low / Low-Medium</strong>
+          <small>No auto-send, no scrape</small>
         </article>
       </section>
 
       <section class="view active" id="view-command">
         <div class="metric-grid">
           <article class="metric-card">
-            <span class="metric-label">API Health</span>
-            <strong id="metricHealth">오프라인</strong>
-            <small id="metricHealthNote">Local dashboard fallback</small>
+            <span class="metric-label">Pipeline GMV Forecast</span>
+            <strong id="metricPipelineGmv">$0</strong>
+            <small id="metricPipelineNote">Forecast from active shortlist</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Production Readiness</span>
-            <strong id="metricReadiness">미확인</strong>
-            <small>Security, DB, backup checks</small>
+            <span class="metric-label">Recent-20 Coverage</span>
+            <strong id="metricScreeningCoverage">0/0</strong>
+            <small id="metricCoverageNote">Approved post data loaded</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Qualified Talent</span>
-            <strong id="metricCandidates">0</strong>
-            <small>Fit score 70+ active pool</small>
+            <span class="metric-label">Outreach Ready</span>
+            <strong id="metricOutreachReady">0</strong>
+            <small id="metricOutreachNote">Pass + low risk + product match</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Review Queue</span>
+            <span class="metric-label">Human Review Load</span>
             <strong id="metricQueue">0</strong>
-            <small>Claims, contact, approval desk</small>
+            <small id="metricQueueNote">Claims, missing data, risk gates</small>
           </article>
         </div>
 
         <div class="content-grid">
+          <section class="panel span-8">
+            <div class="panel-heading">
+              <div>
+                <h2>Commerce Command Board</h2>
+                <p class="panel-subtitle">크리에이터 발굴부터 매출 추적까지 연결되는 운영 퍼널과 병목 지점</p>
+              </div>
+              <span class="badge blue">Executive Control</span>
+            </div>
+            <div class="command-board" id="commerceCommand"></div>
+          </section>
+
+          <section class="panel span-4">
+            <div class="panel-heading">
+              <div>
+                <h2>Operator Next Actions</h2>
+                <p class="panel-subtitle">오늘 처리해야 할 최고 우선순위 액션</p>
+              </div>
+              <span class="badge amber">Action Queue</span>
+            </div>
+            <div class="operator-actions" id="operatorActions"></div>
+          </section>
+
           <section class="panel span-12 talent-radar-panel">
             <div class="panel-heading">
               <div>
-                <h2>Market Talent Radar</h2>
-                <p class="panel-subtitle">MX, PE, EC 핵심 후보의 채널 비주얼, 시장 적합도, 실행 우선순위</p>
+                <h2>Creator Portfolio Leaders</h2>
+                <p class="panel-subtitle">시장별 핵심 후보의 채널 비주얼, 최근 콘텐츠 적합도, 커머스 전환 가능성</p>
               </div>
               <span class="badge blue">Visual Intelligence</span>
             </div>
@@ -145,8 +167,8 @@
           <section class="panel span-8">
             <div class="panel-heading">
               <div>
-                <h2>Priority Talent Pipeline</h2>
-                <p class="panel-subtitle">브랜드 적합도, 리스크, 시장성을 기준으로 정렬된 우선 작업 후보</p>
+                <h2>Shortlist Decision Queue</h2>
+                <p class="panel-subtitle">브랜드 적합도, 최근 20개 데이터, 리스크, 시장성을 기준으로 정렬된 후보</p>
               </div>
               <div class="segmented">
                 <button class="segment active" data-country="ALL">All</button>
@@ -175,8 +197,8 @@
           <section class="panel span-4">
             <div class="panel-heading">
               <div>
-                <h2>Approval Desk</h2>
-                <p class="panel-subtitle">자동 발송 없이 Human Review Gate 유지</p>
+                <h2>Risk & Approval Queue</h2>
+                <p class="panel-subtitle">클레임, 연락 가능성, 부족 데이터, 승인 상태를 수동 검수</p>
               </div>
               <span class="badge amber">Human Gate</span>
             </div>

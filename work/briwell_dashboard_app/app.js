@@ -1,5 +1,10 @@
 const state = {
   apiOnline: false,
+  systemReadiness: {
+    api: "Mock",
+    readiness: "Local",
+    note: "Local dashboard fallback",
+  },
   activeCountry: "ALL",
   selectedCreatorId: "creator-1",
   intakeCreators: [],
@@ -194,9 +199,11 @@ async function refreshFromApi() {
 
     state.apiOnline = true;
     setApiStatus("online", "API Online");
-    byId("metricHealth").textContent = health?.status === "ok" ? "Online" : health?.status || "Online";
-    byId("metricHealthNote").textContent = "Connected to live API";
-    byId("metricReadiness").textContent = formatReadiness(readiness?.status);
+    state.systemReadiness = {
+      api: health?.status === "ok" ? "Online" : health?.status || "Online",
+      readiness: formatReadiness(readiness?.status),
+      note: "Connected to live API",
+    };
     renderSourcePolicy(sourcePolicy);
     renderAiProvider(aiProvider);
 
@@ -206,9 +213,11 @@ async function refreshFromApi() {
   } catch (_error) {
     state.apiOnline = false;
     setApiStatus("offline", "Mock Mode");
-    byId("metricHealth").textContent = "Mock";
-    byId("metricHealthNote").textContent = "Local dashboard fallback";
-    byId("metricReadiness").textContent = "Local";
+    state.systemReadiness = {
+      api: "Mock",
+      readiness: "Local",
+      note: "Local dashboard fallback",
+    };
     renderSourcePolicy(null);
     renderAiProvider(null);
   }
@@ -216,8 +225,9 @@ async function refreshFromApi() {
 }
 
 function renderAll() {
-  byId("metricCandidates").textContent = String(filteredCreators().length);
-  byId("metricQueue").textContent = String(state.reviewItems.length);
+  renderCommandMetrics();
+  renderCommerceCommand();
+  renderOperatorActions();
   renderTalentRadar();
   renderPriorityTable();
   renderReviewQueue();
@@ -228,6 +238,177 @@ function renderAll() {
   renderPostImportTable();
   renderRecentScreenResult(state.selectedCreatorId);
   renderCoverageAudit();
+}
+
+function renderCommandMetrics() {
+  const metrics = buildCommandMetrics();
+  byId("metricPipelineGmv").textContent = formatCurrencyCompact(metrics.pipelineGmvUsd);
+  byId("metricPipelineNote").textContent = `${metrics.targetProgress}% of USD 25K pilot target`;
+  byId("metricScreeningCoverage").textContent = `${metrics.loadedRecentPosts}/${metrics.requiredRecentPosts}`;
+  byId("metricCoverageNote").textContent = `${metrics.coveragePercent}% recent-post coverage`;
+  byId("metricOutreachReady").textContent = String(metrics.outreachReadyCount);
+  byId("metricOutreachNote").textContent = `${metrics.screenedCount} screened · ${metrics.lowRiskCount} low-risk candidates`;
+  byId("metricQueue").textContent = String(metrics.humanReviewLoad);
+  byId("metricQueueNote").textContent = `${metrics.postGapCount} data gaps · ${state.reviewItems.length} approval tasks`;
+}
+
+function renderCommerceCommand() {
+  const metrics = buildCommandMetrics();
+  const stages = [
+    ["Discovered", state.creators.length + state.intakeCreators.length, "candidate pool"],
+    ["Recent 20", `${metrics.loadedRecentPosts}/${metrics.requiredRecentPosts}`, `${metrics.coveragePercent}% coverage`],
+    ["Screened", metrics.screenedCount, "AI first pass"],
+    ["Outreach Ready", metrics.outreachReadyCount, "pass + low risk"],
+    ["Human Review", metrics.humanReviewLoad, "risk/data gates"],
+    ["Live Posts", 0, "tracking pending"],
+  ];
+  byId("commerceCommand").innerHTML = `
+    <div class="command-summary">
+      <div>
+        <span>Forecast GMV</span>
+        <strong>${escapeHtml(formatCurrencyCompact(metrics.pipelineGmvUsd))}</strong>
+        <small>${escapeHtml(metrics.targetProgress)}% to pilot target</small>
+      </div>
+      <div>
+        <span>Qualified Reach</span>
+        <strong>${escapeHtml(formatCompactNumber(metrics.qualifiedReach))}</strong>
+        <small>monthly avg view base</small>
+      </div>
+      <div>
+        <span>Data Confidence</span>
+        <strong>${escapeHtml(String(metrics.coveragePercent))}%</strong>
+        <small>recent 20 completeness</small>
+      </div>
+    </div>
+    <div class="funnel-board">
+      ${stages
+        .map(
+          ([label, value, note], index) => `
+        <div class="funnel-stage" style="--stage-color:${escapeHtml(stageColor(index))}">
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(String(value))}</strong>
+          <small>${escapeHtml(note)}</small>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderOperatorActions() {
+  const metrics = buildCommandMetrics();
+  const gapCreators = state.creators.filter((creator) => loadedRecentPostsCount(creator) < 20);
+  const readyCreators = state.creators.filter(isOutreachReady);
+  const actions = [];
+
+  if (gapCreators.length) {
+    actions.push({
+      tier: "high",
+      label: "Data Completion",
+      title: "Recent 20 posts gap",
+      detail: gapCreators
+        .map((creator) => `@${creator.username} ${loadedRecentPostsCount(creator)}/20`)
+        .join(" · "),
+      next: "Talent Intake",
+    });
+  }
+
+  if (readyCreators.length) {
+    actions.push({
+      tier: "green",
+      label: "Outreach",
+      title: "DM review-ready talent",
+      detail: readyCreators.map((creator) => `@${creator.username}`).join(" · "),
+      next: "Brand Safety Desk",
+    });
+  }
+
+  const auditRisk = (state.coverageAudit || []).filter((item) => (item.missing_intent_types || []).length > 0);
+  if (auditRisk.length) {
+    actions.push({
+      tier: "blue",
+      label: "Discovery Recall",
+      title: "Second-pass expansion",
+      detail: `${auditRisk.length} market/category cells have missing intent coverage`,
+      next: "Creator Discovery",
+    });
+  }
+
+  actions.push({
+    tier: state.apiOnline ? "green" : "neutral",
+    label: "System",
+    title: `${state.systemReadiness.api} · ${state.systemReadiness.readiness}`,
+    detail: state.systemReadiness.note,
+    next: `${formatCompactNumber(metrics.qualifiedReach)} qualified view base`,
+  });
+
+  byId("operatorActions").innerHTML = actions
+    .slice(0, 4)
+    .map(
+      (action) => `
+      <article class="action-card ${escapeHtml(action.tier)}">
+        <span>${escapeHtml(action.label)}</span>
+        <strong>${escapeHtml(action.title)}</strong>
+        <p>${escapeHtml(action.detail)}</p>
+        <small>${escapeHtml(action.next)}</small>
+      </article>
+    `
+    )
+    .join("");
+}
+
+function buildCommandMetrics() {
+  const creators = state.creators;
+  const requiredRecentPosts = Math.max(0, creators.length * 20);
+  const loadedRecentPosts = creators.reduce((sum, creator) => sum + loadedRecentPostsCount(creator), 0);
+  const coveragePercent = requiredRecentPosts ? Math.round((loadedRecentPosts / requiredRecentPosts) * 100) : 0;
+  const screenedCount = Object.keys(state.recentScreenResults).length;
+  const lowRiskCount = creators.filter((creator) => ["low", "low_medium"].includes(sourceRiskForCreator(creator.creator_id))).length;
+  const outreachReadyCount = creators.filter(isOutreachReady).length;
+  const postGapCount = creators.filter((creator) => loadedRecentPostsCount(creator) < 20).length;
+  const explicitReviewCount = Object.values(state.recentScreenResults).filter((result) =>
+    ["human_review", "avoid"].includes(result.suitability_decision)
+  ).length;
+  const humanReviewLoad = state.reviewItems.length + postGapCount + explicitReviewCount;
+  const qualifiedReach = creators.reduce((sum, creator) => sum + Number(creator.avg_views || 0), 0);
+  const budget = toNumber(byId("campaignBudget")?.value || 1200);
+  const pipelineGmvUsd = Math.round((qualifiedReach * 0.45 + outreachReadyCount * budget) / 100) * 100;
+  const targetProgress = Math.min(100, Math.round((pipelineGmvUsd / 25000) * 100));
+  return {
+    requiredRecentPosts,
+    loadedRecentPosts,
+    coveragePercent,
+    screenedCount,
+    lowRiskCount,
+    outreachReadyCount,
+    postGapCount,
+    explicitReviewCount,
+    humanReviewLoad,
+    qualifiedReach,
+    pipelineGmvUsd,
+    targetProgress,
+  };
+}
+
+function loadedRecentPostsCount(creator) {
+  return Math.min(20, (state.recentPostsByCreator[creator.creator_id] || []).length);
+}
+
+function isOutreachReady(creator) {
+  const result = state.recentScreenResults[creator.creator_id];
+  const lowRisk = ["low", "low_medium"].includes(sourceRiskForCreator(creator.creator_id));
+  const productMatched = Boolean(
+    (result?.matched_product_categories || creator.recommended_products || []).length
+  );
+  if (result?.suitability_decision) {
+    return result.suitability_decision === "pass_to_full_analysis" && lowRisk && productMatched;
+  }
+  return Number(creator.final_score || 0) >= 88 && lowRisk && productMatched && loadedRecentPostsCount(creator) >= 20;
+}
+
+function stageColor(index) {
+  return ["#2457c5", "#0e7490", "#047857", "#6d28d9", "#b45309", "#667085"][index] || "#2457c5";
 }
 
 function renderTalentRadar() {
@@ -1643,6 +1824,15 @@ function emptyRow(colspan, message) {
 function truncate(value, max) {
   const text = String(value || "");
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+function formatCurrencyCompact(value) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(Number(value || 0));
 }
 
 function formatCompactNumber(value) {
