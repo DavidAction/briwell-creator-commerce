@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.operations.workflows import evaluate_import_quality
 from app.operations.workflows import match_campaign_candidates
+from app.routers import operations as operations_router
 
 
 client = TestClient(app)
@@ -67,6 +68,17 @@ def test_import_quality_detects_recent_post_readiness() -> None:
     assert quality["creator"]["country_counts"]["MX"] == 1
 
 
+def test_import_quality_supports_single_market_expected_scope() -> None:
+    quality = evaluate_import_quality(
+        [_creator()],
+        {"creator-1": [_post(index) for index in range(20)]},
+        expected_countries=["MX"],
+    )
+
+    assert quality["creator"]["country_counts"] == {"MX": 1}
+    assert not any("PE:" in warning or "EC:" in warning for warning in quality["creator"]["warnings"])
+
+
 def test_operations_import_quality_endpoint_validates_without_database() -> None:
     response = client.post(
         "/operations/import-quality-logs",
@@ -87,6 +99,23 @@ def test_operations_import_quality_endpoint_validates_without_database() -> None
     assert body["quality_gate"]["posts"]["coverage_percent"] == 100
 
 
+def test_operations_import_quality_endpoint_blocks_high_risk_source() -> None:
+    response = client.post(
+        "/operations/import-quality-logs",
+        headers={"X-User-Role": "operator"},
+        json={
+            "dataset_type": "mixed",
+            "source_type": "manual",
+            "source_risk_level": "high",
+            "creator_candidates": [_creator()],
+            "recent_posts_by_creator": {"creator-1": [_post(index) for index in range(20)]},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "OPERATIONS_SOURCE_NOT_ALLOWED"
+
+
 def test_operations_creator_enrichment_endpoint_returns_next_actions() -> None:
     response = client.post(
         "/operations/creator-enrichment",
@@ -99,6 +128,19 @@ def test_operations_creator_enrichment_endpoint_returns_next_actions() -> None:
     assert body["status"] == "enriched"
     assert body["items"][0]["commerce_readiness"] == "commerce_ready"
     assert "sunscreen" in body["items"][0]["normalized_categories"]
+
+
+def test_operations_db_persistence_requires_uuid_creator_id(monkeypatch) -> None:
+    monkeypatch.setattr(operations_router, "database_enabled", lambda: True)
+
+    response = client.post(
+        "/operations/creator-enrichment",
+        headers={"X-User-Role": "operator"},
+        json={"source_risk_level": "low", "creators": [_creator()], "persist_result": True},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "DB_UUID_REQUIRED"
 
 
 def test_operations_recent_screen_apply_routes_pass_to_full_analysis_queue() -> None:

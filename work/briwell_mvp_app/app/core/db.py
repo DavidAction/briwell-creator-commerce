@@ -7,6 +7,8 @@ from psycopg.rows import dict_row
 
 from app.core.config import settings
 
+CONNECT_TIMEOUT_SECONDS = 5
+
 
 class DatabaseNotEnabled(RuntimeError):
     """Raised when a repository is called without USE_DATABASE enabled."""
@@ -20,7 +22,11 @@ def database_enabled() -> bool:
 def connection():
     if not settings.use_database:
         raise DatabaseNotEnabled("Set USE_DATABASE=true to enable PostgreSQL persistence.")
-    with psycopg.connect(settings.database_url, row_factory=dict_row) as conn:
+    with psycopg.connect(
+        settings.database_url,
+        row_factory=dict_row,
+        connect_timeout=CONNECT_TIMEOUT_SECONDS,
+    ) as conn:
         yield conn
 
 

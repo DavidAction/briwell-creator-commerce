@@ -8,7 +8,7 @@ class Settings:
     app_env: str = os.getenv("APP_ENV", "development")
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://postgres:postgres@localhost:5432/briwell",
+        "postgresql://postgres:postgres@127.0.0.1:5432/briwell",
     )
     use_database: bool = os.getenv("USE_DATABASE", "false").strip().lower() in {
         "1",

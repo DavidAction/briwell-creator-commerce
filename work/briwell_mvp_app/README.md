@@ -128,7 +128,8 @@ python scripts/bootstrap_db.py --with-seeds --with-keywords --verify
 
 The bootstrap command applies migrations, applies SQL seeds, imports keyword CSV
 seeds, records applied SQL files in `schema_migration`, and verifies required
-tables, enums, and minimum seed counts.
+tables, enums, and minimum seed counts. PostgreSQL connections use a 5-second
+timeout so a stopped local database fails fast instead of hanging the setup.
 
 Safer local PostgreSQL option, if Docker is available:
 
@@ -273,6 +274,13 @@ and performance rollup. In local mode these endpoints validate and calculate
 the workflow without persistence. In DB mode they persist import quality logs,
 creator enrichment results, recent-post screen results, and CRM events through
 the `004_operations_orchestration_schema.sql` migration.
+
+Import QA defaults to the MX/PE/EC launch cluster, but requests can pass
+`expected_countries` to validate a single-market or partial-market upload
+without false coverage warnings. When `USE_DATABASE=true` and persistence is
+requested, entity IDs such as `creator_id`, `campaign_id`, and `outreach_id`
+must be real UUIDs from the database; local dashboard IDs should keep
+`persist_result=false`.
 
 ## Auth Headers
 

@@ -34,8 +34,12 @@ OUTREACH_FUNNEL_ORDER = [
 def evaluate_import_quality(
     creators: list[dict[str, Any]],
     recent_posts_by_creator: dict[str, list[dict[str, Any]]] | None = None,
+    expected_countries: list[str] | set[str] | tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     recent_posts_by_creator = recent_posts_by_creator or {}
+    expected_market_set = {country for country in (expected_countries or COUNTRIES) if country in COUNTRIES}
+    if not expected_market_set:
+        expected_market_set = set(COUNTRIES)
     blockers: list[str] = []
     warnings: list[str] = []
     seen_usernames: set[str] = set()
@@ -78,7 +82,7 @@ def evaluate_import_quality(
 
     country_counts = {
         country: sum(1 for creator in creators if creator.get("country") == country)
-        for country in sorted(COUNTRIES)
+        for country in sorted(expected_market_set)
     }
     for country, count in country_counts.items():
         if count == 0:

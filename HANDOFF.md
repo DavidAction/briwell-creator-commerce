@@ -20,6 +20,8 @@ Backend:
 6. Human review gate for outreach.
 7. Manual-send tracking without external message automation.
 8. OIDC/Supabase-compatible JWT validation scaffold for production.
+9. Operations orchestration endpoints for import QA, creator enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup.
+10. Fast-fail PostgreSQL connection timeout for API and bootstrap scripts.
 
 Frontend:
 
@@ -28,6 +30,7 @@ Frontend:
 3. Creator profile and channel visual placeholders.
 4. API client with mock fallback.
 5. Smoke test coverage for core visual and workflow surfaces.
+6. Talent Intake workflow for creator CSV upload, recent 20 post intake, import quality gate, and coverage audit visibility.
 
 Documentation:
 
@@ -47,13 +50,14 @@ Documentation:
 ## Recommended Next Development Order
 
 1. Use `POST /analysis-jobs/run-recent-posts-screen` as the first creator-fit gate with the latest 20 approved recent post snapshots.
-2. Replace local header RBAC in the dashboard with Supabase Auth/OIDC bearer tokens.
-3. Move development DB from portable PostgreSQL to managed PostgreSQL.
-4. Connect the dashboard to production API environment config.
-5. Implement approved-provider or manual import flows for real creator and recent-post data.
-6. Add live Gemini calls behind cost, logging, and operator review controls.
-7. Build real media asset ingestion for creator-provided or approved-provider content.
-8. Add production monitoring, error alerts, backup restore drills, and rate limits.
+2. Use `/operations/*` as the dashboard orchestration layer for import QA through performance rollup.
+3. Replace local header RBAC in the dashboard with Supabase Auth/OIDC bearer tokens.
+4. Move development DB from portable PostgreSQL to managed PostgreSQL.
+5. Connect the dashboard to production API environment config.
+6. Implement approved-provider or manual import flows for real creator and recent-post data.
+7. Add live Gemini calls behind cost, logging, and operator review controls.
+8. Build real media asset ingestion for creator-provided or approved-provider content.
+9. Add production monitoring, error alerts, backup restore drills, and rate limits.
 
 ## Creator Discovery Recall Policy
 

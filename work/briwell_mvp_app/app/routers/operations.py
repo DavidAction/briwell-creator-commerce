@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Literal
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -82,6 +83,7 @@ class ImportQualityLogRequest(BaseModel):
     upload_name: str | None = Field(default=None, max_length=200)
     source_type: str = Field(min_length=1)
     source_risk_level: str = Field(min_length=1)
+    expected_countries: list[Country] = Field(default_factory=lambda: ["MX", "PE", "EC"], max_length=3)
     creator_candidates: list[CreatorCandidate] = Field(default_factory=list, max_length=200)
     recent_posts_by_creator: dict[str, list[RecentPostInput]] = Field(default_factory=dict)
     quality_gate: dict[str, Any] | None = None
@@ -150,7 +152,11 @@ def create_import_quality_log(
         key: [post.model_dump() for post in value]
         for key, value in payload.recent_posts_by_creator.items()
     }
-    quality_gate = payload.quality_gate or evaluate_import_quality(creators, posts)
+    quality_gate = payload.quality_gate or evaluate_import_quality(
+        creators,
+        posts,
+        expected_countries=payload.expected_countries,
+    )
     normalized_payload = payload.model_dump()
     normalized_payload["source_type"] = source_type
     normalized_payload["source_risk_level"] = source_risk_level
@@ -184,6 +190,7 @@ def run_creator_enrichment(
     persisted: list[dict[str, Any]] = []
     if database_enabled() and payload.persist_result:
         for item in enriched:
+            _require_db_uuid(item.get("creator_id"), "creator_id")
             persisted.append(
                 operations_repository.upsert_creator_profile_enrichment(
                     item,
@@ -214,6 +221,7 @@ def apply_recent_posts_screening(
     persisted: list[dict[str, Any]] = []
     if database_enabled() and payload.persist_result:
         for item in items:
+            _require_db_uuid(item.get("creator_id"), "creator_id")
             persisted.append(
                 operations_repository.create_recent_posts_screen_result(
                     item,
@@ -240,6 +248,7 @@ def run_campaign_match(
     product_category = payload.product_category
 
     if database_enabled() and payload.campaign_id and not candidates:
+        _require_db_uuid(payload.campaign_id, "campaign_id")
         campaign = campaign_repository.get_campaign(payload.campaign_id)
         if campaign is None:
             raise HTTPException(
@@ -292,7 +301,10 @@ def create_outreach_plan(
     )
     persisted: list[dict[str, Any]] = []
     if database_enabled() and payload.persist_result:
+        if payload.campaign_id:
+            _require_db_uuid(payload.campaign_id, "campaign_id")
         for item in plan:
+            _require_db_uuid(item.get("creator_id"), "creator_id")
             persisted.append(
                 outreach_repository.create_dm_draft(
                     creator_id=str(item["creator_id"]),
@@ -322,6 +334,9 @@ def build_crm_board(
     persisted: list[dict[str, Any]] = []
     if database_enabled() and payload.persist_event:
         for item in payload.outreach_items:
+            _require_optional_db_uuid(item.get("outreach_id"), "outreach_id")
+            _require_optional_db_uuid(item.get("creator_id"), "creator_id")
+            _require_optional_db_uuid(item.get("campaign_id"), "campaign_id")
             persisted.append(operations_repository.create_outreach_crm_event(item))
     return {
         "status": "ok",
@@ -339,6 +354,7 @@ def create_performance_rollup(
     rollup = rollup_performance(payload.snapshots, spend_usd=payload.spend_usd)
     db_summary = None
     if database_enabled() and payload.campaign_id and payload.include_db_summary:
+        _require_db_uuid(payload.campaign_id, "campaign_id")
         db_summary = performance_repository.campaign_summary(payload.campaign_id)
     return {
         "status": "ok",
@@ -389,6 +405,26 @@ def _quality_next_action(quality_gate: dict[str, Any]) -> str:
     if status == "needs_review":
         return "operator_review_then_enrichment"
     return "fix_import_blockers"
+
+
+def _require_optional_db_uuid(value: Any, field_name: str) -> None:
+    if value is None or value == "":
+        return
+    _require_db_uuid(value, field_name)
+
+
+def _require_db_uuid(value: Any, field_name: str) -> None:
+    try:
+        UUID(str(value))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "code": "DB_UUID_REQUIRED",
+                "message": f"{field_name} must be a UUID when database persistence is enabled.",
+                "details": {"field": field_name, "value": value},
+            },
+        ) from exc
 
 
 def _count_by(items: list[dict[str, Any]], key: str) -> dict[str, int]:

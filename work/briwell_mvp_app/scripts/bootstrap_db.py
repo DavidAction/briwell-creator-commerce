@@ -22,6 +22,8 @@ from scripts.import_keyword_seed import rows_from_csv
 from scripts.import_keyword_seed import CSV_PATH
 from scripts.validate_csv_imports import validate_keyword_seed
 
+CONNECT_TIMEOUT_SECONDS = 5
+
 
 def sql_files(include_seeds: bool) -> list[Path]:
     files = sorted((ROOT / "db" / "migrations").glob("*.sql"))
@@ -164,18 +166,25 @@ def main() -> int:
     parser.add_argument("--verify", action="store_true", help="Verify required tables, enums, and seeds.")
     args = parser.parse_args()
 
-    with psycopg.connect(settings.database_url) as conn:
-        ensure_migration_table(conn)
-        for file_name, status in apply_files(conn, sql_files(include_seeds=args.with_seeds)):
-            print(f"{status}: {file_name}")
+    try:
+        with psycopg.connect(settings.database_url, connect_timeout=CONNECT_TIMEOUT_SECONDS) as conn:
+            ensure_migration_table(conn)
+            for file_name, status in apply_files(conn, sql_files(include_seeds=args.with_seeds)):
+                print(f"{status}: {file_name}")
 
-        if args.with_keywords:
-            imported = import_keywords(conn)
-            print(f"imported keyword rows: {imported}")
+            if args.with_keywords:
+                imported = import_keywords(conn)
+                print(f"imported keyword rows: {imported}")
 
-        if args.verify:
-            verify_database(conn)
-            print("database verification passed")
+            if args.verify:
+                verify_database(conn)
+                print("database verification passed")
+    except psycopg.OperationalError as exc:
+        print(
+            f"database connection failed with {CONNECT_TIMEOUT_SECONDS}s connect timeout: {exc}",
+            file=sys.stderr,
+        )
+        return 2
 
     return 0
 

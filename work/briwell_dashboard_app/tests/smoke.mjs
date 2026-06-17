@@ -46,6 +46,9 @@ const requiredEndpoints = [
 ];
 
 assert(files.html.includes("Briwell Creator Commerce Intelligence"), "missing global dashboard title");
+assert(files.html.includes("글로벌 MCN 운영 콘솔"), "missing Korean executive positioning copy");
+assert(files.html.includes("오늘 처리해야 할 최고 우선순위 액션"), "missing Korean operator action copy");
+assert(files.html.includes("후보 업로드"), "missing Korean intake navigation copy");
 assert(files.html.includes("Executive Overview"), "missing executive navigation");
 assert(files.html.includes("Talent Intake"), "missing talent intake navigation");
 assert(files.html.includes("Talent Intelligence"), "missing talent intelligence navigation");
@@ -101,6 +104,8 @@ assert(files.app.includes("parseCsv"), "CSV parser missing");
 assert(files.app.includes("runRecentScreenForCreator"), "recent posts screen workflow missing");
 assert(files.app.includes("coverageAudit"), "coverage audit state missing");
 assert(files.app.includes("Shortlist Talent"), "shortlist action missing");
+assert(files.app.includes("최근 게시물 20개까지 추가 수집"), "missing Korean recent-post next step copy");
+assert(!files.html.includes("\uFFFD") && !files.app.includes("\uFFFD"), "replacement characters found in dashboard source");
 requiredViews.forEach((view) => assert(files.html.includes(view), `missing ${view}`));
 requiredEndpoints.forEach((endpoint) =>
   assert(files.client.includes(endpoint) || files.app.includes(endpoint), `missing ${endpoint}`)
