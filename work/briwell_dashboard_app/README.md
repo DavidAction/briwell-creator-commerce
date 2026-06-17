@@ -62,12 +62,16 @@ Authorization: Bearer <supabase-jwt>
 3. AI provider status display
 4. MX/PE/EC candidate inbox and filters
 5. Discovery plan generation
-6. Campaign draft creation
-7. Campaign outreach draft preparation
-8. DM claims check and human approval gate
-9. Manual send status recording
-10. Performance snapshot capture
-11. Settlement contract capture
+6. Discovery coverage audit and recall safeguards
+7. Creator CSV import preview and `/creators/import` handoff
+8. Recent 20 posts CSV/manual intake and `/videos/import` handoff
+9. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
+10. Campaign draft creation
+11. Campaign outreach draft preparation
+12. DM claims check and human approval gate
+13. Manual send status recording
+14. Performance snapshot capture
+15. Settlement contract capture
 
 ## Vercel
 

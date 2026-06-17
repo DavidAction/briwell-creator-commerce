@@ -69,6 +69,8 @@
     getSourcePolicy: () => request("/discovery/source-policy"),
     getAiProvider: () => request("/ai/provider-status"),
     listCreators: (params) => request(`/creators${toQuery(params)}`),
+    importCreators: (body) => request("/creators/import", { method: "POST", body }),
+    importVideos: (body) => request("/videos/import", { method: "POST", body }),
     listCampaigns: (params) => request(`/campaigns${toQuery(params)}`),
     createCampaign: (body) => request("/campaigns", { method: "POST", body }),
     createDiscoveryPlan: (body) => request("/discovery/plans", { method: "POST", body }),
@@ -83,6 +85,8 @@
     savePerformanceSnapshot: (body) =>
       request("/performance/snapshots", { method: "POST", body }),
     saveContract: (body) => request("/settlements/contracts", { method: "POST", body }),
+    runRecentPostsScreen: (body) =>
+      request("/analysis-jobs/run-recent-posts-screen", { method: "POST", body }),
   };
 
   function toQuery(params) {
