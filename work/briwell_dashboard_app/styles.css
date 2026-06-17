@@ -356,6 +356,10 @@ textarea:focus {
   padding: 8px 12px;
   white-space: nowrap;
   font-weight: 740;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 .button:hover {
@@ -1310,6 +1314,106 @@ tbody tr.row-selected {
   line-height: 1.35;
 }
 
+.validation-report {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.validation-card {
+  min-height: 156px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.04);
+}
+
+.validation-card.green {
+  border-color: #bde8d5;
+  background: #f5fcf8;
+}
+
+.validation-card.blue {
+  border-color: #bfd3ff;
+  background: #f5f8ff;
+}
+
+.validation-card.amber {
+  border-color: #f2d7a8;
+  background: #fffaf0;
+}
+
+.validation-card.red {
+  border-color: #f3c6d0;
+  background: #fff7f8;
+}
+
+.validation-card span,
+.validation-card strong,
+.validation-card small {
+  display: block;
+}
+
+.validation-card span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.validation-card strong {
+  margin-top: 7px;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.validation-card small {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.validation-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 5px;
+}
+
+.validation-card li {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.validation-card li::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--blue);
+  margin-right: 7px;
+  vertical-align: middle;
+}
+
+.validation-card.green li::before {
+  background: var(--green);
+}
+
+.validation-card.amber li::before {
+  background: var(--amber);
+}
+
+.validation-card.red li::before {
+  background: var(--red);
+}
+
 .quality-columns {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1797,6 +1901,7 @@ tbody tr.row-selected {
   .command-summary,
   .operations-pipeline,
   .quality-summary,
+  .validation-report,
   .quality-columns,
   .quality-readiness,
   .funnel-row,
@@ -1840,6 +1945,7 @@ tbody tr.row-selected {
   .command-summary,
   .operations-pipeline,
   .quality-summary,
+  .validation-report,
   .quality-columns,
   .quality-readiness,
   .funnel-row,

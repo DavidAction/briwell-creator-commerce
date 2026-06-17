@@ -9,6 +9,8 @@ const files = {
   client: readFileSync(join(root, "api-client.js"), "utf8"),
   app: readFileSync(join(root, "app.js"), "utf8"),
   vercel: readFileSync(join(root, "vercel.json"), "utf8"),
+  creatorTemplate: readFileSync(join(root, "templates", "creator_candidates_template.csv"), "utf8"),
+  postsTemplate: readFileSync(join(root, "templates", "recent_posts_20_template.csv"), "utf8"),
 };
 
 const requiredViews = [
@@ -62,7 +64,9 @@ assert(files.html.includes("Growth Operations Engine"), "missing operations engi
 assert(files.html.includes("runOperationsPipelineButton"), "missing operations pipeline action");
 assert(files.html.includes("Creator Portfolio Leaders"), "missing visual portfolio leaders");
 assert(files.html.includes("creatorCsvInput"), "missing creator CSV upload input");
+assert(files.html.includes("downloadCreatorTemplateButton"), "missing creator CSV template download");
 assert(files.html.includes("postCsvInput"), "missing recent posts CSV upload input");
+assert(files.html.includes("downloadPostTemplateButton"), "missing recent posts template download");
 assert(files.html.includes("manualPostsInput"), "missing manual recent posts input");
 assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts screen action");
 assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
@@ -84,6 +88,7 @@ assert(files.css.includes(".operator-actions"), "operator action styling missing
 assert(files.css.includes(".operations-pipeline"), "operations pipeline styling missing");
 assert(files.css.includes(".quality-gate"), "import quality gate styling missing");
 assert(files.css.includes(".quality-summary"), "quality summary styling missing");
+assert(files.css.includes(".validation-report"), "upload validation report styling missing");
 assert(files.css.includes(".screening-grid"), "recent posts screening layout missing");
 assert(files.css.includes(".decision-pass"), "screening decision styling missing");
 assert(files.css.includes(".audit-card"), "coverage audit card styling missing");
@@ -103,11 +108,17 @@ assert(files.app.includes("matchCampaignCandidates"), "campaign match operations
 assert(files.app.includes("evaluateImportQuality"), "import quality evaluator missing");
 assert(files.app.includes("validateCreatorDataset"), "creator quality validation missing");
 assert(files.app.includes("validateRecentPostDataset"), "recent post quality validation missing");
+assert(files.app.includes("renderValidationReport"), "upload validation report renderer missing");
+assert(files.app.includes("parseCsvWithMeta"), "CSV parser metadata report missing");
 assert(files.app.includes("parseCsv"), "CSV parser missing");
 assert(files.app.includes("runRecentScreenForCreator"), "recent posts screen workflow missing");
 assert(files.app.includes("coverageAudit"), "coverage audit state missing");
 assert(files.app.includes("Shortlist Talent"), "shortlist action missing");
 assert(files.app.includes("최근 게시물 20개까지 추가 수집"), "missing Korean recent-post next step copy");
+assert(files.creatorTemplate.includes("source_type,source_risk_level"), "creator template missing source governance columns");
+assert(files.creatorTemplate.includes("profile_image_url,channel_image_url"), "creator template missing visual identity columns");
+assert(files.postsTemplate.includes("creator_id,platform_video_id,url,caption,transcript"), "recent posts template missing post analysis columns");
+assert(files.postsTemplate.split(/\r?\n/).filter(Boolean).length >= 21, "recent posts template should include 20 sample rows");
 assert(!files.html.includes("\uFFFD") && !files.app.includes("\uFFFD"), "replacement characters found in dashboard source");
 requiredViews.forEach((view) => assert(files.html.includes(view), `missing ${view}`));
 requiredEndpoints.forEach((endpoint) =>

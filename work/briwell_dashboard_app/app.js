@@ -8,8 +8,10 @@ const state = {
   activeCountry: "ALL",
   selectedCreatorId: "creator-1",
   intakeCreators: [],
+  intakeCreatorHeaders: [],
   importQuality: null,
   operationsPipeline: null,
+  recentPostHeadersByCreator: {},
   recentPostsByCreator: {
     "creator-1": buildSeedPosts("creator-1", "sunscreen", 20),
     "creator-2": buildSeedPosts("creator-2", "calming_serum", 16),
@@ -107,6 +109,32 @@ const state = {
     },
   ],
 };
+
+const ALLOWED_IMPORT_SOURCE_TYPES = ["manual", "official_api", "approved_provider", "creator_provided"];
+const REQUIRED_CREATOR_COLUMNS = ["username", "country", "profile_url", "source_type", "source_risk_level"];
+const RECOMMENDED_CREATOR_COLUMNS = [
+  "creator_id",
+  "display_name",
+  "platform",
+  "profile_image_url",
+  "channel_image_url",
+  "follower_count",
+  "avg_views",
+  "engagement_rate",
+  "signals",
+  "recommended_products",
+];
+const REQUIRED_POST_COLUMNS = ["creator_id", "url", "caption", "view_count", "like_count", "comment_count", "source_type", "source_risk_level"];
+const RECOMMENDED_POST_COLUMNS = [
+  "platform_video_id",
+  "transcript",
+  "hashtags",
+  "posted_at",
+  "share_count",
+  "save_count",
+  "duration_seconds",
+  "thumbnail_url",
+];
 
 document.addEventListener("DOMContentLoaded", () => {
   hydrateConfigControls();
@@ -448,10 +476,27 @@ function validateCreatorDataset(creators) {
   const seenProfiles = new Set();
   const marketCoverage = [];
   const invalidCreatorIds = new Set();
+  const csvLoaded = creators === state.intakeCreators && state.intakeCreators.length > 0;
+  const headerReport = csvLoaded
+    ? buildHeaderReport(state.intakeCreatorHeaders, REQUIRED_CREATOR_COLUMNS, RECOMMENDED_CREATOR_COLUMNS)
+    : buildHeaderReport([], [], []);
+  const sourceTypeCounts = {};
+  const riskCounts = {};
+
+  headerReport.missing_required.forEach((column) => {
+    blockers.push(`Creator CSV: required column ${column} missing`);
+  });
+  headerReport.missing_recommended.forEach((column) => {
+    warnings.push(`Creator CSV: recommended column ${column} missing`);
+  });
 
   creators.forEach((creator, index) => {
     const rowLabel = creator.username ? `@${creator.username}` : `row ${index + 1}`;
     const creatorKey = creator.creator_id || creator.username || `row-${index}`;
+    const sourceType = normalizeSourceType(creator.source_type);
+    const sourceRisk = normalizeRisk(creator.source_risk_level);
+    incrementCount(sourceTypeCounts, sourceType || "missing");
+    incrementCount(riskCounts, sourceRisk || "missing");
     if (!creator.username) {
       blockers.push(`${rowLabel}: username required`);
       invalidCreatorIds.add(creatorKey);
@@ -464,7 +509,11 @@ function validateCreatorDataset(creators) {
       blockers.push(`${rowLabel}: country must be MX, PE, or EC`);
       invalidCreatorIds.add(creatorKey);
     }
-    if (!["low", "low_medium", "medium"].includes(normalizeRisk(creator.source_risk_level))) {
+    if (!ALLOWED_IMPORT_SOURCE_TYPES.includes(sourceType)) {
+      blockers.push(`${rowLabel}: source_type must be manual, official_api, approved_provider, or creator_provided`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (!["low", "low_medium", "medium"].includes(sourceRisk)) {
       blockers.push(`${rowLabel}: source_risk_level must be low, low_medium, or medium`);
       invalidCreatorIds.add(creatorKey);
     }
@@ -488,6 +537,11 @@ function validateCreatorDataset(creators) {
     if (profileKey) seenProfiles.add(profileKey);
   });
 
+  const approvedSourceTypes = Object.keys(sourceTypeCounts).filter((type) => ALLOWED_IMPORT_SOURCE_TYPES.includes(type));
+  if (approvedSourceTypes.length > 1) {
+    blockers.push("Creator CSV: split mixed source_type values into separate uploads before DB import");
+  }
+
   ["MX", "PE", "EC"].forEach((country) => {
     if (creators.some((creator) => creator.country === country)) {
       marketCoverage.push(country);
@@ -500,6 +554,9 @@ function validateCreatorDataset(creators) {
     total: creators.length,
     valid: Math.max(0, creators.length - invalidCreatorIds.size),
     market_coverage: marketCoverage,
+    source_type_counts: sourceTypeCounts,
+    risk_counts: riskCounts,
+    header_report: headerReport,
     blockers: unique(blockers),
     warnings: unique(warnings),
     readiness: creators.map((creator) => {
@@ -518,14 +575,37 @@ function validateRecentPostDataset(creators) {
   const warnings = [];
   let loaded = 0;
   const required = Math.max(0, creators.length * 20);
+  const sourceTypeCounts = {};
+  const riskCounts = {};
+  const headerReports = [];
+  let creatorsReady = 0;
 
   creators.forEach((creator) => {
     const posts = state.recentPostsByCreator[creator.creator_id] || [];
+    const headerReport = buildHeaderReport(
+      state.recentPostHeadersByCreator[creator.creator_id] || [],
+      state.recentPostHeadersByCreator[creator.creator_id]?.length ? REQUIRED_POST_COLUMNS : [],
+      state.recentPostHeadersByCreator[creator.creator_id]?.length ? RECOMMENDED_POST_COLUMNS : []
+    );
+    if (headerReport.detected_count) {
+      headerReports.push({
+        creator_id: creator.creator_id,
+        username: creator.username,
+        ...headerReport,
+      });
+      headerReport.missing_required.forEach((column) => {
+        blockers.push(`@${creator.username}: post CSV required column ${column} missing`);
+      });
+      headerReport.missing_recommended.forEach((column) => {
+        warnings.push(`@${creator.username}: post CSV recommended column ${column} missing`);
+      });
+    }
     loaded += Math.min(20, posts.length);
     if (posts.length === 0) {
       blockers.push(`@${creator.username}: recent 20 posts missing`);
       return;
     }
+    if (posts.length >= 20) creatorsReady += 1;
     if (posts.length < 20) {
       blockers.push(`@${creator.username}: ${posts.length}/20 recent posts loaded`);
     }
@@ -535,6 +615,23 @@ function validateRecentPostDataset(creators) {
     const missingCaptions = posts.filter((post) => !post.caption).length;
     const missingMetrics = posts.filter((post) => !post.view_count && !post.like_count && !post.comment_count).length;
     const missingTranscripts = posts.filter((post) => !post.transcript).length;
+    posts.forEach((post, index) => {
+      const sourceType = normalizeSourceType(post.source_type || creator.source_type);
+      const sourceRisk = normalizeRisk(post.source_risk_level || creator.source_risk_level);
+      incrementCount(sourceTypeCounts, sourceType || "missing");
+      incrementCount(riskCounts, sourceRisk || "missing");
+      if (!ALLOWED_IMPORT_SOURCE_TYPES.includes(sourceType)) {
+        blockers.push(`@${creator.username}: post ${index + 1} has unapproved source_type`);
+      }
+      if (!["low", "low_medium", "medium"].includes(sourceRisk)) {
+        blockers.push(`@${creator.username}: post ${index + 1} has blocked source_risk_level`);
+      }
+    });
+    const postApprovedSourceTypes = unique(posts.map((post) => normalizeSourceType(post.source_type || creator.source_type)))
+      .filter((type) => ALLOWED_IMPORT_SOURCE_TYPES.includes(type));
+    if (postApprovedSourceTypes.length > 1) {
+      blockers.push(`@${creator.username}: split mixed post source_type values into separate uploads before DB import`);
+    }
     if (missingUrls) blockers.push(`@${creator.username}: ${missingUrls} posts missing URL`);
     if (missingCaptions) warnings.push(`@${creator.username}: ${missingCaptions} posts missing captions`);
     if (missingMetrics) warnings.push(`@${creator.username}: ${missingMetrics} posts missing public metrics`);
@@ -545,6 +642,10 @@ function validateRecentPostDataset(creators) {
     loaded,
     required,
     coverage_percent: required ? Math.round((loaded / required) * 100) : 0,
+    creators_ready: creatorsReady,
+    source_type_counts: sourceTypeCounts,
+    risk_counts: riskCounts,
+    header_reports: headerReports,
     blockers: unique(blockers),
     warnings: unique(warnings),
   };
@@ -554,6 +655,42 @@ function buildQualitySummary(status, blockers, warnings) {
   if (status === "blocked") return `${blockers} blockers must be fixed before import or screening.`;
   if (status === "needs_review") return `${warnings} warnings need operator review before outreach.`;
   return "Ready for import, screening, and operator review.";
+}
+
+function buildHeaderReport(headers, requiredColumns, recommendedColumns) {
+  const normalized = unique((headers || []).map(normalizeHeader).filter(Boolean));
+  return {
+    detected: normalized,
+    detected_count: normalized.length,
+    missing_required: missingColumns(normalized, requiredColumns),
+    missing_recommended: missingColumns(normalized, recommendedColumns),
+  };
+}
+
+function missingColumns(headers, columns) {
+  const present = new Set((headers || []).map(normalizeHeader));
+  return (columns || []).filter((column) => !present.has(normalizeHeader(column)));
+}
+
+function incrementCount(target, key) {
+  const normalized = String(key || "missing").trim() || "missing";
+  target[normalized] = (target[normalized] || 0) + 1;
+}
+
+function mergeCountObjects(...objects) {
+  return objects.reduce((merged, object) => {
+    Object.entries(object || {}).forEach(([key, value]) => {
+      merged[key] = (merged[key] || 0) + Number(value || 0);
+    });
+    return merged;
+  }, {});
+}
+
+function objectCountSummary(object) {
+  return Object.entries(object || {})
+    .filter(([, value]) => Number(value || 0) > 0)
+    .map(([key, value]) => `${key}:${value}`)
+    .join(" · ");
 }
 
 function loadedRecentPostsCount(creator) {
@@ -899,6 +1036,7 @@ function renderImportQualityGate() {
         <small>MX, PE, EC launch cluster</small>
       </article>
     </div>
+    ${renderValidationReport(quality)}
     <div class="quality-columns">
       ${renderQualityColumn("Creator Blockers", quality.creator.blockers, "red")}
       ${renderQualityColumn("Creator Warnings", quality.creator.warnings, "amber")}
@@ -918,6 +1056,80 @@ function renderImportQualityGate() {
         )
         .join("")}
     </div>
+  `;
+}
+
+function renderValidationReport(quality) {
+  const creatorHeader = quality.creator.header_report || buildHeaderReport([], [], []);
+  const postReports = quality.posts.header_reports || [];
+  const postMissingRequired = unique(postReports.flatMap((report) => report.missing_required || []));
+  const postMissingRecommended = unique(postReports.flatMap((report) => report.missing_recommended || []));
+  const sourceTypes = mergeCountObjects(quality.creator.source_type_counts, quality.posts.source_type_counts);
+  const riskMix = mergeCountObjects(quality.creator.risk_counts, quality.posts.risk_counts);
+  const sourceTypeKeys = Object.keys(sourceTypes);
+  const creatorContractReady = !creatorHeader.missing_required.length;
+  const postsContractReady = !postMissingRequired.length && quality.posts.coverage_percent >= 100;
+  const sourceReady = sourceTypeKeys.every((type) => ALLOWED_IMPORT_SOURCE_TYPES.includes(type)) && sourceTypeKeys.length <= 1;
+  const dbReady = quality.overall_status !== "blocked";
+  const cards = [
+    {
+      title: "Creator CSV Contract",
+      value: creatorContractReady ? "Ready" : "Fix Required",
+      tone: creatorContractReady ? "green" : "red",
+      meta: `${quality.creator.total} rows · ${creatorHeader.detected_count || "seed"} columns`,
+      items: creatorHeader.missing_required.length
+        ? creatorHeader.missing_required.map((column) => `Required: ${column}`)
+        : (creatorHeader.missing_recommended.length
+          ? creatorHeader.missing_recommended.slice(0, 4).map((column) => `Recommended: ${column}`)
+          : ["Required columns detected"]),
+    },
+    {
+      title: "Recent 20 Contract",
+      value: postsContractReady ? "Screen Ready" : `${quality.posts.creators_ready}/${quality.creator.total} Ready`,
+      tone: postsContractReady ? "green" : "amber",
+      meta: `${quality.posts.loaded}/${quality.posts.required} posts · ${quality.posts.coverage_percent}% coverage`,
+      items: postMissingRequired.length
+        ? postMissingRequired.map((column) => `Required: ${column}`)
+        : (postMissingRecommended.length
+          ? postMissingRecommended.slice(0, 4).map((column) => `Recommended: ${column}`)
+          : ["Recent post contract clear"]),
+    },
+    {
+      title: "Source Governance",
+      value: sourceReady ? "Approved" : "Blocked",
+      tone: sourceReady ? "blue" : "red",
+      meta: objectCountSummary(sourceTypes) || "manual preview",
+      items: [`Risk mix: ${objectCountSummary(riskMix) || "low"}`],
+    },
+    {
+      title: "DB E2E Gate",
+      value: dbReady ? "Persistable" : "Hold",
+      tone: dbReady ? "green" : "red",
+      meta: dbReady ? "Ready for import log and DB workflow" : "Resolve blockers before persistence",
+      items: [
+        quality.overall_status === "ready"
+          ? "Creator, post, and source checks clear"
+          : `${quality.creator.blockers.length + quality.posts.blockers.length} blockers · ${quality.creator.warnings.length + quality.posts.warnings.length} warnings`,
+      ],
+    },
+  ];
+  return `
+    <div class="validation-report">
+      ${cards.map(renderValidationReportCard).join("")}
+    </div>
+  `;
+}
+
+function renderValidationReportCard(card) {
+  return `
+    <article class="validation-card ${escapeHtml(card.tone)}">
+      <span>${escapeHtml(card.title)}</span>
+      <strong>${escapeHtml(card.value)}</strong>
+      <small>${escapeHtml(card.meta)}</small>
+      <ul>
+        ${(card.items || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </article>
   `;
 }
 
@@ -1011,13 +1223,17 @@ async function runDiscoveryPlan() {
 async function loadCreatorCsv() {
   try {
     const text = await readFileInput("creatorCsvInput");
-    state.intakeCreators = parseCsv(text).map(normalizeCsvCreator);
+    const parsed = parseCsvWithMeta(text);
+    state.intakeCreatorHeaders = parsed.headers;
+    state.intakeCreators = parsed.rows.map(normalizeCsvCreator);
     renderCreatorImportPreview();
     renderImportQualityGate();
     showResult("creatorImportResult", {
       status: "preview_ready",
       preview_count: state.intakeCreators.length,
       source_risk_level: highestRiskLevel(state.intakeCreators),
+      missing_required_columns: state.importQuality?.creator?.header_report?.missing_required || [],
+      missing_recommended_columns: state.importQuality?.creator?.header_report?.missing_recommended || [],
     });
     showToast(`${state.intakeCreators.length} creator candidates loaded`);
   } catch (error) {
@@ -1031,7 +1247,7 @@ async function importCreators() {
     return;
   }
   const payload = {
-    source_type: "manual",
+    source_type: sourceTypeForImport(state.intakeCreators),
     source_risk_level: highestRiskLevel(state.intakeCreators),
     items: state.intakeCreators.map(toCreatorImportItem),
   };
@@ -1054,7 +1270,9 @@ async function loadPostCsv() {
   try {
     const creatorId = byId("postCreatorSelect").value;
     const text = await readFileInput("postCsvInput");
-    const posts = parseCsv(text).map((row, index) => normalizeCsvPost(row, creatorId, index));
+    const parsed = parseCsvWithMeta(text);
+    const posts = parsed.rows.map((row, index) => normalizeCsvPost(row, creatorId, index));
+    state.recentPostHeadersByCreator[creatorId] = parsed.headers;
     state.recentPostsByCreator[creatorId] = posts.slice(0, 20);
     renderPostImportTable();
     renderImportQualityGate();
@@ -1063,6 +1281,8 @@ async function loadPostCsv() {
       status: "preview_ready",
       creator_id: creatorId,
       recent_posts_loaded: state.recentPostsByCreator[creatorId].length,
+      missing_required_columns:
+        state.importQuality?.posts?.header_reports?.find((item) => item.creator_id === creatorId)?.missing_required || [],
     });
   } catch (error) {
     showResult("postImportResult", { status: "preview_failed", message: error.message });
@@ -1073,8 +1293,9 @@ function loadManualPosts() {
   try {
     const creatorId = byId("postCreatorSelect").value;
     const text = byId("manualPostsInput").value.trim();
-    const rows = parseManualPosts(text);
-    const posts = rows.map((row, index) => normalizeCsvPost(row, creatorId, index));
+    const parsed = parseManualPostsWithMeta(text);
+    const posts = parsed.rows.map((row, index) => normalizeCsvPost(row, creatorId, index));
+    state.recentPostHeadersByCreator[creatorId] = parsed.headers;
     state.recentPostsByCreator[creatorId] = posts.slice(0, 20);
     renderPostImportTable();
     renderImportQualityGate();
@@ -1083,6 +1304,8 @@ function loadManualPosts() {
       status: "manual_preview_ready",
       creator_id: creatorId,
       recent_posts_loaded: state.recentPostsByCreator[creatorId].length,
+      missing_required_columns:
+        state.importQuality?.posts?.header_reports?.find((item) => item.creator_id === creatorId)?.missing_required || [],
     });
   } catch (error) {
     showResult("postImportResult", { status: "manual_preview_failed", message: error.message });
@@ -1098,8 +1321,8 @@ async function importVideos() {
   }
   const payload = {
     creator_id: creatorId,
-    source_type: "manual",
-    source_risk_level: sourceRiskForCreator(creatorId),
+    source_type: sourceTypeForImport(posts),
+    source_risk_level: highestRiskLevel(posts),
     items: posts.map(toVideoImportItem),
   };
   try {
@@ -1473,7 +1696,7 @@ function bindRecentScreenButtons() {
 
 function normalizeApiCreator(creator) {
   return {
-    creator_id: creator.creator_id || creator.id || stableCreatorId(creator.username || "creator"),
+    creator_id: creator.id || creator.creator_id || stableCreatorId(creator.username || "creator"),
     username: creator.username || "creator",
     display_name: creator.display_name || creator.username || "Creator",
     country: normalizeCountry(creator.country),
@@ -1485,6 +1708,7 @@ function normalizeApiCreator(creator) {
     avg_views: toNumber(creator.avg_views || creator.average_views),
     engagement_rate: toNumber(creator.engagement_rate),
     platform: creator.platform || "tiktok",
+    source_type: normalizeSourceType(creator.source_type || "manual"),
     source_risk_level: creator.source_risk_level || "low",
     final_score: toNumber(creator.final_score || creator.score || 70),
     risk_penalty: toNumber(creator.risk_penalty || 5),
@@ -1508,6 +1732,7 @@ function normalizeCsvCreator(row, index) {
     avg_views: row.avg_views || row.average_views || 0,
     engagement_rate: row.engagement_rate || row.er || 0,
     platform: row.platform || "tiktok",
+    source_type: normalizeSourceType(row.source_type || "manual"),
     source_risk_level: normalizeRisk(row.source_risk_level || row.risk || "low"),
     profile_image_url: row.profile_image_url || "",
     channel_image_url: row.channel_image_url || "",
@@ -1535,6 +1760,8 @@ function normalizeCsvPost(row, creatorId, index) {
     save_count: toNumber(row.save_count || row.saves),
     duration_seconds: toNumber(row.duration_seconds || row.duration),
     thumbnail_url: row.thumbnail_url || "",
+    source_type: normalizeSourceType(row.source_type || "manual"),
+    source_risk_level: normalizeRisk(row.source_risk_level || row.risk || "low"),
     source_url: row.source_url || row.url || row.post_url || "",
   };
 }
@@ -1567,7 +1794,12 @@ function toVideoImportItem(post) {
     duration_seconds: toNumber(post.duration_seconds),
     thumbnail_url: post.thumbnail_url || null,
     transcript: post.transcript || null,
-    raw_metadata: { manual_import: true, source: "dashboard_talent_intake" },
+    raw_metadata: {
+      manual_import: true,
+      source: "dashboard_talent_intake",
+      row_source_type: normalizeSourceType(post.source_type || "manual"),
+      row_source_risk_level: normalizeRisk(post.source_risk_level || "low"),
+    },
     source_url: post.source_url || post.url,
   };
 }
@@ -2066,6 +2298,10 @@ async function readFileInput(id) {
 }
 
 function parseCsv(text) {
+  return parseCsvWithMeta(text).rows;
+}
+
+function parseCsvWithMeta(text) {
   const rows = [];
   let row = [];
   let field = "";
@@ -2101,31 +2337,42 @@ function parseCsv(text) {
   rows.push(row);
 
   const cleanRows = rows.filter((items) => items.some((item) => String(item).trim() !== ""));
-  if (!cleanRows.length) return [];
+  if (!cleanRows.length) return { headers: [], rows: [] };
   const headers = cleanRows[0].map((header) => normalizeHeader(header));
-  return cleanRows.slice(1).map((items) => {
-    const object = {};
-    headers.forEach((header, index) => {
-      object[header] = String(items[index] || "").trim();
-    });
-    return object;
-  });
+  return {
+    headers,
+    rows: cleanRows.slice(1).map((items) => {
+      const object = {};
+      headers.forEach((header, index) => {
+        object[header] = String(items[index] || "").trim();
+      });
+      return object;
+    }),
+  };
 }
 
 function parseManualPosts(text) {
-  if (!text) return [];
+  return parseManualPostsWithMeta(text).rows;
+}
+
+function parseManualPostsWithMeta(text) {
+  if (!text) return { headers: [], rows: [] };
   const firstLine = text.split(/\r?\n/)[0].toLowerCase();
   if (firstLine.includes("url") || firstLine.includes("caption") || firstLine.includes("view_count")) {
-    return parseCsv(text);
+    return parseCsvWithMeta(text);
   }
-  const headers = ["url", "caption", "hashtags", "view_count", "like_count", "comment_count"];
-  return text
-    .split(/\r?\n/)
-    .filter((line) => line.trim())
-    .map((line) => {
-      const values = parseCsv(`${headers.join(",")}\n${line}`)[0] || {};
-      return values;
-    });
+  const rowHeaders = ["url", "caption", "hashtags", "view_count", "like_count", "comment_count"];
+  const derivedHeaders = ["creator_id", ...rowHeaders, "source_type", "source_risk_level"];
+  return {
+    headers: derivedHeaders,
+    rows: text
+      .split(/\r?\n/)
+      .filter((line) => line.trim())
+      .map((line) => {
+        const values = parseCsv(`${rowHeaders.join(",")}\n${line}`)[0] || {};
+        return values;
+      }),
+  };
 }
 
 function buildSeedPosts(creatorId, product, count) {
@@ -2282,9 +2529,16 @@ function mergeCreators(current, incoming) {
 
 function highestRiskLevel(creators) {
   const levels = creators.map((creator) => normalizeRisk(creator.source_risk_level));
+  if (levels.some((level) => !["low", "low_medium", "medium"].includes(level))) return "high";
   if (levels.includes("medium")) return "medium";
   if (levels.includes("low_medium")) return "low_medium";
   return "low";
+}
+
+function sourceTypeForImport(items) {
+  const types = unique((items || []).map((item) => normalizeSourceType(item.source_type)).filter(Boolean));
+  if (types.length === 1 && ALLOWED_IMPORT_SOURCE_TYPES.includes(types[0])) return types[0];
+  return "manual";
 }
 
 function sourceRiskForCreator(creatorId) {
@@ -2292,11 +2546,19 @@ function sourceRiskForCreator(creatorId) {
   return normalizeRisk(creator?.source_risk_level || "low");
 }
 
+function normalizeSourceType(value) {
+  const normalized = String(value || "manual").trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (normalized === "api") return "official_api";
+  if (normalized === "provider") return "approved_provider";
+  if (normalized === "creator") return "creator_provided";
+  return normalized;
+}
+
 function normalizeRisk(value) {
   const normalized = String(value || "low").trim().toLowerCase().replace("-", "_");
   if (["low", "low_medium", "medium"].includes(normalized)) return normalized;
   if (normalized === "low/medium") return "low_medium";
-  return "low";
+  return normalized || "low";
 }
 
 function normalizeCountry(value) {

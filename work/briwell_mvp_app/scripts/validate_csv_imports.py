@@ -18,6 +18,7 @@ ALLOWED_PRODUCT_CATEGORIES = {
 }
 ALLOWED_INTENTS = {"discovery", "concern", "format", "commerce"}
 ALLOWED_SOURCE_RISK = {"low", "low_medium", "medium"}
+ALLOWED_SOURCE_TYPES = {"manual", "official_api", "approved_provider", "creator_provided"}
 
 EXPECTED_HEADERS = {
     "keyword_seed_v0.csv": [
@@ -82,6 +83,45 @@ EXPECTED_HEADERS = {
         "reply_count",
         "notes",
     ],
+    "creator_candidates_template.csv": [
+        "creator_id",
+        "username",
+        "display_name",
+        "country",
+        "platform",
+        "profile_url",
+        "profile_image_url",
+        "channel_image_url",
+        "bio",
+        "follower_count",
+        "avg_views",
+        "engagement_rate",
+        "source_type",
+        "source_risk_level",
+        "contact_email",
+        "instagram_url",
+        "signals",
+        "recommended_products",
+        "recommended_campaign_angle",
+    ],
+    "recent_posts_20_template.csv": [
+        "creator_id",
+        "platform_video_id",
+        "url",
+        "caption",
+        "transcript",
+        "hashtags",
+        "posted_at",
+        "view_count",
+        "like_count",
+        "comment_count",
+        "share_count",
+        "save_count",
+        "duration_seconds",
+        "thumbnail_url",
+        "source_type",
+        "source_risk_level",
+    ],
 }
 
 
@@ -145,6 +185,14 @@ def validate_template(path: Path) -> list[str]:
         risk = row.get("source_risk_level", "")
         if risk and risk not in ALLOWED_SOURCE_RISK:
             errors.append(f"{path.name}:{index}: source_risk_level not allowed: {risk}")
+        source_type = row.get("source_type", "")
+        if source_type and source_type not in ALLOWED_SOURCE_TYPES:
+            errors.append(f"{path.name}:{index}: source_type not allowed: {source_type}")
+        country = row.get("country", "")
+        if country and country not in ALLOWED_COUNTRIES:
+            errors.append(f"{path.name}:{index}: country not allowed: {country}")
+    if path.name == "recent_posts_20_template.csv" and len(rows) < 20:
+        errors.append(f"{path.name}: at least 20 sample rows required")
     return errors
 
 
@@ -159,6 +207,12 @@ def validate_all() -> list[str]:
         "briwell_comment_sample_template.csv",
     ):
         errors.extend(validate_template(output_dir / name))
+    dashboard_template_dir = ROOT.parents[1] / "work" / "briwell_dashboard_app" / "templates"
+    for name in (
+        "creator_candidates_template.csv",
+        "recent_posts_20_template.csv",
+    ):
+        errors.extend(validate_template(dashboard_template_dir / name))
     return errors
 
 

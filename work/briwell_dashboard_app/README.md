@@ -13,6 +13,8 @@ index.html
 styles.css
 api-client.js
 app.js
+templates/creator_candidates_template.csv
+templates/recent_posts_20_template.csv
 vercel.json
 tests/smoke.mjs
 ```
@@ -63,9 +65,9 @@ Authorization: Bearer <supabase-jwt>
 4. MX/PE/EC candidate inbox and filters
 5. Discovery plan generation
 6. Discovery coverage audit and recall safeguards
-7. Creator CSV import preview and `/creators/import` handoff
-8. Recent 20 posts CSV/manual intake and `/videos/import` handoff
-9. Import quality gate for required fields, duplicate risk, market coverage, and recent-post readiness
+7. Downloadable creator candidate CSV template and `/creators/import` handoff
+8. Downloadable recent 20 posts CSV template, manual intake, and `/videos/import` handoff
+9. Upload validation report for column contract, source governance, recent-post readiness, and DB E2E gate
 10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
 11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
 12. Campaign draft creation
