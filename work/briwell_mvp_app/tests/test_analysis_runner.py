@@ -2,6 +2,7 @@ from app.ai.contracts import AnalysisRequest, AnalysisResult
 from app.workers.analysis_runner import (
     AnalysisRunRequest,
     build_invocation_log_payload,
+    estimate_analysis_cost,
     estimate_tokens,
     run_analysis,
     status_for_result,
@@ -110,3 +111,28 @@ def test_invocation_log_payload_includes_estimates() -> None:
     assert payload["status"] == "success"
     assert payload["model_alias"] == "low_cost_text"
     assert payload["input_token_count"] == estimate_tokens(run_request.request.model_dump())
+
+
+def test_live_provider_cost_estimate_uses_alias_pricing() -> None:
+    result = AnalysisResult(
+        status="ok",
+        model_alias="recent_posts_screen",
+        prompt_version="recent_posts_screen_v0",
+        output={"status": "ok", "evidence": ["x"], "confidence": 0.8},
+        confidence=0.8,
+    )
+
+    assert estimate_analysis_cost(
+        model_alias="recent_posts_screen",
+        input_token_count=100_000,
+        output_token_count=10_000,
+        live_provider_call=True,
+        result=result,
+    ) == 0.014
+    assert estimate_analysis_cost(
+        model_alias="recent_posts_screen",
+        input_token_count=100_000,
+        output_token_count=10_000,
+        live_provider_call=False,
+        result=result,
+    ) == 0.0

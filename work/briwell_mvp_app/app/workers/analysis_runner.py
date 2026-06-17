@@ -30,6 +30,9 @@ class AnalysisRunResult(BaseModel):
     invocation_log: dict[str, Any]
     persistence_status: Literal["persisted", "validated_not_persisted"]
     job_update: dict[str, Any] | None = None
+    screen_persistence_status: Literal["persisted", "validated_not_persisted", "failed"] = "validated_not_persisted"
+    persisted_screen_result: dict[str, Any] | None = None
+    screen_persistence_error: str | None = None
 
 
 def run_analysis(request: AnalysisRunRequest) -> AnalysisRunResult:
@@ -48,6 +51,7 @@ def run_analysis(request: AnalysisRunRequest) -> AnalysisRunResult:
         run_request=request,
         result=result,
         latency_ms=latency_ms,
+        live_provider_call=not adapter.dry_run,
     )
     run_status = log_payload["status"]
     job_update = None
@@ -92,6 +96,7 @@ def build_invocation_log_payload(
     run_request: AnalysisRunRequest,
     result: AnalysisResult,
     latency_ms: int,
+    live_provider_call: bool = False,
 ) -> dict[str, Any]:
     input_token_count = estimate_tokens(run_request.request.model_dump())
     output_token_count = estimate_tokens(result.output)
@@ -103,7 +108,13 @@ def build_invocation_log_payload(
         "prompt_version": run_request.request.prompt_version,
         "input_token_count": input_token_count,
         "output_token_count": output_token_count,
-        "cost_usd": estimate_dry_run_cost(result),
+        "cost_usd": estimate_analysis_cost(
+            model_alias=run_request.request.model_alias,
+            input_token_count=input_token_count,
+            output_token_count=output_token_count,
+            live_provider_call=live_provider_call,
+            result=result,
+        ),
         "latency_ms": latency_ms,
         "status": status_for_result(result),
         "error_message": None if result.status == "ok" else result.error_code or result.review_required_reason,
@@ -129,3 +140,33 @@ def estimate_dry_run_cost(result: AnalysisResult) -> float:
     if result.status == "ok":
         return 0.0
     return 0.0
+
+
+GEMINI_ALIAS_COST_PER_1M_TOKENS = {
+    # MVP planning estimates only. Reconcile with provider billing exports before production finance reporting.
+    "low_cost_text": {"input": 0.10, "output": 0.40},
+    "recent_posts_screen": {"input": 0.10, "output": 0.40},
+    "dm_generation": {"input": 0.30, "output": 2.50},
+    "multimodal_default": {"input": 0.30, "output": 2.50},
+    "final_review": {"input": 0.30, "output": 2.50},
+}
+
+
+def estimate_analysis_cost(
+    model_alias: str,
+    input_token_count: int,
+    output_token_count: int,
+    live_provider_call: bool,
+    result: AnalysisResult,
+) -> float:
+    if not live_provider_call or result.status != "ok":
+        return 0.0
+    pricing = GEMINI_ALIAS_COST_PER_1M_TOKENS.get(
+        model_alias,
+        GEMINI_ALIAS_COST_PER_1M_TOKENS["low_cost_text"],
+    )
+    return round(
+        input_token_count / 1_000_000 * pricing["input"]
+        + output_token_count / 1_000_000 * pricing["output"],
+        6,
+    )

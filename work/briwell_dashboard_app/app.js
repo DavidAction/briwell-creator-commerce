@@ -149,6 +149,10 @@ function hydrateConfigControls() {
   const config = window.BriwellApi.readConfig();
   byId("apiBaseInput").value = config.apiBase;
   byId("roleSelect").value = config.role;
+  const recentScreenMode = byId("recentScreenMode");
+  if (recentScreenMode) {
+    recentScreenMode.value = localStorage.getItem("briwell.recentScreenMode") || "dry_run";
+  }
 }
 
 function bindNavigation() {
@@ -208,6 +212,9 @@ function bindActions() {
   byId("importVideosButton").addEventListener("click", importVideos);
   byId("runRecentScreenButton").addEventListener("click", () => {
     runRecentScreenForCreator(byId("postCreatorSelect").value);
+  });
+  byId("recentScreenMode").addEventListener("change", () => {
+    localStorage.setItem("briwell.recentScreenMode", byId("recentScreenMode").value);
   });
   byId("postCreatorSelect").addEventListener("change", () => {
     state.selectedCreatorId = byId("postCreatorSelect").value;
@@ -1336,6 +1343,8 @@ async function importVideos() {
 async function runRecentScreenForCreator(creatorId) {
   const creator = state.creators.find((item) => item.creator_id === creatorId);
   const posts = (state.recentPostsByCreator[creatorId] || []).slice(0, 20);
+  const mode = byId("recentScreenMode")?.value || "dry_run";
+  const liveGemini = mode === "live";
   if (!creator) return;
 
   if (!posts.length) {
@@ -1358,15 +1367,28 @@ async function runRecentScreenForCreator(creatorId) {
       brand: "Briwell",
       markets: ["MX", "PE", "EC"],
     },
-    dry_run: true,
+    dry_run: !liveGemini,
+    allow_live_provider_calls: liveGemini,
+    persist_result: looksLikeUuid(creatorId),
   };
 
   try {
     const response = await window.BriwellApi.runRecentPostsScreen(payload);
-    const output = extractRecentScreenOutput(response) || previewRecentPostsScreen(creator, posts);
+    const providerOutput = extractRecentScreenOutput(response);
+    const output = providerOutput || previewRecentPostsScreen(creator, posts);
     state.recentScreenResults[creatorId] = output;
     applyScreenResultToCreator(creatorId, output);
-    showResult("postImportResult", { status: "screened", creator_id: creatorId, output });
+    showResult("postImportResult", {
+      status: providerOutput
+        ? (liveGemini ? "live_gemini_screened" : "dry_run_screened")
+        : (liveGemini ? "live_gemini_failed_preview_only" : "local_preview_screened"),
+      creator_id: creatorId,
+      output,
+      provider_result: providerOutput ? undefined : response.result,
+      invocation_log: response.invocation_log,
+      screen_persistence_status: response.screen_persistence_status,
+      screen_persistence_error: response.screen_persistence_error,
+    });
   } catch (error) {
     const output = extractRecentScreenOutput(error.payload) || previewRecentPostsScreen(creator, posts);
     state.recentScreenResults[creatorId] = output;

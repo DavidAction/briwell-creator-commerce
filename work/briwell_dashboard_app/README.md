@@ -69,7 +69,7 @@ Authorization: Bearer <supabase-jwt>
 8. Downloadable recent 20 posts CSV template, manual intake, and `/videos/import` handoff
 9. Upload validation report for column contract, source governance, recent-post readiness, and DB E2E gate
 10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
-11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
+11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen` with Dry Run Preview or Live Gemini Analysis mode
 12. Campaign draft creation
 13. Campaign outreach draft preparation
 14. DM claims check and human approval gate

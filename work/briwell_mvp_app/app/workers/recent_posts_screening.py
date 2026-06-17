@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
 
 from app.ai.contracts import AnalysisRequest
+from app.core.db import database_enabled
+from app.repositories import operations as operations_repository
 from app.workers.analysis_runner import AnalysisRunRequest
 from app.workers.analysis_runner import AnalysisRunResult
 from app.workers.analysis_runner import run_analysis
@@ -41,6 +44,7 @@ class RecentPostsScreenRequest(BaseModel):
     prompt_version: str = "recent_posts_screen_v0"
     dry_run: bool | None = None
     allow_live_provider_calls: bool | None = None
+    persist_result: bool = False
 
     @model_validator(mode="after")
     def expected_count_must_cover_provided_posts(self) -> "RecentPostsScreenRequest":
@@ -55,7 +59,7 @@ def run_recent_posts_screen(payload: RecentPostsScreenRequest) -> AnalysisRunRes
         key=lambda item: item.posted_at or datetime.min,
         reverse=True,
     )[:20]
-    return run_analysis(
+    result = run_analysis(
         AnalysisRunRequest(
             target_entity_type="creator",
             target_entity_id=payload.creator_id,
@@ -86,3 +90,41 @@ def run_recent_posts_screen(payload: RecentPostsScreenRequest) -> AnalysisRunRes
             ),
         )
     )
+    if not payload.persist_result or not database_enabled():
+        return result
+    if result.status != "success":
+        return result.model_copy(
+            update={
+                "screen_persistence_status": "failed",
+                "screen_persistence_error": result.result.error_code or result.result.review_required_reason or "analysis_failed",
+            }
+        )
+    if not _looks_like_uuid(payload.creator_id):
+        return result.model_copy(
+            update={
+                "screen_persistence_status": "failed",
+                "screen_persistence_error": "creator_id_must_be_uuid_for_db_persistence",
+            }
+        )
+    persisted = operations_repository.create_recent_posts_screen_result(
+        {
+            "creator_id": payload.creator_id,
+            "creator_snapshot": payload.creator_snapshot,
+            "screen_result": result.result.output,
+        },
+        source_risk_level=payload.source_risk_level,
+    )
+    return result.model_copy(
+        update={
+            "screen_persistence_status": "persisted",
+            "persisted_screen_result": persisted,
+        }
+    )
+
+
+def _looks_like_uuid(value: str) -> bool:
+    try:
+        UUID(str(value))
+    except (TypeError, ValueError):
+        return False
+    return True

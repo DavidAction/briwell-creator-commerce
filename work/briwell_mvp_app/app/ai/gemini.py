@@ -7,6 +7,7 @@ from app.ai.adapters import AIAdapter, rejected_for_source_risk
 from app.ai.contracts import AnalysisRequest, AnalysisResult
 from app.ai.schema_validation import AnalysisSchemaError, validate_analysis_output
 from app.core.config import settings
+from app.schemas.analysis import ANALYSIS_OUTPUT_SCHEMAS
 
 
 MODEL_BY_ALIAS = {
@@ -84,9 +85,7 @@ class GeminiTextAdapter(AIAdapter):
                     "parts": [{"text": self._build_prompt(request)}],
                 }
             ],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-            },
+            "generationConfig": self._generation_config(request),
         }
         response = httpx.post(
             url,
@@ -96,13 +95,38 @@ class GeminiTextAdapter(AIAdapter):
         )
         response.raise_for_status()
         body = response.json()
-        text = body["candidates"][0]["content"]["parts"][0]["text"]
+        text = self._extract_text(body)
         parsed = json.loads(text)
         if not isinstance(parsed, dict):
             raise ValueError("Gemini response JSON must be an object.")
         return parsed
 
+    def _generation_config(self, request: AnalysisRequest) -> dict[str, Any]:
+        schema_model = ANALYSIS_OUTPUT_SCHEMAS.get(request.task_type)
+        if schema_model is None:
+            return {"responseMimeType": "application/json"}
+        return {
+            "responseFormat": {
+                "text": {
+                    "mimeType": "application/json",
+                    "schema": _schema_for_gemini(schema_model.model_json_schema()),
+                }
+            }
+        }
+
+    def _extract_text(self, body: dict[str, Any]) -> str:
+        candidates = body.get("candidates") or []
+        if not candidates:
+            raise ValueError("Gemini response did not include candidates.")
+        parts = ((candidates[0].get("content") or {}).get("parts") or [])
+        text = "".join(str(part.get("text") or "") for part in parts if "text" in part)
+        if not text:
+            raise ValueError("Gemini response did not include text content.")
+        return text
+
     def _build_prompt(self, request: AnalysisRequest) -> str:
+        if request.task_type == "recent_posts_screen":
+            return _build_recent_posts_screen_prompt(request)
         return json.dumps(
             {
                 "instruction": (
@@ -166,6 +190,69 @@ class GeminiTextAdapter(AIAdapter):
         if request.task_type == "final_review":
             return _dry_run_final_review(request.payload)
         raise AnalysisSchemaError(f"unsupported_analysis_task:{request.task_type}")
+
+
+def _build_recent_posts_screen_prompt(request: AnalysisRequest) -> str:
+    return json.dumps(
+        {
+            "instruction": (
+                "Analyze the creator's latest approved recent posts for Briwell's LATAM K-beauty "
+                "creator commerce workflow. Return valid JSON only and match the provided schema. "
+                "Use only the supplied captions, transcripts, hashtags, public metrics, creator "
+                "snapshot, and product context. Do not browse, infer private demographics, or invent "
+                "missing data. Treat medical, treatment, guaranteed-result, unsafe, or non-cosmetic "
+                "claims as brand-safety risk notes."
+            ),
+            "decision_policy": {
+                "pass_to_full_analysis": (
+                    "Use only when recent content strongly fits beauty/skincare/K-beauty, has no "
+                    "material brand-safety risk, has enough recent posts, and should proceed to "
+                    "profile, comment, and multimodal analysis before outreach."
+                ),
+                "human_review": (
+                    "Use for borderline fit, missing transcripts/metrics, fewer than expected posts, "
+                    "or any claim/safety uncertainty requiring an operator."
+                ),
+                "recheck_later": "Use when the creator may fit later but current recent content is weak or incomplete.",
+                "avoid": "Use when recent posts show clear brand-safety, non-cosmetic, or unsuitable collaboration risk.",
+            },
+            "scoring_contract": {
+                "all_scores": "0-100 numeric values",
+                "ratios": "0-1 numeric values",
+                "confidence": "0-1 numeric value",
+                "matched_product_categories": [
+                    "sunscreen",
+                    "calming_serum",
+                    "cleanser",
+                    "sheet_mask",
+                    "cushion_foundation",
+                ],
+            },
+            "task_type": request.task_type,
+            "prompt_version": request.prompt_version,
+            "source_risk_level": request.source_risk_level,
+            "payload": request.payload,
+        },
+        ensure_ascii=True,
+        default=str,
+    )
+
+
+def _schema_for_gemini(schema: dict[str, Any]) -> dict[str, Any]:
+    """Trim Pydantic JSON Schema to the subset expected by Gemini structured output."""
+    if isinstance(schema, dict):
+        cleaned: dict[str, Any] = {}
+        for key, value in schema.items():
+            if key in {"title", "default"}:
+                continue
+            if key == "const":
+                cleaned["enum"] = [value]
+                continue
+            cleaned[key] = _schema_for_gemini(value)
+        return cleaned
+    if isinstance(schema, list):
+        return [_schema_for_gemini(item) for item in schema]
+    return schema
 
 
 def _dry_run_profile_analysis(payload: dict[str, Any]) -> dict[str, Any]:

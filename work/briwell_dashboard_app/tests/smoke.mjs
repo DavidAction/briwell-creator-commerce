@@ -68,6 +68,8 @@ assert(files.html.includes("downloadCreatorTemplateButton"), "missing creator CS
 assert(files.html.includes("postCsvInput"), "missing recent posts CSV upload input");
 assert(files.html.includes("downloadPostTemplateButton"), "missing recent posts template download");
 assert(files.html.includes("manualPostsInput"), "missing manual recent posts input");
+assert(files.html.includes("recentScreenMode"), "missing recent screen AI mode selector");
+assert(files.html.includes("Live Gemini Analysis"), "missing live Gemini screening option");
 assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts screen action");
 assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
 assert(files.html.includes("importQualityGate"), "missing import quality gate mount");
@@ -112,6 +114,9 @@ assert(files.app.includes("renderValidationReport"), "upload validation report r
 assert(files.app.includes("parseCsvWithMeta"), "CSV parser metadata report missing");
 assert(files.app.includes("parseCsv"), "CSV parser missing");
 assert(files.app.includes("runRecentScreenForCreator"), "recent posts screen workflow missing");
+assert(files.app.includes("allow_live_provider_calls"), "live Gemini request flag missing");
+assert(files.app.includes("persist_result"), "recent screen persistence flag missing");
+assert(files.app.includes("live_gemini_screened"), "live Gemini result status missing");
 assert(files.app.includes("coverageAudit"), "coverage audit state missing");
 assert(files.app.includes("Shortlist Talent"), "shortlist action missing");
 assert(files.app.includes("최근 게시물 20개까지 추가 수집"), "missing Korean recent-post next step copy");

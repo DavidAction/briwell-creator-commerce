@@ -365,6 +365,7 @@ Current AI rules:
 3. `GeminiTextAdapter` runs in dry-run mode by default.
 4. Live Gemini calls require both `GEMINI_API_KEY` and `ALLOW_LIVE_PROVIDER_CALLS=true`.
 5. Dry-run output is deterministic and exists for API contract testing only.
+6. Recent-20 screening uses Gemini structured output with the `RecentPostsScreenOutput` schema when live calls are enabled.
 
 Environment flags:
 
@@ -436,6 +437,17 @@ Rules currently enforced:
 4. Fewer than 20 posts can be validated, but the output requires human review or more recent posts.
 5. The screen returns `suitability_decision`, `suitability_score`, product category matches, coverage gaps, and next step.
 6. Passing this screen does not approve outreach by itself; it only moves the creator to full analysis.
+7. Set `dry_run=false` and `allow_live_provider_calls=true` in the request to run live Gemini analysis.
+8. Set `persist_result=true` with a real database UUID `creator_id` to store the result in `recent_posts_screen_result`.
+
+Live Gemini request prerequisites:
+
+```text
+AI_DRY_RUN=false
+ALLOW_LIVE_PROVIDER_CALLS=true
+GEMINI_API_KEY=<managed-secret>
+USE_DATABASE=true # only required for persist_result=true
+```
 
 ## Analysis to Score Handoff
 
