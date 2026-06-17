@@ -11,6 +11,7 @@ const state = {
   intakeCreatorHeaders: [],
   importQuality: null,
   operationsPipeline: null,
+  aiProvider: null,
   recentPostHeadersByCreator: {},
   recentPostsByCreator: {
     "creator-1": buildSeedPosts("creator-1", "sunscreen", 20),
@@ -153,6 +154,7 @@ function hydrateConfigControls() {
   if (recentScreenMode) {
     recentScreenMode.value = localStorage.getItem("briwell.recentScreenMode") || "dry_run";
   }
+  updateRecentScreenModeAvailability();
 }
 
 function bindNavigation() {
@@ -938,12 +940,32 @@ function renderAiProvider(payload) {
     live_ready: false,
     dry_run: true,
   };
+  state.aiProvider = source;
   byId("aiProvider").innerHTML = `
     <div class="policy-line"><span>Primary Provider</span><strong>${escapeHtml(formatProvider(source.provider || "google"))}</strong></div>
     <div class="policy-line"><span>Adapter</span><strong>${escapeHtml(formatAdapter(source.default_adapter || "GeminiTextAdapter"))}</strong></div>
     <div class="policy-line"><span>Live Calls</span><strong>${escapeHtml(formatBoolean(Boolean(source.live_ready)))}</strong></div>
     <div class="policy-line"><span>Dry Run</span><strong>${escapeHtml(formatBoolean(Boolean(source.dry_run)))}</strong></div>
   `;
+  updateRecentScreenModeAvailability();
+}
+
+function updateRecentScreenModeAvailability() {
+  const select = byId("recentScreenMode");
+  const hint = byId("recentScreenModeHint");
+  if (!select) return;
+  const liveOption = Array.from(select.options).find((option) => option.value === "live");
+  const liveReady = Boolean(state.aiProvider?.live_ready);
+  if (liveOption) liveOption.disabled = !liveReady;
+  if (!liveReady && select.value === "live") {
+    select.value = "dry_run";
+    localStorage.setItem("briwell.recentScreenMode", "dry_run");
+  }
+  if (hint) {
+    hint.textContent = liveReady
+      ? "Live Gemini ready. Calls are cost/rate limited and logged."
+      : "Live Gemini unavailable. Check API, AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, and GEMINI_API_KEY.";
+  }
 }
 
 function renderPayoutTable() {
@@ -1346,6 +1368,17 @@ async function runRecentScreenForCreator(creatorId) {
   const mode = byId("recentScreenMode")?.value || "dry_run";
   const liveGemini = mode === "live";
   if (!creator) return;
+  if (liveGemini && !state.aiProvider?.live_ready) {
+    showResult("postImportResult", {
+      status: "live_gemini_unavailable",
+      message: "Live Gemini requires API online, AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, and GEMINI_API_KEY.",
+      provider: state.aiProvider,
+    });
+    showToast("Live Gemini is not ready; using Dry Run Preview");
+    byId("recentScreenMode").value = "dry_run";
+    localStorage.setItem("briwell.recentScreenMode", "dry_run");
+    return;
+  }
 
   if (!posts.length) {
     const output = buildNoPostsScreenResult();

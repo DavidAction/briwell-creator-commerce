@@ -149,6 +149,27 @@ def create_recent_posts_screen_result(
     source_risk_level: str,
 ) -> dict[str, Any]:
     result = item.get("screen_result", {})
+    result_payload = Jsonb(result)
+    existing = fetch_one(
+        """
+        SELECT *
+        FROM recent_posts_screen_result
+        WHERE creator_id = %(creator_id)s
+          AND source_risk_level = %(source_risk_level)s
+          AND result_payload = %(result_payload)s
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        {
+            "creator_id": item.get("creator_id"),
+            "source_risk_level": source_risk_level,
+            "result_payload": result_payload,
+        },
+    )
+    if existing is not None:
+        existing["duplicate_policy"] = "reused_identical_result"
+        return existing
+
     query = """
         INSERT INTO recent_posts_screen_result (
           creator_id,
@@ -187,7 +208,7 @@ def create_recent_posts_screen_result(
             "coverage_gaps": result.get("coverage_gaps", []),
             "risk_notes": result.get("risk_notes", []),
             "next_step": result.get("next_step"),
-            "result_payload": Jsonb(result),
+            "result_payload": result_payload,
         },
     )
     if created is None:

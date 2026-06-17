@@ -60,6 +60,14 @@ class Settings:
         "true",
         "yes",
     }
+    ai_live_require_database: bool = os.getenv("AI_LIVE_REQUIRE_DATABASE", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    ai_live_daily_call_limit: int = int(os.getenv("AI_LIVE_DAILY_CALL_LIMIT", "50"))
+    ai_live_daily_cost_limit_usd: float = float(os.getenv("AI_LIVE_DAILY_COST_LIMIT_USD", "2.00"))
+    ai_live_per_creator_daily_call_limit: int = int(os.getenv("AI_LIVE_PER_CREATOR_DAILY_CALL_LIMIT", "3"))
 
 
 settings = Settings()

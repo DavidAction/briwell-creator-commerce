@@ -1,11 +1,13 @@
 import json
 import time
 from typing import Any, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 from app.ai.contracts import AnalysisRequest, AnalysisResult
 from app.ai.gemini import GeminiTextAdapter
+from app.core.config import settings
 from app.core.db import database_enabled
 from app.repositories import ai_invocation_logs, analysis_jobs
 
@@ -36,6 +38,32 @@ class AnalysisRunResult(BaseModel):
 
 
 def run_analysis(request: AnalysisRunRequest) -> AnalysisRunResult:
+    live_provider_call = live_provider_call_requested(request)
+    limit_error = live_analysis_limit_error(request) if live_provider_call else None
+    if limit_error:
+        result = AnalysisResult(
+            status="error",
+            model_alias=request.request.model_alias,
+            prompt_version=request.request.prompt_version,
+            output={"status": "error", "message": limit_error["message"]},
+            confidence=0,
+            review_required=True,
+            review_required_reason=limit_error["message"],
+            error_code=limit_error["code"],
+        )
+        log_payload = build_invocation_log_payload(
+            run_request=request,
+            result=result,
+            latency_ms=0,
+            live_provider_call=False,
+        )
+        return AnalysisRunResult(
+            status="failed",
+            result=result,
+            invocation_log=log_payload,
+            persistence_status="validated_not_persisted",
+        )
+
     adapter = GeminiTextAdapter(
         dry_run=request.dry_run,
         allow_live_provider_calls=request.allow_live_provider_calls,
@@ -51,7 +79,7 @@ def run_analysis(request: AnalysisRunRequest) -> AnalysisRunResult:
         run_request=request,
         result=result,
         latency_ms=latency_ms,
-        live_provider_call=not adapter.dry_run,
+        live_provider_call=live_provider_call,
     )
     run_status = log_payload["status"]
     job_update = None
@@ -129,6 +157,68 @@ def status_for_result(result: AnalysisResult) -> Literal["success", "failed", "s
     if result.status == "rejected":
         return "skipped"
     return "failed"
+
+
+def live_provider_call_requested(request: AnalysisRunRequest) -> bool:
+    dry_run = settings.ai_dry_run if request.dry_run is None else request.dry_run
+    allow_live = (
+        settings.allow_live_provider_calls
+        if request.allow_live_provider_calls is None
+        else request.allow_live_provider_calls
+    )
+    return not dry_run and allow_live
+
+
+def live_analysis_limit_error(request: AnalysisRunRequest) -> dict[str, str] | None:
+    if settings.ai_dry_run and request.dry_run is False:
+        return {
+            "code": "live_ai_default_dry_run_enabled",
+            "message": "Live AI calls require AI_DRY_RUN=false at server level.",
+        }
+    if settings.ai_live_require_database and not database_enabled():
+        return {
+            "code": "live_ai_database_required",
+            "message": "Live AI calls require USE_DATABASE=true for cost and rate-limit tracking.",
+        }
+    if not database_enabled():
+        return None
+
+    daily = ai_invocation_logs.live_usage_summary()
+    if settings.ai_live_daily_call_limit > 0 and daily["call_count"] >= settings.ai_live_daily_call_limit:
+        return {
+            "code": "live_ai_daily_call_limit_reached",
+            "message": "Daily live AI call limit reached.",
+        }
+    if settings.ai_live_daily_cost_limit_usd > 0 and daily["cost_usd"] >= settings.ai_live_daily_cost_limit_usd:
+        return {
+            "code": "live_ai_daily_cost_limit_reached",
+            "message": "Daily live AI cost limit reached.",
+        }
+
+    if (
+        request.target_entity_type == "creator"
+        and request.target_entity_id
+        and _looks_like_uuid(request.target_entity_id)
+        and settings.ai_live_per_creator_daily_call_limit > 0
+    ):
+        creator_daily = ai_invocation_logs.live_usage_summary(
+            target_entity_type="creator",
+            target_entity_id=request.target_entity_id,
+        )
+        if creator_daily["call_count"] >= settings.ai_live_per_creator_daily_call_limit:
+            return {
+                "code": "live_ai_creator_daily_call_limit_reached",
+                "message": "Daily live AI call limit reached for this creator.",
+            }
+    return None
+
+
+def _looks_like_uuid(value: str) -> bool:
+    try:
+        UUID(str(value))
+    except (TypeError, ValueError):
+        return False
+    return True
 
 
 def estimate_tokens(payload: Any) -> int:

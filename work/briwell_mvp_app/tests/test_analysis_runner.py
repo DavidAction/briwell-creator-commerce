@@ -4,6 +4,7 @@ from app.workers.analysis_runner import (
     build_invocation_log_payload,
     estimate_analysis_cost,
     estimate_tokens,
+    live_provider_call_requested,
     run_analysis,
     status_for_result,
 )
@@ -136,3 +137,86 @@ def test_live_provider_cost_estimate_uses_alias_pricing() -> None:
         live_provider_call=False,
         result=result,
     ) == 0.0
+
+
+def test_live_analysis_requires_database_when_configured(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    from app.workers import analysis_runner
+
+    monkeypatch.setattr(
+        analysis_runner,
+        "settings",
+        SimpleNamespace(
+            ai_dry_run=False,
+            allow_live_provider_calls=True,
+            ai_live_require_database=True,
+            ai_live_daily_call_limit=50,
+            ai_live_daily_cost_limit_usd=2.0,
+            ai_live_per_creator_daily_call_limit=3,
+        ),
+    )
+    monkeypatch.setattr(analysis_runner, "database_enabled", lambda: False)
+
+    request = AnalysisRunRequest(
+        target_entity_type="creator",
+        target_entity_id="creator-1",
+        dry_run=False,
+        allow_live_provider_calls=True,
+        request=AnalysisRequest(
+            task_type="profile_analysis",
+            model_alias="low_cost_text",
+            source_risk_level="low",
+            prompt_version="profile_v0",
+            payload={"creator": {"username": "creator"}},
+        ),
+    )
+
+    assert live_provider_call_requested(request) is True
+    result = run_analysis(request)
+    assert result.status == "failed"
+    assert result.result.error_code == "live_ai_database_required"
+
+
+def test_live_analysis_blocks_daily_budget(monkeypatch) -> None:
+    from types import SimpleNamespace
+
+    from app.workers import analysis_runner
+
+    monkeypatch.setattr(
+        analysis_runner,
+        "settings",
+        SimpleNamespace(
+            ai_dry_run=False,
+            allow_live_provider_calls=True,
+            ai_live_require_database=True,
+            ai_live_daily_call_limit=1,
+            ai_live_daily_cost_limit_usd=2.0,
+            ai_live_per_creator_daily_call_limit=3,
+        ),
+    )
+    monkeypatch.setattr(analysis_runner, "database_enabled", lambda: True)
+    monkeypatch.setattr(
+        analysis_runner.ai_invocation_logs,
+        "live_usage_summary",
+        lambda **_kwargs: {"call_count": 1, "cost_usd": 0.01},
+    )
+
+    result = run_analysis(
+        AnalysisRunRequest(
+            target_entity_type="creator",
+            target_entity_id="9c0e8b22-8e32-4e8d-bd2e-0fe275510001",
+            dry_run=False,
+            allow_live_provider_calls=True,
+            request=AnalysisRequest(
+                task_type="profile_analysis",
+                model_alias="low_cost_text",
+                source_risk_level="low",
+                prompt_version="profile_v0",
+                payload={"creator": {"username": "creator"}},
+            ),
+        )
+    )
+
+    assert result.status == "failed"
+    assert result.result.error_code == "live_ai_daily_call_limit_reached"

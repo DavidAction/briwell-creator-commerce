@@ -374,6 +374,10 @@ GEMINI_API_KEY=
 GEMINI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta
 AI_DRY_RUN=true
 ALLOW_LIVE_PROVIDER_CALLS=false
+AI_LIVE_REQUIRE_DATABASE=true
+AI_LIVE_DAILY_CALL_LIMIT=50
+AI_LIVE_DAILY_COST_LIMIT_USD=2.00
+AI_LIVE_PER_CREATOR_DAILY_CALL_LIMIT=3
 ```
 
 `POST /ai/validate-output` validates a proposed AI JSON result before it is
@@ -439,6 +443,8 @@ Rules currently enforced:
 6. Passing this screen does not approve outreach by itself; it only moves the creator to full analysis.
 7. Set `dry_run=false` and `allow_live_provider_calls=true` in the request to run live Gemini analysis.
 8. Set `persist_result=true` with a real database UUID `creator_id` to store the result in `recent_posts_screen_result`.
+9. Identical persisted screen outputs for the same creator and source risk are reused instead of duplicated; changed outputs are kept as history.
+10. Live calls are blocked before provider invocation when daily call, daily cost, or per-creator limits are reached.
 
 Live Gemini request prerequisites:
 
@@ -448,6 +454,27 @@ ALLOW_LIVE_PROVIDER_CALLS=true
 GEMINI_API_KEY=<managed-secret>
 USE_DATABASE=true # only required for persist_result=true
 ```
+
+Guarded live smoke test:
+
+```bash
+python scripts/smoke_gemini_recent20_live.py --confirm-live-cost
+```
+
+The script refuses to call Gemini unless `--confirm-live-cost`,
+`AI_DRY_RUN=false`, `ALLOW_LIVE_PROVIDER_CALLS=true`, and `GEMINI_API_KEY` are
+present. Add `--persist-result --creator-id <db-uuid>` only when DB persistence
+is intended.
+
+Golden dataset regression:
+
+```bash
+python scripts/evaluate_recent20_golden.py
+```
+
+The v0 golden dataset lives at `data/golden/recent20_screen_v0.json` and
+contains pass, human-review, recheck-later, and claim-risk cases for the
+deterministic recent-20 screen.
 
 ## Analysis to Score Handoff
 

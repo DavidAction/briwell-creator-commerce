@@ -1078,6 +1078,15 @@ tbody tr.row-selected {
   gap: 10px;
 }
 
+.field-hint {
+  display: block;
+  margin-top: 5px;
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
 .candidate-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 390px;

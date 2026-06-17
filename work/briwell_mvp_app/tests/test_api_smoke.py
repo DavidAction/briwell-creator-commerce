@@ -107,6 +107,8 @@ def test_ai_provider_status_reports_live_gate() -> None:
     assert body["provider"] == "google"
     assert body["default_adapter"] == "GeminiTextAdapter"
     assert body["live_ready"] is False
+    assert body["live_limits"]["daily_call_limit"] >= 1
+    assert body["live_limits"]["require_database"] is True
 
 
 def test_create_campaign_validates_without_database() -> None:
@@ -985,6 +987,41 @@ def test_ai_validate_output_accepts_profile_analysis() -> None:
                 "review_required": False,
                 "review_required_reason": None,
                 "summary": "Strong skincare review fit.",
+            },
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "validated"
+
+
+def test_ai_validate_output_accepts_recent_posts_screen() -> None:
+    response = client.post(
+        "/ai/validate-output",
+        headers={"X-User-Role": "operator"},
+        json={
+            "task_type": "recent_posts_screen",
+            "output": {
+                "status": "ok",
+                "post_count_analyzed": 20,
+                "expected_post_count": 20,
+                "suitability_decision": "pass_to_full_analysis",
+                "suitability_score": 86,
+                "beauty_content_ratio": 0.9,
+                "kbeauty_signal_ratio": 0.7,
+                "skincare_relevance_score": 88,
+                "commerce_signal_score": 75,
+                "consistency_score": 84,
+                "brand_safety_precheck_score": 92,
+                "matched_product_categories": ["sunscreen"],
+                "recent_post_observations": ["Strong recent skincare routine fit."],
+                "coverage_gaps": [],
+                "risk_notes": [],
+                "next_step": "run_full_profile_comment_multimodal_analysis",
+                "evidence": ["20 recent approved posts analyzed."],
+                "missing_data": [],
+                "confidence": 0.84,
+                "review_required": False,
+                "review_required_reason": None,
             },
         },
     )

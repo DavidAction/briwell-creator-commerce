@@ -16,6 +16,7 @@ AnalysisTask = Literal[
     "profile_analysis",
     "comment_analysis",
     "multimodal_analysis",
+    "recent_posts_screen",
     "final_review",
     "creator_score",
 ]
@@ -75,5 +76,11 @@ def provider_status(
             and settings.allow_live_provider_calls
             and bool(settings.gemini_api_key)
         ),
+        "live_limits": {
+            "require_database": settings.ai_live_require_database,
+            "daily_call_limit": settings.ai_live_daily_call_limit,
+            "daily_cost_limit_usd": settings.ai_live_daily_cost_limit_usd,
+            "per_creator_daily_call_limit": settings.ai_live_per_creator_daily_call_limit,
+        },
         "safety_note": "Live calls require AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, and GEMINI_API_KEY.",
     }

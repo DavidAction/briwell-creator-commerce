@@ -70,12 +70,13 @@ Authorization: Bearer <supabase-jwt>
 9. Upload validation report for column contract, source governance, recent-post readiness, and DB E2E gate
 10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
 11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen` with Dry Run Preview or Live Gemini Analysis mode
-12. Campaign draft creation
-13. Campaign outreach draft preparation
-14. DM claims check and human approval gate
-15. Manual send status recording
-16. Performance snapshot capture
-17. Settlement contract capture
+12. Live Gemini mode is enabled only when `/ai/provider-status` reports `live_ready=true`
+13. Campaign draft creation
+14. Campaign outreach draft preparation
+15. DM claims check and human approval gate
+16. Manual send status recording
+17. Performance snapshot capture
+18. Settlement contract capture
 
 ## Executive Overview Standard
 

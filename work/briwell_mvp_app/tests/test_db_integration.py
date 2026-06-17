@@ -381,6 +381,39 @@ def test_db_talent_intake_upload_quality_and_recent20_e2e(monkeypatch: pytest.Mo
     assert direct_screen_body["status"] == "success"
     assert direct_screen_body["screen_persistence_status"] == "persisted"
     assert direct_screen_body["result"]["output"]["suitability_decision"] == "pass_to_full_analysis"
+    first_screen_result_id = direct_screen_body["persisted_screen_result"]["id"]
+
+    duplicate_screen_response = client.post(
+        "/analysis-jobs/run-recent-posts-screen",
+        headers=headers,
+        json={
+            "creator_id": creator_id,
+            "source_risk_level": "low",
+            "recent_posts": [
+                {
+                    "video_id": post["platform_video_id"],
+                    "url": post["url"],
+                    "caption": post["caption"],
+                    "transcript": post["transcript"],
+                    "hashtags": post["hashtags"],
+                    "view_count": post["view_count"],
+                    "like_count": post["like_count"],
+                    "comment_count": post["comment_count"],
+                    "share_count": post["share_count"],
+                }
+                for post in recent_posts
+            ],
+            "expected_post_count": 20,
+            "creator_snapshot": creator_snapshot,
+            "product_context": {"product_category": "sunscreen", "brand": "Briwell"},
+            "dry_run": True,
+            "persist_result": True,
+        },
+    )
+    assert duplicate_screen_response.status_code == 200
+    duplicate_screen_body = duplicate_screen_response.json()
+    assert duplicate_screen_body["persisted_screen_result"]["id"] == first_screen_result_id
+    assert duplicate_screen_body["persisted_screen_result"]["duplicate_policy"] == "reused_identical_result"
 
     screen_result = {
         "post_count_analyzed": 20,

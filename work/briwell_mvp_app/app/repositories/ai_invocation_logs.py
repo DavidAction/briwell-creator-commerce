@@ -44,6 +44,37 @@ def list_invocation_logs(
     return fetch_all(query, params)
 
 
+def live_usage_summary(
+    target_entity_type: str | None = None,
+    target_entity_id: str | None = None,
+) -> dict[str, Any]:
+    params: dict[str, Any] = {}
+    filters = [
+        "created_at >= date_trunc('day', now())",
+        "status = 'success'",
+        "COALESCE(cost_usd, 0) > 0",
+    ]
+    if target_entity_type:
+        filters.append("target_entity_type = %(target_entity_type)s")
+        params["target_entity_type"] = target_entity_type
+    if target_entity_id:
+        filters.append("target_entity_id = %(target_entity_id)s")
+        params["target_entity_id"] = target_entity_id
+
+    query = f"""
+        SELECT
+          COUNT(*)::INTEGER AS call_count,
+          COALESCE(SUM(cost_usd), 0)::FLOAT AS cost_usd
+        FROM ai_invocation_log
+        WHERE {' AND '.join(filters)}
+    """
+    row = fetch_one(query, params) or {}
+    return {
+        "call_count": int(row.get("call_count") or 0),
+        "cost_usd": float(row.get("cost_usd") or 0),
+    }
+
+
 def create_invocation_log(payload: dict[str, Any]) -> dict[str, Any]:
     query = """
         INSERT INTO ai_invocation_log (

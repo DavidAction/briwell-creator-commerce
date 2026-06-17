@@ -69,6 +69,7 @@ assert(files.html.includes("postCsvInput"), "missing recent posts CSV upload inp
 assert(files.html.includes("downloadPostTemplateButton"), "missing recent posts template download");
 assert(files.html.includes("manualPostsInput"), "missing manual recent posts input");
 assert(files.html.includes("recentScreenMode"), "missing recent screen AI mode selector");
+assert(files.html.includes("recentScreenModeHint"), "missing recent screen live-readiness hint");
 assert(files.html.includes("Live Gemini Analysis"), "missing live Gemini screening option");
 assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts screen action");
 assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
@@ -91,6 +92,7 @@ assert(files.css.includes(".operations-pipeline"), "operations pipeline styling 
 assert(files.css.includes(".quality-gate"), "import quality gate styling missing");
 assert(files.css.includes(".quality-summary"), "quality summary styling missing");
 assert(files.css.includes(".validation-report"), "upload validation report styling missing");
+assert(files.css.includes(".field-hint"), "field hint styling missing");
 assert(files.css.includes(".screening-grid"), "recent posts screening layout missing");
 assert(files.css.includes(".decision-pass"), "screening decision styling missing");
 assert(files.css.includes(".audit-card"), "coverage audit card styling missing");
@@ -115,6 +117,8 @@ assert(files.app.includes("parseCsvWithMeta"), "CSV parser metadata report missi
 assert(files.app.includes("parseCsv"), "CSV parser missing");
 assert(files.app.includes("runRecentScreenForCreator"), "recent posts screen workflow missing");
 assert(files.app.includes("allow_live_provider_calls"), "live Gemini request flag missing");
+assert(files.app.includes("updateRecentScreenModeAvailability"), "live Gemini mode availability control missing");
+assert(files.app.includes("live_gemini_unavailable"), "live Gemini unavailable guard missing");
 assert(files.app.includes("persist_result"), "recent screen persistence flag missing");
 assert(files.app.includes("live_gemini_screened"), "live Gemini result status missing");
 assert(files.app.includes("coverageAudit"), "coverage audit state missing");

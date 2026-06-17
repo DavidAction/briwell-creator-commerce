@@ -1,0 +1,70 @@
+[
+  {
+    "case_id": "mx_sunscreen_strong_pass",
+    "expected_decision": "pass_to_full_analysis",
+    "min_score": 75,
+    "creator": {"creator_id": "golden-mx-pass", "username": "luzspf", "country": "MX", "platform": "tiktok"},
+    "product_context": {"product_category": "sunscreen", "brand": "Briwell"},
+    "post_template": {
+      "caption": "Rutina skincare con protector solar coreano SPF y link de compra.",
+      "transcript": "Textura ligera, acabado natural y review honesta de protector solar coreano.",
+      "hashtags": ["skincare", "kbeauty", "protectorsolar"],
+      "view_count": 18000,
+      "like_count": 1200,
+      "comment_count": 90,
+      "share_count": 20
+    },
+    "post_count": 20
+  },
+  {
+    "case_id": "pe_incomplete_human_review",
+    "expected_decision": "human_review",
+    "required_gap": "recent_posts_below_20",
+    "creator": {"creator_id": "golden-pe-incomplete", "username": "pielreview", "country": "PE", "platform": "instagram"},
+    "product_context": {"product_category": "calming_serum", "brand": "Briwell"},
+    "post_template": {
+      "caption": "Serum coreano para barrera de la piel sensible.",
+      "transcript": "Rutina de noche con serum calmante y textura ligera.",
+      "hashtags": ["skincare", "kbeauty", "serum"],
+      "view_count": 9000,
+      "like_count": 640,
+      "comment_count": 38,
+      "share_count": 8
+    },
+    "post_count": 8
+  },
+  {
+    "case_id": "ec_lifestyle_recheck",
+    "expected_decision": "recheck_later",
+    "max_score": 55,
+    "creator": {"creator_id": "golden-ec-recheck", "username": "rutinafit", "country": "EC", "platform": "tiktok"},
+    "product_context": {"product_category": "cleanser", "brand": "Briwell"},
+    "post_template": {
+      "caption": "Comida, ejercicio y vlog del dia.",
+      "transcript": "Contenido de lifestyle y fitness sin productos cosmeticos.",
+      "hashtags": ["vlog", "fitness", "lifestyle"],
+      "view_count": 7000,
+      "like_count": 350,
+      "comment_count": 20,
+      "share_count": 4
+    },
+    "post_count": 20
+  },
+  {
+    "case_id": "mx_claim_risk_review",
+    "expected_decision": "human_review",
+    "required_risk_note": "dermatitis",
+    "creator": {"creator_id": "golden-mx-risk", "username": "pielclaims", "country": "MX", "platform": "tiktok"},
+    "product_context": {"product_category": "calming_serum", "brand": "Briwell"},
+    "post_template": {
+      "caption": "Serum coreano que cura dermatitis y da resultado garantizado.",
+      "transcript": "Claim de tratamiento no permitido para campana cosmetica.",
+      "hashtags": ["skincare", "serum", "kbeauty"],
+      "view_count": 15000,
+      "like_count": 900,
+      "comment_count": 70,
+      "share_count": 15
+    },
+    "post_count": 20
+  }
+]
