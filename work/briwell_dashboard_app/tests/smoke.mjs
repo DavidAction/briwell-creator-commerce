@@ -53,6 +53,8 @@ assert(files.html.includes("creatorCsvInput"), "missing creator CSV upload input
 assert(files.html.includes("postCsvInput"), "missing recent posts CSV upload input");
 assert(files.html.includes("manualPostsInput"), "missing manual recent posts input");
 assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts screen action");
+assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
+assert(files.html.includes("importQualityGate"), "missing import quality gate mount");
 assert(files.html.includes("coverageAudit"), "missing coverage audit mount");
 assert(files.html.includes("talentRadar"), "missing talent radar mount");
 assert(files.html.includes("ops-strip"), "missing operations status strip");
@@ -65,6 +67,8 @@ assert(files.css.includes(".creator-cover"), "creator cover styling missing");
 assert(files.css.includes(".profile-avatar"), "profile avatar styling missing");
 assert(files.css.includes(".command-board"), "command board styling missing");
 assert(files.css.includes(".operator-actions"), "operator action styling missing");
+assert(files.css.includes(".quality-gate"), "import quality gate styling missing");
+assert(files.css.includes(".quality-summary"), "quality summary styling missing");
 assert(files.css.includes(".screening-grid"), "recent posts screening layout missing");
 assert(files.css.includes(".decision-pass"), "screening decision styling missing");
 assert(files.css.includes(".audit-card"), "coverage audit card styling missing");
@@ -76,6 +80,9 @@ assert(files.app.includes("selectedCreatorId"), "selected creator state missing"
 assert(files.app.includes("renderCommandMetrics"), "command metric renderer missing");
 assert(files.app.includes("renderCommerceCommand"), "commerce command renderer missing");
 assert(files.app.includes("renderOperatorActions"), "operator actions renderer missing");
+assert(files.app.includes("evaluateImportQuality"), "import quality evaluator missing");
+assert(files.app.includes("validateCreatorDataset"), "creator quality validation missing");
+assert(files.app.includes("validateRecentPostDataset"), "recent post quality validation missing");
 assert(files.app.includes("parseCsv"), "CSV parser missing");
 assert(files.app.includes("runRecentScreenForCreator"), "recent posts screen workflow missing");
 assert(files.app.includes("coverageAudit"), "coverage audit state missing");

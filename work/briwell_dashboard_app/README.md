@@ -65,13 +65,14 @@ Authorization: Bearer <supabase-jwt>
 6. Discovery coverage audit and recall safeguards
 7. Creator CSV import preview and `/creators/import` handoff
 8. Recent 20 posts CSV/manual intake and `/videos/import` handoff
-9. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
-10. Campaign draft creation
-11. Campaign outreach draft preparation
-12. DM claims check and human approval gate
-13. Manual send status recording
-14. Performance snapshot capture
-15. Settlement contract capture
+9. Import quality gate for required fields, duplicate risk, market coverage, and recent-post readiness
+10. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
+11. Campaign draft creation
+12. Campaign outreach draft preparation
+13. DM claims check and human approval gate
+14. Manual send status recording
+15. Performance snapshot capture
+16. Settlement contract capture
 
 ## Executive Overview Standard
 

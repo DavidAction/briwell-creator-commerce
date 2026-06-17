@@ -8,6 +8,7 @@ const state = {
   activeCountry: "ALL",
   selectedCreatorId: "creator-1",
   intakeCreators: [],
+  importQuality: null,
   recentPostsByCreator: {
     "creator-1": buildSeedPosts("creator-1", "sunscreen", 20),
     "creator-2": buildSeedPosts("creator-2", "calming_serum", 16),
@@ -236,6 +237,7 @@ function renderAll() {
   renderCreatorImportPreview();
   renderPostCreatorSelect();
   renderPostImportTable();
+  renderImportQualityGate();
   renderRecentScreenResult(state.selectedCreatorId);
   renderCoverageAudit();
 }
@@ -391,6 +393,141 @@ function buildCommandMetrics() {
   };
 }
 
+function evaluateImportQuality() {
+  const creatorCandidates = state.intakeCreators.length ? state.intakeCreators : state.creators;
+  const creatorIssues = validateCreatorDataset(creatorCandidates);
+  const postIssues = validateRecentPostDataset(creatorCandidates);
+  const blockerCount = creatorIssues.blockers.length + postIssues.blockers.length;
+  const warningCount = creatorIssues.warnings.length + postIssues.warnings.length;
+  let overallStatus = "ready";
+  if (blockerCount > 0) {
+    overallStatus = "blocked";
+  } else if (warningCount > 0) {
+    overallStatus = "needs_review";
+  }
+  return {
+    overall_status: overallStatus,
+    summary: buildQualitySummary(overallStatus, blockerCount, warningCount),
+    creator: creatorIssues,
+    posts: postIssues,
+  };
+}
+
+function validateCreatorDataset(creators) {
+  const blockers = [];
+  const warnings = [];
+  const seenUsernames = new Set();
+  const seenProfiles = new Set();
+  const marketCoverage = [];
+  const invalidCreatorIds = new Set();
+
+  creators.forEach((creator, index) => {
+    const rowLabel = creator.username ? `@${creator.username}` : `row ${index + 1}`;
+    const creatorKey = creator.creator_id || creator.username || `row-${index}`;
+    if (!creator.username) {
+      blockers.push(`${rowLabel}: username required`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (!creator.profile_url) {
+      blockers.push(`${rowLabel}: profile_url required`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (!["MX", "PE", "EC"].includes(creator.country)) {
+      blockers.push(`${rowLabel}: country must be MX, PE, or EC`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (!["low", "low_medium", "medium"].includes(normalizeRisk(creator.source_risk_level))) {
+      blockers.push(`${rowLabel}: source_risk_level must be low, low_medium, or medium`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (!creator.follower_count) warnings.push(`${rowLabel}: follower_count missing`);
+    if (!creator.avg_views) warnings.push(`${rowLabel}: avg_views missing`);
+    if (!creator.profile_image_url || creator.profile_image_url.includes("creator-luz.svg")) {
+      warnings.push(`${rowLabel}: profile image should be replaced with channel-provided asset`);
+    }
+
+    const usernameKey = String(creator.username || "").toLowerCase();
+    const profileKey = String(creator.profile_url || "").toLowerCase();
+    if (usernameKey && seenUsernames.has(usernameKey)) {
+      blockers.push(`${rowLabel}: duplicate username`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (profileKey && seenProfiles.has(profileKey)) {
+      blockers.push(`${rowLabel}: duplicate profile_url`);
+      invalidCreatorIds.add(creatorKey);
+    }
+    if (usernameKey) seenUsernames.add(usernameKey);
+    if (profileKey) seenProfiles.add(profileKey);
+  });
+
+  ["MX", "PE", "EC"].forEach((country) => {
+    if (creators.some((creator) => creator.country === country)) {
+      marketCoverage.push(country);
+    } else {
+      warnings.push(`${country}: no creator candidate loaded`);
+    }
+  });
+
+  return {
+    total: creators.length,
+    valid: Math.max(0, creators.length - invalidCreatorIds.size),
+    market_coverage: marketCoverage,
+    blockers: unique(blockers),
+    warnings: unique(warnings),
+    readiness: creators.map((creator) => {
+      const postCount = loadedRecentPostsCount(creator);
+      return {
+        username: creator.username || creator.creator_id || "creator",
+        post_count: postCount,
+        status: postCount >= 20 ? "Ready" : postCount > 0 ? "Needs more posts" : "No recent posts",
+      };
+    }),
+  };
+}
+
+function validateRecentPostDataset(creators) {
+  const blockers = [];
+  const warnings = [];
+  let loaded = 0;
+  const required = Math.max(0, creators.length * 20);
+
+  creators.forEach((creator) => {
+    const posts = state.recentPostsByCreator[creator.creator_id] || [];
+    loaded += Math.min(20, posts.length);
+    if (posts.length === 0) {
+      blockers.push(`@${creator.username}: recent 20 posts missing`);
+      return;
+    }
+    if (posts.length < 20) {
+      blockers.push(`@${creator.username}: ${posts.length}/20 recent posts loaded`);
+    }
+    const duplicateUrls = findDuplicates(posts.map((post) => post.url).filter(Boolean));
+    duplicateUrls.forEach((url) => blockers.push(`@${creator.username}: duplicate post URL ${url}`));
+    const missingUrls = posts.filter((post) => !post.url).length;
+    const missingCaptions = posts.filter((post) => !post.caption).length;
+    const missingMetrics = posts.filter((post) => !post.view_count && !post.like_count && !post.comment_count).length;
+    const missingTranscripts = posts.filter((post) => !post.transcript).length;
+    if (missingUrls) blockers.push(`@${creator.username}: ${missingUrls} posts missing URL`);
+    if (missingCaptions) warnings.push(`@${creator.username}: ${missingCaptions} posts missing captions`);
+    if (missingMetrics) warnings.push(`@${creator.username}: ${missingMetrics} posts missing public metrics`);
+    if (missingTranscripts) warnings.push(`@${creator.username}: ${missingTranscripts} posts missing transcripts`);
+  });
+
+  return {
+    loaded,
+    required,
+    coverage_percent: required ? Math.round((loaded / required) * 100) : 0,
+    blockers: unique(blockers),
+    warnings: unique(warnings),
+  };
+}
+
+function buildQualitySummary(status, blockers, warnings) {
+  if (status === "blocked") return `${blockers} blockers must be fixed before import or screening.`;
+  if (status === "needs_review") return `${warnings} warnings need operator review before outreach.`;
+  return "Ready for import, screening, and operator review.";
+}
+
 function loadedRecentPostsCount(creator) {
   return Math.min(20, (state.recentPostsByCreator[creator.creator_id] || []).length);
 }
@@ -409,6 +546,33 @@ function isOutreachReady(creator) {
 
 function stageColor(index) {
   return ["#2457c5", "#0e7490", "#047857", "#6d28d9", "#b45309", "#667085"][index] || "#2457c5";
+}
+
+function qualityStatusClass(status) {
+  if (status === "ready") return "quality-ready";
+  if (status === "needs_review") return "quality-review";
+  return "quality-blocked";
+}
+
+function formatQualityStatus(status) {
+  const labels = {
+    ready: "Ready",
+    needs_review: "Needs Review",
+    blocked: "Blocked",
+  };
+  return labels[status] || status;
+}
+
+function findDuplicates(values) {
+  const seen = new Set();
+  const duplicates = new Set();
+  values.forEach((value) => {
+    const key = String(value || "").trim().toLowerCase();
+    if (!key) return;
+    if (seen.has(key)) duplicates.add(value);
+    seen.add(key);
+  });
+  return Array.from(duplicates);
 }
 
 function renderTalentRadar() {
@@ -654,6 +818,68 @@ function renderPostImportTable() {
       .join("") || emptyRow(4, "최근 게시물 데이터 없음");
 }
 
+function renderImportQualityGate() {
+  const gate = byId("importQualityGate");
+  if (!gate) return;
+  const quality = evaluateImportQuality();
+  state.importQuality = quality;
+  gate.innerHTML = `
+    <div class="quality-summary">
+      <article class="${escapeHtml(qualityStatusClass(quality.overall_status))}">
+        <span>Overall Status</span>
+        <strong>${escapeHtml(formatQualityStatus(quality.overall_status))}</strong>
+        <small>${escapeHtml(quality.summary)}</small>
+      </article>
+      <article>
+        <span>Creator Data</span>
+        <strong>${escapeHtml(String(quality.creator.total))}</strong>
+        <small>${escapeHtml(quality.creator.valid)} valid · ${escapeHtml(quality.creator.blockers.length)} blockers</small>
+      </article>
+      <article>
+        <span>Recent Posts</span>
+        <strong>${escapeHtml(String(quality.posts.loaded))}/${escapeHtml(String(quality.posts.required))}</strong>
+        <small>${escapeHtml(quality.posts.coverage_percent)}% coverage · ${escapeHtml(quality.posts.blockers.length)} blockers</small>
+      </article>
+      <article>
+        <span>Market Coverage</span>
+        <strong>${escapeHtml(quality.creator.market_coverage.join(" · ") || "None")}</strong>
+        <small>MX, PE, EC launch cluster</small>
+      </article>
+    </div>
+    <div class="quality-columns">
+      ${renderQualityColumn("Creator Blockers", quality.creator.blockers, "red")}
+      ${renderQualityColumn("Creator Warnings", quality.creator.warnings, "amber")}
+      ${renderQualityColumn("Post Blockers", quality.posts.blockers, "red")}
+      ${renderQualityColumn("Post Warnings", quality.posts.warnings, "amber")}
+    </div>
+    <div class="quality-readiness">
+      ${quality.creator.readiness
+        .map(
+          (item) => `
+        <div>
+          <span>@${escapeHtml(item.username)}</span>
+          <strong>${escapeHtml(String(item.post_count))}/20</strong>
+          <small>${escapeHtml(item.status)}</small>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderQualityColumn(title, items, tone) {
+  const rendered = items.length
+    ? items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+    : `<li class="quality-empty">Clear</li>`;
+  return `
+    <section class="quality-column ${escapeHtml(tone)}">
+      <h3>${escapeHtml(title)}</h3>
+      <ul>${rendered}</ul>
+    </section>
+  `;
+}
+
 function renderRecentScreenResult(creatorId) {
   const result = state.recentScreenResults[creatorId];
   const creator = state.creators.find((item) => item.creator_id === creatorId);
@@ -734,6 +960,7 @@ async function loadCreatorCsv() {
     const text = await readFileInput("creatorCsvInput");
     state.intakeCreators = parseCsv(text).map(normalizeCsvCreator);
     renderCreatorImportPreview();
+    renderImportQualityGate();
     showResult("creatorImportResult", {
       status: "preview_ready",
       preview_count: state.intakeCreators.length,
@@ -777,6 +1004,7 @@ async function loadPostCsv() {
     const posts = parseCsv(text).map((row, index) => normalizeCsvPost(row, creatorId, index));
     state.recentPostsByCreator[creatorId] = posts.slice(0, 20);
     renderPostImportTable();
+    renderImportQualityGate();
     renderRecentScreenResult(creatorId);
     showResult("postImportResult", {
       status: "preview_ready",
@@ -796,6 +1024,7 @@ function loadManualPosts() {
     const posts = rows.map((row, index) => normalizeCsvPost(row, creatorId, index));
     state.recentPostsByCreator[creatorId] = posts.slice(0, 20);
     renderPostImportTable();
+    renderImportQualityGate();
     renderRecentScreenResult(creatorId);
     showResult("postImportResult", {
       status: "manual_preview_ready",
