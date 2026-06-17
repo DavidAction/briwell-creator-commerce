@@ -46,7 +46,8 @@ def test_tiktok_provider_dry_run_returns_recent_20_payloads() -> None:
     assert result.creator_import_payload["source_type"] == "approved_provider"
     assert result.quality_gates["recent_20_coverage"]["ready_creators"] == 2
     assert result.provider_request_preview is not None
-    assert "search" in result.provider_request_preview["input"]
+    assert "searchQueries" in result.provider_request_preview["input"]
+    assert result.provider_request_preview["input"]["searchSection"] == "/video"
 
 
 def test_tiktok_provider_live_blocks_without_allow_flag() -> None:

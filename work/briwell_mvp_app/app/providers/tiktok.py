@@ -279,17 +279,19 @@ def _apify_input(
         "proxyCountryCode": "None",
         "resultsPerPage": results_per_page,
         "scrapeRelatedVideos": False,
-        "search": searches,
+        "searchQueries": searches,
         "shouldDownloadAvatars": False,
         "shouldDownloadCovers": False,
         "shouldDownloadMusicCovers": False,
         "shouldDownloadSlideshowImages": False,
-        "shouldDownloadSubtitles": True,
+        "downloadSubtitlesOptions": "DOWNLOAD_SUBTITLES",
         "shouldDownloadVideos": False,
         "profileScrapeSections": ["videos"] if include_recent_posts else [],
         "profileSorting": "latest",
-        "searchSection": "",
+        "searchSection": "/video",
         "maxProfilesPerQuery": max_profiles_per_query,
+        "videoSearchSorting": "MOST_RELEVANT",
+        "videoSearchDateFilter": "LAST_6_MONTHS",
     }
 
 
@@ -837,4 +839,3 @@ def _to_int(value: Any) -> int | None:
         return int(float(value))
     except (TypeError, ValueError):
         return None
-

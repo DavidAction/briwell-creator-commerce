@@ -133,9 +133,9 @@ def test_gemini_live_recent_posts_uses_structured_output_schema(monkeypatch) -> 
                 ]
             }
 
-    def fake_post(url, params, json, timeout):
+    def fake_post(url, headers, json, timeout):
         captured["url"] = url
-        captured["params"] = params
+        captured["headers"] = headers
         captured["payload"] = json
         captured["timeout"] = timeout
         return FakeResponse()
@@ -174,6 +174,7 @@ def test_gemini_live_recent_posts_uses_structured_output_schema(monkeypatch) -> 
     assert result.output["suitability_decision"] == "pass_to_full_analysis"
     generation_config = captured["payload"]["generationConfig"]
     schema = generation_config["responseFormat"]["text"]["schema"]
-    assert generation_config["responseFormat"]["text"]["mimeType"] == "application/json"
+    assert generation_config["responseFormat"]["text"]["mimeType"] == "APPLICATION_JSON"
+    assert captured["headers"] == {"x-goog-api-key": "fake-key"}
     assert "suitability_decision" in schema["properties"]
     assert "decision_policy" in captured["payload"]["contents"][0]["parts"][0]["text"]

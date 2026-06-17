@@ -397,6 +397,10 @@ ALLOW_LIVE_TIKTOK_PROVIDER_CALLS=true
 TIKTOK_PROVIDER_DAILY_RESULT_LIMIT=2000
 ```
 
+The backend loads `work/briwell_mvp_app/.env` automatically for local
+development. Keep real provider keys in `.env` or the deployment secret manager
+only. Do not commit live secrets to GitHub.
+
 Live provider calls return normalized `creator_import_payload` and
 `video_import_payloads`. Set `persist_imports=true` only after a small smoke
 run passes. In DB mode, persisted creators enter `creator`, recent post
@@ -437,6 +441,7 @@ Current AI rules:
 4. Live Gemini calls require both `GEMINI_API_KEY` and `ALLOW_LIVE_PROVIDER_CALLS=true`.
 5. Dry-run output is deterministic and exists for API contract testing only.
 6. Recent-20 screening uses Gemini structured output with the `RecentPostsScreenOutput` schema when live calls are enabled.
+7. The Gemini REST adapter sends the key through the `x-goog-api-key` header so provider errors do not include the key in query-string logs.
 
 Environment flags:
 

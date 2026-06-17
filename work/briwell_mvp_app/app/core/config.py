@@ -1,5 +1,13 @@
 from dataclasses import dataclass
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+
+ROOT = Path(__file__).resolve().parents[2]
+if os.getenv("BRIWELL_SKIP_DOTENV", "").strip().lower() not in {"1", "true", "yes"}:
+    load_dotenv(ROOT / ".env", override=False)
 
 
 @dataclass(frozen=True)

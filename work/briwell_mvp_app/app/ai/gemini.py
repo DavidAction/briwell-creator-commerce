@@ -89,7 +89,7 @@ class GeminiTextAdapter(AIAdapter):
         }
         response = httpx.post(
             url,
-            params={"key": self.api_key},
+            headers={"x-goog-api-key": self.api_key},
             json=payload,
             timeout=self.timeout_seconds,
         )
@@ -104,11 +104,11 @@ class GeminiTextAdapter(AIAdapter):
     def _generation_config(self, request: AnalysisRequest) -> dict[str, Any]:
         schema_model = ANALYSIS_OUTPUT_SCHEMAS.get(request.task_type)
         if schema_model is None:
-            return {"responseMimeType": "application/json"}
+            return {"responseFormat": {"text": {"mimeType": "APPLICATION_JSON"}}}
         return {
             "responseFormat": {
                 "text": {
-                    "mimeType": "application/json",
+                    "mimeType": "APPLICATION_JSON",
                     "schema": _schema_for_gemini(schema_model.model_json_schema()),
                 }
             }
