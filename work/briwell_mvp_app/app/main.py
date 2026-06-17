@@ -16,6 +16,7 @@ from app.routers import (
     health,
     keywords,
     ops,
+    operations,
     outreach,
     performance,
     products,
@@ -73,3 +74,4 @@ app.include_router(performance.router)
 app.include_router(products.router)
 app.include_router(settlements.router)
 app.include_router(ops.router)
+app.include_router(operations.router)

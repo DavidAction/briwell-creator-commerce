@@ -87,6 +87,20 @@
     saveContract: (body) => request("/settlements/contracts", { method: "POST", body }),
     runRecentPostsScreen: (body) =>
       request("/analysis-jobs/run-recent-posts-screen", { method: "POST", body }),
+    saveImportQualityLog: (body) =>
+      request("/operations/import-quality-logs", { method: "POST", body }),
+    enrichCreators: (body) =>
+      request("/operations/creator-enrichment", { method: "POST", body }),
+    applyRecentPostsResults: (body) =>
+      request("/operations/recent-posts/apply", { method: "POST", body }),
+    matchCampaignCandidates: (body) =>
+      request("/operations/campaign-match", { method: "POST", body }),
+    createOutreachPlan: (body) =>
+      request("/operations/outreach-plan", { method: "POST", body }),
+    buildOutreachCrmBoard: (body) =>
+      request("/operations/outreach-crm/board", { method: "POST", body }),
+    createPerformanceRollup: (body) =>
+      request("/operations/performance-rollup", { method: "POST", body }),
   };
 
   function toQuery(params) {

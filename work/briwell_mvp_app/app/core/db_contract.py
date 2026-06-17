@@ -16,6 +16,10 @@ REQUIRED_TABLES = {
     "creator_contract",
     "creator_payout",
     "compliance_rule",
+    "import_quality_log",
+    "creator_profile_enrichment",
+    "recent_posts_screen_result",
+    "outreach_crm_event",
 }
 
 REQUIRED_ENUMS = {

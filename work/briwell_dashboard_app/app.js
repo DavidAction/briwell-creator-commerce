@@ -9,6 +9,7 @@ const state = {
   selectedCreatorId: "creator-1",
   intakeCreators: [],
   importQuality: null,
+  operationsPipeline: null,
   recentPostsByCreator: {
     "creator-1": buildSeedPosts("creator-1", "sunscreen", 20),
     "creator-2": buildSeedPosts("creator-2", "calming_serum", 16),
@@ -170,6 +171,7 @@ function bindActions() {
   byId("manualSendButton").addEventListener("click", recordManualSend);
   byId("saveSnapshotButton").addEventListener("click", saveSnapshot);
   byId("saveContractButton").addEventListener("click", saveContract);
+  byId("runOperationsPipelineButton").addEventListener("click", runOperationsPipeline);
 
   byId("loadCreatorCsvButton").addEventListener("click", loadCreatorCsv);
   byId("importCreatorsButton").addEventListener("click", importCreators);
@@ -229,6 +231,7 @@ function renderAll() {
   renderCommandMetrics();
   renderCommerceCommand();
   renderOperatorActions();
+  renderOperationsPipelineSummary();
   renderTalentRadar();
   renderPriorityTable();
   renderReviewQueue();
@@ -354,6 +357,31 @@ function renderOperatorActions() {
         <strong>${escapeHtml(action.title)}</strong>
         <p>${escapeHtml(action.detail)}</p>
         <small>${escapeHtml(action.next)}</small>
+      </article>
+    `
+    )
+    .join("");
+}
+
+function renderOperationsPipelineSummary() {
+  const target = byId("operationsPipelineSummary");
+  if (!target) return;
+  const pipeline = state.operationsPipeline;
+  const steps = [
+    ["Import Log", pipeline?.importQuality?.status || "Ready"],
+    ["Enrichment", pipeline?.enrichment?.status || "Pending"],
+    ["Recent 20 Apply", pipeline?.recentApply?.status || "Pending"],
+    ["Campaign Match", pipeline?.match?.summary?.matched_count ?? "Pending"],
+    ["Outreach Plan", pipeline?.outreachPlan?.items?.length ?? "Pending"],
+    ["CRM Board", pipeline?.crm?.board?.total ?? "Pending"],
+    ["Performance", pipeline?.performance?.rollup?.summary?.revenue_usd ?? "Pending"],
+  ];
+  target.innerHTML = steps
+    .map(
+      ([label, value], index) => `
+      <article class="pipeline-step" style="--stage-color:${escapeHtml(stageColor(index))}">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(formatPipelineValue(label, value))}</strong>
       </article>
     `
     )
@@ -561,6 +589,31 @@ function formatQualityStatus(status) {
     blocked: "Blocked",
   };
   return labels[status] || status;
+}
+
+function canPersistOperationCreators(creators) {
+  return creators.every((creator) => looksLikeUuid(creator.creator_id));
+}
+
+function looksLikeUuid(value) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(value || "")
+  );
+}
+
+function countBy(items, key) {
+  return items.reduce((counts, item) => {
+    const value = String(item[key] || "unknown");
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function formatPipelineValue(label, value) {
+  if (label === "Performance" && typeof value === "number") {
+    return formatCurrencyCompact(value);
+  }
+  return String(value);
 }
 
 function findDuplicates(values) {
@@ -1102,6 +1155,131 @@ async function runRecentScreenForCreator(creatorId) {
   showToast(`@${creator.username} recent 20 posts screened`);
 }
 
+async function runOperationsPipeline() {
+  const creators = state.creators.map(toOperationCreator);
+  const recentPostsByCreator = operationRecentPostsByCreator();
+  const screenResults = ensureOperationScreenResults();
+  const qualityGate = evaluateImportQuality();
+  const campaignProduct = byId("campaignProduct")?.value || "sunscreen";
+  const campaignCountry = byId("campaignCountry")?.value || "MX";
+  const persistEntityResults = canPersistOperationCreators(creators);
+
+  const importQuality = await callOperationStep(
+    () =>
+      window.BriwellApi.saveImportQualityLog({
+        dataset_type: "mixed",
+        upload_name: "dashboard_current_pool",
+        source_type: "manual",
+        source_risk_level: "low",
+        creator_candidates: creators,
+        recent_posts_by_creator: recentPostsByCreator,
+        quality_gate: qualityGate,
+      }),
+    {
+      status: "logged",
+      persistence_status: "local_fallback",
+      quality_gate: qualityGate,
+      next_action: qualityGate.overall_status === "ready" ? "run_creator_enrichment" : "operator_review",
+    }
+  );
+
+  const enrichment = await callOperationStep(
+    () =>
+      window.BriwellApi.enrichCreators({
+        source_risk_level: "low",
+        creators,
+        persist_result: persistEntityResults,
+      }),
+    {
+      status: "enriched",
+      persistence_status: "local_fallback",
+      items: creators.map(localEnrichmentFromCreator),
+      summary: {
+        ready: creators.length,
+        needs_review: 0,
+        blocked: 0,
+      },
+    }
+  );
+
+  const recentApply = await callOperationStep(
+    () =>
+      window.BriwellApi.applyRecentPostsResults({
+        source_risk_level: "low",
+        items: creators.map((creator) => ({
+          creator_id: creator.creator_id,
+          creator_snapshot: creator,
+          screen_result: screenResults[creator.creator_id],
+        })),
+        persist_result: persistEntityResults,
+      }),
+    localRecentApply(creators, screenResults)
+  );
+
+  const match = await callOperationStep(
+    () =>
+      window.BriwellApi.matchCampaignCandidates({
+        campaign_id: byId("campaignName")?.value || "campaign-1",
+        country: campaignCountry,
+        product_category: campaignProduct,
+        campaign_goal: byId("campaignGoal")?.value || "",
+        candidates: creators,
+        recent_screen_results: screenResults,
+        min_score: 70,
+        max_risk_penalty: 12,
+        limit: 20,
+      }),
+    localCampaignMatch(creators, screenResults, campaignProduct, campaignCountry)
+  );
+
+  const matchedItems = match.items || [];
+  const outreachPlan = await callOperationStep(
+    () =>
+      window.BriwellApi.createOutreachPlan({
+        campaign_id: "campaign-1",
+        product_category: campaignProduct,
+        product_name: "Briwell Daily Sun",
+        dm_variant: "product_review",
+        candidates: matchedItems,
+        persist_result: false,
+      }),
+    localOutreachPlan(matchedItems, campaignProduct)
+  );
+
+  const crm = await callOperationStep(
+    () =>
+      window.BriwellApi.buildOutreachCrmBoard({
+        campaign_id: "campaign-1",
+        outreach_items: outreachPlan.items || [],
+        persist_event: false,
+      }),
+    localCrmBoard(outreachPlan.items || [])
+  );
+
+  const performance = await callOperationStep(
+    () =>
+      window.BriwellApi.createPerformanceRollup({
+        campaign_id: "campaign-1",
+        spend_usd: Number(byId("campaignBudget")?.value || 0),
+        snapshots: buildOperationPerformanceSnapshots(matchedItems),
+      }),
+    localPerformanceRollup(matchedItems)
+  );
+
+  state.operationsPipeline = {
+    importQuality,
+    enrichment,
+    recentApply,
+    match,
+    outreachPlan,
+    crm,
+    performance,
+  };
+  renderOperationsPipelineSummary();
+  showResult("operationsEngineResult", state.operationsPipeline);
+  showToast("Operations pipeline completed");
+}
+
 async function saveCampaign() {
   const payload = {
     name: byId("campaignName").value.trim(),
@@ -1531,6 +1709,268 @@ function mockRecentPostsScreen(creator, posts) {
     next_step: nextStep,
     missing_data: coverageGaps,
     confidence: postCount >= 20 && !coverageGaps.length ? 0.78 : 0.58,
+  };
+}
+
+async function callOperationStep(remoteCall, fallback) {
+  try {
+    return await remoteCall();
+  } catch (_error) {
+    return fallback;
+  }
+}
+
+function toOperationCreator(creator) {
+  return {
+    creator_id: creator.creator_id,
+    country: creator.country,
+    username: creator.username,
+    display_name: creator.display_name,
+    profile_url: creator.profile_url || `https://example.com/@${creator.username}`,
+    source_risk_level: sourceRiskForCreator(creator.creator_id),
+    bio: creator.bio || creator.recommended_campaign_angle || "",
+    language: "es",
+    platform: creator.platform || "tiktok",
+    follower_count: toNumber(creator.follower_count),
+    avg_views: toNumber(creator.avg_views),
+    engagement_rate: toNumber(creator.engagement_rate),
+    contact_email: creator.contact_email || null,
+    instagram_url: creator.instagram_url || null,
+    status: creator.status || "active",
+    final_score: toNumber(creator.final_score),
+    risk_penalty: toNumber(creator.risk_penalty),
+    segment: creator.segment || "review_creator",
+    signals: creator.signals || [],
+    recommended_products: creator.recommended_products || [],
+    recommended_campaign_angle: creator.recommended_campaign_angle || "",
+  };
+}
+
+function operationRecentPostsByCreator() {
+  return Object.fromEntries(
+    state.creators.map((creator) => [
+      creator.creator_id,
+      (state.recentPostsByCreator[creator.creator_id] || []).slice(0, 20).map(toRecentPostSnapshot),
+    ])
+  );
+}
+
+function ensureOperationScreenResults() {
+  const results = {};
+  state.creators.forEach((creator) => {
+    const existing = state.recentScreenResults[creator.creator_id];
+    if (existing) {
+      results[creator.creator_id] = existing;
+      return;
+    }
+    const posts = (state.recentPostsByCreator[creator.creator_id] || []).slice(0, 20);
+    results[creator.creator_id] = posts.length
+      ? mockRecentPostsScreen(creator, posts)
+      : buildNoPostsScreenResult();
+    state.recentScreenResults[creator.creator_id] = results[creator.creator_id];
+  });
+  return results;
+}
+
+function localEnrichmentFromCreator(creator) {
+  return {
+    creator_id: creator.creator_id,
+    username: creator.username,
+    display_name: creator.display_name || creator.username,
+    primary_country: creator.country,
+    country_confidence: 0.85,
+    language: creator.language || "es",
+    platforms: [creator.platform || "tiktok"],
+    contact_channels: [creator.platform || "profile"],
+    normalized_categories: creator.recommended_products || [],
+    commerce_readiness: creator.avg_views >= 10000 ? "audience_ready" : "needs_validation",
+    duplicate_key: `${creator.platform || "tiktok"}:${creator.username}`,
+    missing_data: creator.profile_url ? [] : ["profile_url"],
+    enrichment_status: creator.profile_url ? "ready" : "needs_review",
+    next_action: "run_recent_20_screen",
+  };
+}
+
+function localRecentApply(creators, screenResults) {
+  const items = creators.map((creator) => {
+    const result = screenResults[creator.creator_id] || buildNoPostsScreenResult();
+    const decision = result.suitability_decision || "human_review";
+    const queue =
+      decision === "pass_to_full_analysis"
+        ? "full_analysis_queue"
+        : decision === "avoid"
+          ? "avoid_queue"
+          : decision === "recheck_later"
+            ? "recheck_later_queue"
+            : "human_review_queue";
+    return {
+      creator_id: creator.creator_id,
+      username: creator.username,
+      suitability_decision: decision,
+      suitability_score: result.suitability_score || 0,
+      queue,
+      next_action: queue === "full_analysis_queue" ? "run_profile_comment_multimodal_analysis" : "operator_review",
+      matched_product_categories: result.matched_product_categories || [],
+      coverage_gaps: result.coverage_gaps || [],
+      risk_notes: result.risk_notes || [],
+      post_count_analyzed: result.post_count_analyzed || 0,
+    };
+  });
+  return {
+    status: "applied",
+    persistence_status: "local_fallback",
+    items,
+    queue_counts: countBy(items, "queue"),
+  };
+}
+
+function localCampaignMatch(creators, screenResults, productCategory, country) {
+  const items = creators
+    .filter((creator) => creator.country === country)
+    .map((creator) => {
+      const screen = screenResults[creator.creator_id] || {};
+      const productMatch =
+        (creator.recommended_products || []).includes(productCategory) ||
+        (screen.matched_product_categories || []).includes(productCategory);
+      const matchScore = Math.max(
+        0,
+        Math.min(
+          100,
+          Math.round(
+            Number(creator.final_score || 0) * 0.55 +
+              Number(screen.suitability_score || 0) * 0.25 +
+              (productMatch ? 12 : -6) -
+              Number(creator.risk_penalty || 0) * 0.8
+          )
+        )
+      );
+      return {
+        ...creator,
+        campaign_product_category: productCategory,
+        product_match: productMatch,
+        recent_posts_decision: screen.suitability_decision,
+        recent_posts_score: screen.suitability_score || 0,
+        match_score: matchScore,
+        priority_label: matchScore >= 85 && Number(creator.risk_penalty || 0) <= 5 ? "priority_outreach" : "outreach_candidate",
+        match_reasons: productMatch ? [`matched_product:${productCategory}`, "recent_20_signal"] : ["minimum_filter_match"],
+      };
+    })
+    .filter((item) => item.match_score >= 70)
+    .sort((left, right) => right.match_score - left.match_score)
+    .map((item, index) => ({ ...item, rank: index + 1 }));
+  return {
+    status: "matched",
+    items,
+    summary: {
+      matched_count: items.length,
+      priority_outreach: items.filter((item) => item.priority_label === "priority_outreach").length,
+      human_review: items.filter((item) => item.priority_label === "human_review").length,
+    },
+  };
+}
+
+function localOutreachPlan(matchedItems, productCategory) {
+  const items = matchedItems.map((candidate) => ({
+    creator_id: candidate.creator_id,
+    username: candidate.username,
+    rank: candidate.rank,
+    priority_label: candidate.priority_label,
+    dm_variant: "product_review",
+    dm_message: `Hola ${candidate.display_name || candidate.username}, equipo Briwell. Tu contenido de skincare encaja con una colaboracion K-Beauty para ${formatProductCategory(productCategory)}.`,
+    offer_terms: {
+      fee_usd: candidate.follower_count >= 50000 ? 220 : 140,
+      sample_product: true,
+      deliverables: ["1 short-form video", "story/link placement if available"],
+      usage_rights_days: 30,
+      tracking: { coupon_code_required: true, tracking_url_required: true },
+    },
+    claims_check_status: "needs_review",
+    crm_status: "dm_drafted",
+    manual_send_required: true,
+    next_action: "run_claims_check_then_operator_approval",
+  }));
+  return {
+    status: "planned",
+    persistence_status: "local_fallback",
+    items,
+    send_policy: {
+      auto_send_enabled: false,
+      required_before_send: ["claims_check_passed", "human_approval", "manual_send_confirmed"],
+    },
+  };
+}
+
+function localCrmBoard(outreachItems) {
+  return {
+    status: "ok",
+    persistence_status: "local_fallback",
+    board: {
+      total: outreachItems.length,
+      counts: countBy(outreachItems, "crm_status"),
+      stages: ["dm_drafted", "approved", "dm_sent", "replied", "accepted"].map((status) => ({
+        status,
+        count: outreachItems.filter((item) => item.crm_status === status).length,
+        items: outreachItems.filter((item) => item.crm_status === status),
+      })),
+      next_actions: outreachItems.length
+        ? ["Run claims check and human approval for drafted DMs."]
+        : ["Prepare outreach drafts for matched candidates."],
+      manual_send_policy: {
+        auto_send_enabled: false,
+        required_before_send: ["claims_check_passed", "human_approval", "manual_send_confirmed"],
+      },
+    },
+  };
+}
+
+function buildOperationPerformanceSnapshots(matchedItems) {
+  const fallbackViews = Number(byId("snapshotViews")?.value || 0);
+  const fallbackRevenue = Number(byId("snapshotRevenue")?.value || 0);
+  return (matchedItems.length ? matchedItems : state.creators.slice(0, 1)).map((item, index) => ({
+    campaign_id: "campaign-1",
+    creator_id: item.creator_id,
+    post_url: byId("snapshotPostUrl")?.value || `https://example.com/post/${index + 1}`,
+    tracking_url: `https://briwell.example/track/${item.creator_id}`,
+    coupon_code: byId("snapshotCoupon")?.value || `BRI-${item.country || "MX"}-${index + 1}`,
+    view_count: fallbackViews || item.avg_views || 0,
+    like_count: Math.round((fallbackViews || item.avg_views || 0) * 0.06),
+    comment_count: Math.round((fallbackViews || item.avg_views || 0) * 0.005),
+    share_count: Math.round((fallbackViews || item.avg_views || 0) * 0.002),
+    click_count: Math.round((fallbackViews || item.avg_views || 0) * 0.018),
+    conversion_count: Math.round((fallbackViews || item.avg_views || 0) * 0.001),
+    revenue_usd: fallbackRevenue || Math.round((item.match_score || item.final_score || 0) * 4),
+  }));
+}
+
+function localPerformanceRollup(matchedItems) {
+  const snapshots = buildOperationPerformanceSnapshots(matchedItems);
+  const spend = Number(byId("campaignBudget")?.value || 0);
+  const summary = {
+    snapshot_count: snapshots.length,
+    view_count: snapshots.reduce((sum, item) => sum + item.view_count, 0),
+    like_count: snapshots.reduce((sum, item) => sum + item.like_count, 0),
+    comment_count: snapshots.reduce((sum, item) => sum + item.comment_count, 0),
+    share_count: snapshots.reduce((sum, item) => sum + item.share_count, 0),
+    click_count: snapshots.reduce((sum, item) => sum + item.click_count, 0),
+    conversion_count: snapshots.reduce((sum, item) => sum + item.conversion_count, 0),
+    revenue_usd: snapshots.reduce((sum, item) => sum + item.revenue_usd, 0),
+  };
+  summary.engagement_count = summary.like_count + summary.comment_count + summary.share_count;
+  summary.roas = spend ? Number((summary.revenue_usd / spend).toFixed(2)) : null;
+  return {
+    status: "ok",
+    rollup: {
+      summary,
+      creator_leaderboard: snapshots
+        .map((item) => ({
+          creator_id: item.creator_id,
+          view_count: item.view_count,
+          conversion_count: item.conversion_count,
+          revenue_usd: item.revenue_usd,
+        }))
+        .sort((left, right) => right.revenue_usd - left.revenue_usd),
+      next_actions: ["Use creator leaderboard to expand budget toward top performers."],
+    },
   };
 }
 

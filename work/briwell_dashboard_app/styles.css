@@ -553,6 +553,49 @@ textarea:focus {
   gap: 9px;
 }
 
+.operations-pipeline {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pipeline-step {
+  min-height: 78px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pipeline-step::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: var(--stage-color, var(--blue));
+}
+
+.pipeline-step span,
+.pipeline-step strong {
+  display: block;
+}
+
+.pipeline-step span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.pipeline-step strong {
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
 .action-card {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1752,6 +1795,7 @@ tbody tr.row-selected {
   .metric-grid,
   .form-grid,
   .command-summary,
+  .operations-pipeline,
   .quality-summary,
   .quality-columns,
   .quality-readiness,
@@ -1794,6 +1838,7 @@ tbody tr.row-selected {
   .metric-grid,
   .form-grid,
   .command-summary,
+  .operations-pipeline,
   .quality-summary,
   .quality-columns,
   .quality-readiness,

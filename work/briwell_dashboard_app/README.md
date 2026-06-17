@@ -66,13 +66,14 @@ Authorization: Bearer <supabase-jwt>
 7. Creator CSV import preview and `/creators/import` handoff
 8. Recent 20 posts CSV/manual intake and `/videos/import` handoff
 9. Import quality gate for required fields, duplicate risk, market coverage, and recent-post readiness
-10. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
-11. Campaign draft creation
-12. Campaign outreach draft preparation
-13. DM claims check and human approval gate
-14. Manual send status recording
-15. Performance snapshot capture
-16. Settlement contract capture
+10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
+11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen`
+12. Campaign draft creation
+13. Campaign outreach draft preparation
+14. DM claims check and human approval gate
+15. Manual send status recording
+16. Performance snapshot capture
+17. Settlement contract capture
 
 ## Executive Overview Standard
 

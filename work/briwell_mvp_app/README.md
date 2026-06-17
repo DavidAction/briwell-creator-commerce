@@ -252,11 +252,27 @@ python scripts/validate_csv_imports.py
 37. `POST /compliance/country-claims-check`
 38. `GET /ops/readiness`
 39. `GET /ops/security-policy`
+40. `POST /operations/import-quality-logs`
+41. `POST /operations/creator-enrichment`
+42. `POST /operations/recent-posts/apply`
+43. `POST /operations/campaign-match`
+44. `POST /operations/outreach-plan`
+45. `POST /operations/outreach-crm/board`
+46. `POST /operations/performance-rollup`
 
 The initial routers are scaffolded with policy validation, placeholder responses
 when DB mode is disabled, and repository-backed persistence when
 `USE_DATABASE=true`. Database-backed implementation should follow
 `outputs/briwell_api_spec_v0.md`.
+
+## Operations Orchestration Layer
+
+`/operations/*` connects the MVP workflow across import QA, profile enrichment,
+recent-post screening, campaign matching, outreach planning, CRM board state,
+and performance rollup. In local mode these endpoints validate and calculate
+the workflow without persistence. In DB mode they persist import quality logs,
+creator enrichment results, recent-post screen results, and CRM events through
+the `004_operations_orchestration_schema.sql` migration.
 
 ## Auth Headers
 

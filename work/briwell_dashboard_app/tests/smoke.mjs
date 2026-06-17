@@ -31,6 +31,13 @@ const requiredEndpoints = [
   "/creators/import",
   "/videos/import",
   "/analysis-jobs/run-recent-posts-screen",
+  "/operations/import-quality-logs",
+  "/operations/creator-enrichment",
+  "/operations/recent-posts/apply",
+  "/operations/campaign-match",
+  "/operations/outreach-plan",
+  "/operations/outreach-crm/board",
+  "/operations/performance-rollup",
   "/campaigns",
   "/outreach/claims-check",
   "/outreach/status-transition",
@@ -48,6 +55,8 @@ assert(files.html.includes("Pipeline GMV Forecast"), "missing commerce forecast 
 assert(files.html.includes("Recent-20 Coverage"), "missing recent 20 coverage metric");
 assert(files.html.includes("Commerce Command Board"), "missing commerce command board");
 assert(files.html.includes("Operator Next Actions"), "missing operator action queue");
+assert(files.html.includes("Growth Operations Engine"), "missing operations engine");
+assert(files.html.includes("runOperationsPipelineButton"), "missing operations pipeline action");
 assert(files.html.includes("Creator Portfolio Leaders"), "missing visual portfolio leaders");
 assert(files.html.includes("creatorCsvInput"), "missing creator CSV upload input");
 assert(files.html.includes("postCsvInput"), "missing recent posts CSV upload input");
@@ -60,6 +69,7 @@ assert(files.html.includes("talentRadar"), "missing talent radar mount");
 assert(files.html.includes("ops-strip"), "missing operations status strip");
 assert(files.html.includes("metricPipelineGmv"), "missing pipeline GMV metric mount");
 assert(files.html.includes("operatorActions"), "missing operator actions mount");
+assert(files.html.includes("operationsPipelineSummary"), "missing operations pipeline summary mount");
 assert(files.html.includes("toast"), "missing toast feedback mount");
 assert(files.css.includes("Pretendard Variable"), "Pretendard Variable font missing");
 assert(files.css.includes("--sidebar: #0b1220"), "global navy theme token missing");
@@ -67,6 +77,7 @@ assert(files.css.includes(".creator-cover"), "creator cover styling missing");
 assert(files.css.includes(".profile-avatar"), "profile avatar styling missing");
 assert(files.css.includes(".command-board"), "command board styling missing");
 assert(files.css.includes(".operator-actions"), "operator action styling missing");
+assert(files.css.includes(".operations-pipeline"), "operations pipeline styling missing");
 assert(files.css.includes(".quality-gate"), "import quality gate styling missing");
 assert(files.css.includes(".quality-summary"), "quality summary styling missing");
 assert(files.css.includes(".screening-grid"), "recent posts screening layout missing");
@@ -80,6 +91,9 @@ assert(files.app.includes("selectedCreatorId"), "selected creator state missing"
 assert(files.app.includes("renderCommandMetrics"), "command metric renderer missing");
 assert(files.app.includes("renderCommerceCommand"), "commerce command renderer missing");
 assert(files.app.includes("renderOperatorActions"), "operator actions renderer missing");
+assert(files.app.includes("runOperationsPipeline"), "operations pipeline runner missing");
+assert(files.app.includes("saveImportQualityLog"), "import quality operations API missing");
+assert(files.app.includes("matchCampaignCandidates"), "campaign match operations API missing");
 assert(files.app.includes("evaluateImportQuality"), "import quality evaluator missing");
 assert(files.app.includes("validateCreatorDataset"), "creator quality validation missing");
 assert(files.app.includes("validateRecentPostDataset"), "recent post quality validation missing");
