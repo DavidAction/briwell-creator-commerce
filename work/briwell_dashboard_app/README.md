@@ -68,7 +68,7 @@ Authorization: Bearer <supabase-jwt>
 7. Downloadable creator candidate CSV template and `/creators/import` handoff
 8. Downloadable recent 20 posts CSV template, manual intake, and `/videos/import` handoff
 9. Upload validation report for column contract, source governance, recent-post readiness, and DB E2E gate
-10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
+10. Growth Operations Engine for acquisition orchestration, import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
 11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen` with Dry Run Preview or Live Gemini Analysis mode
 12. Live Gemini mode is enabled only when `/ai/provider-status` reports `live_ready=true`
 13. TikTok Provider Acquisition via `/providers/tiktok/keyword-playbook` and `/providers/tiktok/discovery-runs`

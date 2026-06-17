@@ -43,6 +43,7 @@ const requiredEndpoints = [
   "/operations/outreach-plan",
   "/operations/outreach-crm/board",
   "/operations/performance-rollup",
+  "/operations/acquisition-orchestration",
   "/campaigns",
   "/outreach/claims-check",
   "/outreach/status-transition",
@@ -112,12 +113,14 @@ assert(files.app.includes("renderCommandMetrics"), "command metric renderer miss
 assert(files.app.includes("renderCommerceCommand"), "commerce command renderer missing");
 assert(files.app.includes("renderOperatorActions"), "operator actions renderer missing");
 assert(files.app.includes("runOperationsPipeline"), "operations pipeline runner missing");
+assert(files.app.includes("runAcquisitionOrchestration"), "operations pipeline should call acquisition orchestration");
 assert(files.app.includes("runTiktokProviderDiscovery"), "TikTok provider discovery runner missing");
 assert(files.app.includes("latam_kbeauty_20s_30s"), "K-beauty keyword strategy missing");
 assert(files.app.includes("api_status"), "operations pipeline must expose live/local status");
 assert(files.app.includes("summarizeApiError"), "operations pipeline fallback should preserve API error context");
 assert(files.app.includes("saveImportQualityLog"), "import quality operations API missing");
 assert(files.app.includes("matchCampaignCandidates"), "campaign match operations API missing");
+assert(files.client.includes("runAcquisitionOrchestration"), "acquisition orchestration API missing");
 assert(files.app.includes("evaluateImportQuality"), "import quality evaluator missing");
 assert(files.app.includes("validateCreatorDataset"), "creator quality validation missing");
 assert(files.app.includes("validateRecentPostDataset"), "recent post quality validation missing");

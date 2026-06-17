@@ -106,6 +106,8 @@
       request("/operations/outreach-crm/board", { method: "POST", body }),
     createPerformanceRollup: (body) =>
       request("/operations/performance-rollup", { method: "POST", body }),
+    runAcquisitionOrchestration: (body) =>
+      request("/operations/acquisition-orchestration", { method: "POST", body }),
   };
 
   function toQuery(params) {

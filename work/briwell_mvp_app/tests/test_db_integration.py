@@ -444,3 +444,85 @@ def test_db_talent_intake_upload_quality_and_recent20_e2e(monkeypatch: pytest.Mo
     apply_body = apply_response.json()
     assert apply_body["persistence_status"] == "persisted"
     assert apply_body["queue_counts"]["full_analysis_queue"] == 1
+
+
+def test_db_acquisition_orchestration_persists_import_and_screen(monkeypatch: pytest.MonkeyPatch) -> None:
+    from fastapi.testclient import TestClient
+
+    from app.core import db as db_module
+    from app.main import app
+
+    monkeypatch.setattr(
+        db_module,
+        "settings",
+        SimpleNamespace(
+            use_database=True,
+            database_url=os.environ["DATABASE_URL"],
+        ),
+    )
+
+    client = TestClient(app)
+    suffix = str(int(time.time() * 1000))
+    username = f"db_orchestrated_creator_{suffix}"
+    recent_posts = [
+        {
+            "platform_video_id": f"{username}-recent-{index}",
+            "url": f"https://www.tiktok.com/@{username}/video/{7900000000000000000 + index}",
+            "caption": "Rutina skincare con protector solar coreano SPF y link de compra.",
+            "transcript": "Protector solar coreano de textura ligera para rutina diaria.",
+            "hashtags": ["skincare", "kbeauty", "protectorsolar"],
+            "view_count": 18000 + index,
+            "like_count": 1200 + index,
+            "comment_count": 80 + index,
+            "share_count": 20 + index,
+        }
+        for index in range(1, 21)
+    ]
+
+    response = client.post(
+        "/operations/acquisition-orchestration",
+        headers={"X-User-Role": "admin", "X-User-Email": "db-e2e@briwell.test"},
+        json={
+            "source_type": "manual",
+            "source_risk_level": "low",
+            "product_category": "sunscreen",
+            "product_name": "Briwell Daily Sun",
+            "country": "MX",
+            "creator_candidates": [
+                {
+                    "creator_id": username,
+                    "country": "MX",
+                    "username": username,
+                    "profile_url": f"https://www.tiktok.com/@{username}",
+                    "source_risk_level": "low",
+                    "display_name": "DB Orchestrated Creator",
+                    "bio": "K-beauty SPF reviews with link-in-bio shopping context.",
+                    "follower_count": 64000,
+                    "avg_views": 21000,
+                    "engagement_rate": 6.1,
+                    "final_score": 91,
+                    "risk_penalty": 2,
+                    "segment": "review_creator",
+                    "recommended_products": ["sunscreen"],
+                }
+            ],
+            "recent_posts_by_creator": {username: recent_posts},
+            "persist_imports": True,
+            "recent_screen_dry_run": True,
+            "persist_recent_screen_results": True,
+            "run_campaign_match": True,
+            "build_outreach_plan": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["import"]["persistence_status"] == "persisted"
+    assert body["import"]["creator_count"] == 1
+    assert body["import"]["video_count"] == 20
+    assert body["enrichment"]["persistence_status"] == "persisted"
+    assert body["recent_20_batch"]["screened_count"] == 1
+    assert body["recent_20_batch"]["queue_counts"]["full_analysis_queue"] == 1
+    assert body["campaign_match"]["summary"]["matched_count"] == 1
+    assert body["settlement"]["payout_policy"]["no_payment_without_deliverable"] is True

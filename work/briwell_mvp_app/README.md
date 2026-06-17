@@ -263,6 +263,7 @@ python scripts/validate_csv_imports.py
 47. `GET /providers/tiktok/status`
 48. `GET /providers/tiktok/keyword-playbook`
 49. `POST /providers/tiktok/discovery-runs`
+50. `POST /operations/acquisition-orchestration`
 
 The initial routers are scaffolded with policy validation, placeholder responses
 when DB mode is disabled, and repository-backed persistence when
@@ -277,6 +278,15 @@ and performance rollup. In local mode these endpoints validate and calculate
 the workflow without persistence. In DB mode they persist import quality logs,
 creator enrichment results, recent-post screen results, and CRM events through
 the `004_operations_orchestration_schema.sql` migration.
+
+`POST /operations/acquisition-orchestration` is the offline-ready operator
+runner for steps 2-12 while paid TikTok provider benchmarking is paused. It
+accepts creator candidates and recent posts, evaluates import quality, imports
+approved data when DB persistence is enabled, runs dry-run recent-20 screening,
+plans profile/comment/multimodal/final-review queues, ranks campaign matches,
+builds DM outreach plans, checks claims/country compliance, rolls up performance
+snapshots, and returns settlement, production-readiness, and handoff sections.
+See `docs/offline_operations_2_12.md`.
 
 Import QA defaults to the MX/PE/EC launch cluster, but requests can pass
 `expected_countries` to validate a single-market or partial-market upload

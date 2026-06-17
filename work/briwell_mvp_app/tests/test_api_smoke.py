@@ -1335,3 +1335,89 @@ def test_creator_analysis_list_placeholder_without_database() -> None:
     response = client.get("/creators/creator-1/analysis")
     assert response.status_code == 200
     assert response.json()["items"] == []
+
+
+def test_acquisition_orchestration_runs_offline_operations_flow() -> None:
+    recent_posts = [
+        {
+            "platform_video_id": f"orchestration-post-{index}",
+            "url": f"https://www.tiktok.com/@luzskincare/video/79000000000000000{index:02d}",
+            "caption": "Rutina skincare con protector solar coreano SPF y link de compra.",
+            "transcript": "Protector solar coreano de textura ligera para uso diario.",
+            "hashtags": ["skincare", "kbeauty", "protectorsolar"],
+            "view_count": 18000 + index,
+            "like_count": 1200 + index,
+            "comment_count": 80 + index,
+            "share_count": 20 + index,
+        }
+        for index in range(1, 21)
+    ]
+    response = client.post(
+        "/operations/acquisition-orchestration",
+        headers={"X-User-Role": "operator", "X-User-Email": "ops@briwell.test"},
+        json={
+            "source_type": "manual",
+            "source_risk_level": "low",
+            "product_category": "sunscreen",
+            "product_name": "Briwell Daily Sun",
+            "country": "MX",
+            "campaign_goal": "SPF review pilot",
+            "creator_candidates": [
+                {
+                    "creator_id": "creator-local-1",
+                    "country": "MX",
+                    "username": "luzskincare",
+                    "profile_url": "https://www.tiktok.com/@luzskincare",
+                    "source_risk_level": "low",
+                    "display_name": "Luz Skincare",
+                    "bio": "K-beauty skincare reviews with SPF routines and shopping links.",
+                    "follower_count": 64000,
+                    "avg_views": 21000,
+                    "engagement_rate": 6.1,
+                    "final_score": 88,
+                    "risk_penalty": 3,
+                    "segment": "review_creator",
+                    "recommended_products": ["sunscreen"],
+                }
+            ],
+            "recent_posts_by_creator": {"creator-local-1": recent_posts},
+            "persist_imports": False,
+            "recent_screen_dry_run": True,
+            "persist_recent_screen_results": False,
+            "run_campaign_match": True,
+            "build_outreach_plan": True,
+            "spend_usd": 150,
+            "performance_snapshots": [
+                {
+                    "creator_id": "creator-local-1",
+                    "view_count": 10000,
+                    "like_count": 700,
+                    "comment_count": 60,
+                    "share_count": 30,
+                    "click_count": 180,
+                    "conversion_count": 12,
+                    "revenue_usd": 360,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "ok"
+    assert body["import"]["persistence_status"] == "validated_not_persisted"
+    assert body["recent_20_batch"]["screened_count"] == 1
+    assert body["recent_20_batch"]["queue_counts"]["full_analysis_queue"] == 1
+    assert body["analysis_pipeline"]["items"][0]["tasks"] == [
+        "profile_analysis",
+        "comment_analysis",
+        "multimodal_analysis",
+        "creator_score_handoff",
+        "final_review",
+    ]
+    assert body["campaign_match"]["summary"]["matched_count"] == 1
+    assert body["outreach_plan"]["send_policy"]["auto_send_enabled"] is False
+    assert body["compliance"]["policy"]["auto_send_enabled"] is False
+    assert body["performance"]["summary"]["roas"] == 2.4
+    assert body["settlement"]["payout_policy"]["invoice_required_before_approval"] is True
+    assert body["handoff_package"]["status"] == "ready"

@@ -410,6 +410,7 @@ function renderOperationsPipelineSummary() {
   if (!target) return;
   const pipeline = state.operationsPipeline;
   const steps = [
+    ["Acquisition", pipeline?.acquisition?.status || "Ready"],
     ["Import Log", pipeline?.importQuality?.status || "Ready"],
     ["Enrichment", pipeline?.enrichment?.status || "Pending"],
     ["Recent 20 Apply", pipeline?.recentApply?.status || "Pending"],
@@ -1540,6 +1541,39 @@ async function runOperationsPipeline() {
   const campaignCountry = byId("campaignCountry")?.value || "MX";
   const persistEntityResults = canPersistOperationCreators(creators);
 
+  const acquisition = await callOperationStep(
+    () =>
+      window.BriwellApi.runAcquisitionOrchestration({
+        source_type: "manual",
+        source_risk_level: "low",
+        product_category: campaignProduct,
+        product_name: "Briwell Daily Sun",
+        country: campaignCountry,
+        campaign_id: byId("campaignName")?.value || "campaign-1",
+        campaign_goal: byId("campaignGoal")?.value || "",
+        upload_name: "dashboard_current_pool",
+        creator_candidates: creators,
+        recent_posts_by_creator: recentPostsByCreator,
+        persist_imports: persistEntityResults,
+        run_recent_20_screen: true,
+        recent_screen_dry_run: true,
+        persist_recent_screen_results: persistEntityResults,
+        run_campaign_match: true,
+        build_outreach_plan: true,
+        dm_variant: "product_review",
+        min_score: 70,
+        max_risk_penalty: 12,
+        spend_usd: Number(byId("campaignBudget")?.value || 0),
+        performance_snapshots: buildOperationPerformanceSnapshots(creators),
+      }),
+    {
+      status: "local_preview",
+      mode: "offline_ready_no_paid_provider_benchmark",
+      quality_gate: qualityGate,
+      next_actions: ["API offline; local pipeline steps continue below."],
+    }
+  );
+
   const importQuality = await callOperationStep(
     () =>
       window.BriwellApi.saveImportQualityLog({
@@ -1643,6 +1677,7 @@ async function runOperationsPipeline() {
   );
 
   state.operationsPipeline = {
+    acquisition,
     importQuality,
     enrichment,
     recentApply,
