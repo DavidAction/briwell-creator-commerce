@@ -331,13 +331,14 @@ Rules currently enforced:
 
 1. Requires `admin`, `operator`, or `campaign_manager`.
 2. Discovery plans use keyword seeds for Mexico, Peru, and Ecuador.
-3. Allowed collection paths are `manual`, `official_api`, `approved_provider`, and `creator_provided`.
+3. Allowed collection paths are allowlisted as `manual`, `official_api`, `approved_provider`, and `creator_provided`.
 4. Unauthorized scraping paths such as `browser_automation`, `captcha_bypass`, and `public_page_scrape` are listed as blocked.
-5. Plans produce tasks only; they do not crawl TikTok, bypass login, or send messages.
-6. Candidate profiles collected from the plan should enter the system through `POST /creators/import`.
-7. Discovery plans include `coverage_audit` and `recall_safeguards` so operators can identify false-negative risk before concluding that a country/product lacks good creators.
-8. Keyword selection is balanced across discovery, concern, format, and commerce intents when the keyword budget allows.
-9. Do not apply hard follower-count cutoffs in the discovery stage; first screen content fit and audience intent.
+5. Unknown or unapproved source-type labels are rejected even when they are not explicitly in the blocked list.
+6. Plans produce tasks only; they do not crawl TikTok, bypass login, or send messages.
+7. Candidate profiles collected from the plan should enter the system through `POST /creators/import`.
+8. Discovery plans include `coverage_audit` and `recall_safeguards` so operators can identify false-negative risk before concluding that a country/product lacks good creators.
+9. Keyword selection is balanced across discovery, concern, format, and commerce intents when the keyword budget allows.
+10. Do not apply hard follower-count cutoffs in the discovery stage; first screen content fit and audience intent.
 
 `GET /discovery/source-policy` returns the allowed and blocked source-type policy
 for UI and operator education.

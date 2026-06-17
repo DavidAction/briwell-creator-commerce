@@ -1,9 +1,9 @@
 const state = {
   apiOnline: false,
   systemReadiness: {
-    api: "Mock",
+    api: "Preview",
     readiness: "Local",
-    note: "Local dashboard fallback",
+    note: "API offline; using local preview dataset",
   },
   activeCountry: "ALL",
   selectedCreatorId: "creator-1",
@@ -16,15 +16,15 @@ const state = {
     "creator-3": buildSeedPosts("creator-3", "cleanser", 12),
   },
   recentScreenResults: {},
-  coverageAudit: buildMockCoverageAudit(["MX", "PE", "EC"], "sunscreen", 4),
-  recallSafeguards: buildMockRecallSafeguards(),
+  coverageAudit: buildPreviewCoverageAudit(["MX", "PE", "EC"], "sunscreen", 4),
+  recallSafeguards: buildPreviewRecallSafeguards(),
   creators: [
     {
       creator_id: "creator-1",
       username: "luzskincare",
       display_name: "Luz Skincare",
       country: "MX",
-      profile_url: "https://example.com/@luzskincare",
+      profile_url: "https://www.tiktok.com/@luzskincare",
       profile_image_url: "./assets/creator-luz.svg",
       channel_image_url: "./assets/channel-luz.svg",
       follower_count: 48200,
@@ -45,7 +45,7 @@ const state = {
       username: "pielconandrea",
       display_name: "Andrea Piel",
       country: "PE",
-      profile_url: "https://example.com/@pielconandrea",
+      profile_url: "https://www.instagram.com/pielconandrea",
       profile_image_url: "./assets/creator-andrea.svg",
       channel_image_url: "./assets/channel-andrea.svg",
       follower_count: 32800,
@@ -66,7 +66,7 @@ const state = {
       username: "rutina.ec",
       display_name: "Rutina EC",
       country: "EC",
-      profile_url: "https://example.com/@rutina.ec",
+      profile_url: "https://www.tiktok.com/@rutina.ec",
       profile_image_url: "./assets/creator-rutina.svg",
       channel_image_url: "./assets/channel-rutina.svg",
       follower_count: 21400,
@@ -215,11 +215,11 @@ async function refreshFromApi() {
     }
   } catch (_error) {
     state.apiOnline = false;
-    setApiStatus("offline", "Mock Mode");
+    setApiStatus("offline", "Preview Mode");
     state.systemReadiness = {
-      api: "Mock",
+      api: "Preview",
       readiness: "Local",
-      note: "Local dashboard fallback",
+      note: "API offline; using local preview dataset",
     };
     renderSourcePolicy(null);
     renderAiProvider(null);
@@ -986,7 +986,7 @@ async function runDiscoveryPlan() {
   const product = byId("discoveryProduct").value;
   const platform = byId("discoveryPlatform").value;
   const limit = Number(byId("discoveryLimit").value || 4);
-  const fallback = buildMockDiscoveryRows(countries, product, platform, limit);
+  const previewRows = buildPreviewDiscoveryRows(countries, product, platform, limit);
 
   try {
     const payload = await window.BriwellApi.createDiscoveryPlan({
@@ -996,14 +996,14 @@ async function runDiscoveryPlan() {
       max_keywords_per_country_category: limit,
       include_coverage_audit: true,
     });
-    renderDiscoveryRows(payload.items || fallback);
-    state.coverageAudit = payload.coverage_audit || buildMockCoverageAudit(countries, product, limit);
-    state.recallSafeguards = payload.recall_safeguards || buildMockRecallSafeguards();
+    renderDiscoveryRows(payload.items || previewRows);
+    state.coverageAudit = payload.coverage_audit || buildPreviewCoverageAudit(countries, product, limit);
+    state.recallSafeguards = payload.recall_safeguards || buildPreviewRecallSafeguards();
     renderCoverageAudit();
   } catch (_error) {
-    renderDiscoveryRows(fallback);
-    state.coverageAudit = buildMockCoverageAudit(countries, product, limit);
-    state.recallSafeguards = buildMockRecallSafeguards();
+    renderDiscoveryRows(previewRows);
+    state.coverageAudit = buildPreviewCoverageAudit(countries, product, limit);
+    state.recallSafeguards = buildPreviewRecallSafeguards();
     renderCoverageAudit();
   }
 }
@@ -1044,7 +1044,7 @@ async function importCreators() {
     showResult("creatorImportResult", response);
   } catch (error) {
     state.creators = mergeCreators(state.creators, state.intakeCreators);
-    showResult("creatorImportResult", error.payload || { status: "mock_imported", accepted: state.intakeCreators.length });
+    showResult("creatorImportResult", error.payload || { status: "local_preview_imported", accepted: state.intakeCreators.length });
   }
   renderAll();
   showToast("Creator import workflow completed");
@@ -1105,7 +1105,7 @@ async function importVideos() {
   try {
     showResult("postImportResult", await window.BriwellApi.importVideos(payload));
   } catch (error) {
-    showResult("postImportResult", error.payload || { status: "mock_imported", creator_id: creatorId, accepted: posts.length });
+    showResult("postImportResult", error.payload || { status: "local_preview_imported", creator_id: creatorId, accepted: posts.length });
   }
   showToast(`${posts.length} recent posts linked to candidate`);
 }
@@ -1140,15 +1140,15 @@ async function runRecentScreenForCreator(creatorId) {
 
   try {
     const response = await window.BriwellApi.runRecentPostsScreen(payload);
-    const output = extractRecentScreenOutput(response) || mockRecentPostsScreen(creator, posts);
+    const output = extractRecentScreenOutput(response) || previewRecentPostsScreen(creator, posts);
     state.recentScreenResults[creatorId] = output;
     applyScreenResultToCreator(creatorId, output);
     showResult("postImportResult", { status: "screened", creator_id: creatorId, output });
   } catch (error) {
-    const output = extractRecentScreenOutput(error.payload) || mockRecentPostsScreen(creator, posts);
+    const output = extractRecentScreenOutput(error.payload) || previewRecentPostsScreen(creator, posts);
     state.recentScreenResults[creatorId] = output;
     applyScreenResultToCreator(creatorId, output);
-    showResult("postImportResult", error.payload || { status: "mock_screened", creator_id: creatorId, output });
+    showResult("postImportResult", error.payload || { status: "local_preview_screened", creator_id: creatorId, output });
   }
   renderAll();
   document.querySelector('[data-view="intake"]').click();
@@ -1177,7 +1177,7 @@ async function runOperationsPipeline() {
       }),
     {
       status: "logged",
-      persistence_status: "local_fallback",
+      persistence_status: "local_preview",
       quality_gate: qualityGate,
       next_action: qualityGate.overall_status === "ready" ? "run_creator_enrichment" : "operator_review",
     }
@@ -1192,7 +1192,7 @@ async function runOperationsPipeline() {
       }),
     {
       status: "enriched",
-      persistence_status: "local_fallback",
+      persistence_status: "local_preview",
       items: creators.map(localEnrichmentFromCreator),
       summary: {
         ready: creators.length,
@@ -1293,7 +1293,7 @@ async function saveCampaign() {
   try {
     showResult("campaignSaveResult", await window.BriwellApi.createCampaign(payload));
   } catch (error) {
-    showResult("campaignSaveResult", error.payload || { status: "mock_saved", campaign: payload });
+    showResult("campaignSaveResult", error.payload || { status: "local_preview_saved", campaign: payload });
   }
 }
 
@@ -1308,7 +1308,7 @@ async function prepareDrafts() {
   try {
     showResult("draftResult", await window.BriwellApi.prepareOutreachDrafts("campaign-1", payload));
   } catch (error) {
-    showResult("draftResult", error.payload || { status: "mock_prepared", prepared_count: selected.length });
+    showResult("draftResult", error.payload || { status: "local_preview_prepared", prepared_count: selected.length });
   }
 }
 
@@ -1320,7 +1320,7 @@ async function runClaimsCheck() {
   try {
     showResult("claimsResult", await window.BriwellApi.runClaimsCheck(payload));
   } catch (error) {
-    showResult("claimsResult", error.payload || { status: "mock_passed", safe_to_send: true });
+    showResult("claimsResult", error.payload || { status: "local_preview_passed", safe_to_send: true });
   }
 }
 
@@ -1336,7 +1336,7 @@ async function recordManualSend() {
   try {
     showResult("manualSendResult", await window.BriwellApi.recordStatusTransition(payload));
   } catch (error) {
-    showResult("manualSendResult", error.payload || { status: "mock_recorded", next_status: "dm_sent" });
+    showResult("manualSendResult", error.payload || { status: "local_preview_recorded", next_status: "dm_sent" });
   }
 }
 
@@ -1354,7 +1354,7 @@ async function saveSnapshot() {
   try {
     showResult("snapshotResult", await window.BriwellApi.savePerformanceSnapshot(payload));
   } catch (error) {
-    showResult("snapshotResult", error.payload || { status: "mock_saved", snapshot: payload });
+    showResult("snapshotResult", error.payload || { status: "local_preview_saved", snapshot: payload });
   }
 }
 
@@ -1368,11 +1368,11 @@ async function saveContract() {
   try {
     showResult("contractResult", await window.BriwellApi.saveContract(payload));
   } catch (error) {
-    showResult("contractResult", error.payload || { status: "mock_saved", contract: payload });
+    showResult("contractResult", error.payload || { status: "local_preview_saved", contract: payload });
   }
 }
 
-function buildMockDiscoveryRows(countries, product, platform, limit) {
+function buildPreviewDiscoveryRows(countries, product, platform, limit) {
   const keywords = {
     MX: ["protectorsolar", "skincaremexico", "kbeautymexico", "rutinafacial"],
     PE: ["kbeautyperu", "protectorperu", "pielperu", "skincareperu"],
@@ -1389,7 +1389,7 @@ function buildMockDiscoveryRows(countries, product, platform, limit) {
   );
 }
 
-function buildMockCoverageAudit(countries, product, limit) {
+function buildPreviewCoverageAudit(countries, product, limit) {
   const intents = ["discovery", "concern", "format", "commerce"];
   const selected = intents.slice(0, Math.max(1, Math.min(limit, intents.length)));
   const missing = intents.filter((intent) => !selected.includes(intent));
@@ -1409,7 +1409,7 @@ function buildMockCoverageAudit(countries, product, limit) {
   }));
 }
 
-function buildMockRecallSafeguards() {
+function buildPreviewRecallSafeguards() {
   return [
     "하드 팔로워 컷오프 금지",
     "Discovery, Concern, Format, Commerce intent 균형 유지",
@@ -1502,7 +1502,7 @@ function normalizeCsvCreator(row, index) {
     username,
     display_name: row.display_name || row.name || username,
     country: normalizeCountry(row.country || row.market),
-    profile_url: row.profile_url || row.url || `https://example.com/@${username}`,
+    profile_url: row.profile_url || row.url || `https://www.tiktok.com/@${username}`,
     bio: row.bio || "",
     follower_count: row.follower_count || row.followers || 0,
     avg_views: row.avg_views || row.average_views || 0,
@@ -1523,7 +1523,7 @@ function normalizeCsvPost(row, creatorId, index) {
     creator_id: row.creator_id || creatorId,
     video_id: row.video_id || id,
     platform_video_id: id,
-    url: row.url || row.post_url || `https://example.com/${creatorId}/post/${index + 1}`,
+    url: row.url || row.post_url || `https://www.tiktok.com/@${creatorId}/video/${index + 1}`,
     caption: row.caption || row.text || "",
     transcript: row.transcript || "",
     hashtags: splitList(row.hashtags || row.tags || ""),
@@ -1543,7 +1543,7 @@ function toCreatorImportItem(creator) {
   return {
     country: creator.country,
     username: creator.username,
-    profile_url: creator.profile_url || `https://example.com/@${creator.username}`,
+    profile_url: creator.profile_url || `https://www.tiktok.com/@${creator.username}`,
     display_name: creator.display_name || creator.username,
     bio: creator.bio || "",
     language: "es",
@@ -1650,7 +1650,7 @@ function buildNoPostsScreenResult() {
   };
 }
 
-function mockRecentPostsScreen(creator, posts) {
+function previewRecentPostsScreen(creator, posts) {
   const text = posts
     .map((post) => `${post.caption || ""} ${post.transcript || ""} ${(post.hashtags || []).join(" ")}`)
     .join(" ")
@@ -1714,10 +1714,26 @@ function mockRecentPostsScreen(creator, posts) {
 
 async function callOperationStep(remoteCall, fallback) {
   try {
-    return await remoteCall();
-  } catch (_error) {
-    return fallback;
+    const response = await remoteCall();
+    return {
+      ...response,
+      api_status: "live",
+    };
+  } catch (error) {
+    return {
+      ...fallback,
+      api_status: "local_preview",
+      api_error: summarizeApiError(error),
+    };
   }
+}
+
+function summarizeApiError(error) {
+  const detail = error?.payload?.detail;
+  if (typeof detail?.message === "string") return detail.message;
+  if (typeof detail?.code === "string") return detail.code;
+  if (typeof error?.message === "string") return error.message;
+  return "API request failed; local preview data used.";
 }
 
 function toOperationCreator(creator) {
@@ -1726,7 +1742,7 @@ function toOperationCreator(creator) {
     country: creator.country,
     username: creator.username,
     display_name: creator.display_name,
-    profile_url: creator.profile_url || `https://example.com/@${creator.username}`,
+    profile_url: creator.profile_url || `https://www.tiktok.com/@${creator.username}`,
     source_risk_level: sourceRiskForCreator(creator.creator_id),
     bio: creator.bio || creator.recommended_campaign_angle || "",
     language: "es",
@@ -1765,7 +1781,7 @@ function ensureOperationScreenResults() {
     }
     const posts = (state.recentPostsByCreator[creator.creator_id] || []).slice(0, 20);
     results[creator.creator_id] = posts.length
-      ? mockRecentPostsScreen(creator, posts)
+      ? previewRecentPostsScreen(creator, posts)
       : buildNoPostsScreenResult();
     state.recentScreenResults[creator.creator_id] = results[creator.creator_id];
   });
@@ -1818,7 +1834,7 @@ function localRecentApply(creators, screenResults) {
   });
   return {
     status: "applied",
-    persistence_status: "local_fallback",
+    persistence_status: "local_preview",
     items,
     queue_counts: countBy(items, "queue"),
   };
@@ -1891,7 +1907,7 @@ function localOutreachPlan(matchedItems, productCategory) {
   }));
   return {
     status: "planned",
-    persistence_status: "local_fallback",
+    persistence_status: "local_preview",
     items,
     send_policy: {
       auto_send_enabled: false,
@@ -1903,7 +1919,7 @@ function localOutreachPlan(matchedItems, productCategory) {
 function localCrmBoard(outreachItems) {
   return {
     status: "ok",
-    persistence_status: "local_fallback",
+    persistence_status: "local_preview",
     board: {
       total: outreachItems.length,
       counts: countBy(outreachItems, "crm_status"),
@@ -1929,8 +1945,8 @@ function buildOperationPerformanceSnapshots(matchedItems) {
   return (matchedItems.length ? matchedItems : state.creators.slice(0, 1)).map((item, index) => ({
     campaign_id: "campaign-1",
     creator_id: item.creator_id,
-    post_url: byId("snapshotPostUrl")?.value || `https://example.com/post/${index + 1}`,
-    tracking_url: `https://briwell.example/track/${item.creator_id}`,
+    post_url: byId("snapshotPostUrl")?.value || `https://www.tiktok.com/@${item.username || "creator"}/video/${index + 1}`,
+    tracking_url: `https://go.briwell.co/track/${item.creator_id}`,
     coupon_code: byId("snapshotCoupon")?.value || `BRI-${item.country || "MX"}-${index + 1}`,
     view_count: fallbackViews || item.avg_views || 0,
     like_count: Math.round((fallbackViews || item.avg_views || 0) * 0.06),
@@ -2135,7 +2151,7 @@ function buildSeedPosts(creatorId, product, count) {
     creator_id: creatorId,
     video_id: `${creatorId}-seed-${index + 1}`,
     platform_video_id: `${creatorId}-seed-${index + 1}`,
-    url: `https://example.com/${creatorId}/video/${index + 1}`,
+    url: `https://www.tiktok.com/@${creatorId}/video/${index + 1}`,
     caption: template.caption,
     transcript: index % 3 === 0 ? "" : template.transcript,
     hashtags: template.hashtags,

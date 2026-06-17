@@ -37,6 +37,7 @@ Documentation:
 1. PRD and implementation reviews in `outputs/`.
 2. Cloud stack plan and production risk notes.
 3. API spec and AI prompt/schema documents.
+4. Latest quality upgrade audit: `outputs/briwell_quality_upgrade_audit_v0.md`.
 
 ## Non-Negotiable Product Constraints
 
@@ -44,8 +45,9 @@ Documentation:
 2. Do not implement CAPTCHA bypass.
 3. Do not automate external DM sending.
 4. Do not store or process High Risk or Not Allowed source records as valid workflow inputs.
-5. Do not treat country compliance rules as legal advice.
-6. Keep human approval before any manual outreach status transition.
+5. Accept only approved collection source types: `manual`, `official_api`, `approved_provider`, and `creator_provided`.
+6. Do not treat country compliance rules as legal advice.
+7. Keep human approval before any manual outreach status transition.
 
 ## Recommended Next Development Order
 

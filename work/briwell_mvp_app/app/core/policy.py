@@ -6,6 +6,12 @@ ALLOWED_SOURCE_RISK_LEVELS = {"low", "low_medium", "medium"}
 REQUIRES_ADMIN_APPROVAL = {"low_medium", "medium"}
 BLOCKED_SOURCE_RISK_LEVELS = {"high", "not_allowed"}
 BLOCKED_CREATOR_STATUSES = {"quarantined", "do_not_contact", "removed", "avoided"}
+ALLOWED_COLLECTION_SOURCE_TYPES = {
+    "manual",
+    "official_api",
+    "approved_provider",
+    "creator_provided",
+}
 BLOCKED_COLLECTION_SOURCE_TYPES = {
     "automated_scrape",
     "browser_automation",
@@ -78,6 +84,8 @@ def require_allowed_collection_source_type(value: str) -> str:
         raise PolicyError("missing_source_type")
     if source_type in BLOCKED_COLLECTION_SOURCE_TYPES:
         raise PolicyError("collection_source_type_not_allowed")
+    if source_type not in ALLOWED_COLLECTION_SOURCE_TYPES:
+        raise PolicyError("collection_source_type_not_approved")
     return source_type
 
 

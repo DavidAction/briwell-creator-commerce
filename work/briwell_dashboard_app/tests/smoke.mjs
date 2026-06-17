@@ -68,6 +68,7 @@ assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts sc
 assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
 assert(files.html.includes("importQualityGate"), "missing import quality gate mount");
 assert(files.html.includes("coverageAudit"), "missing coverage audit mount");
+assert(files.html.includes("https://www.tiktok.com/@luzskincare/video/0000000000000000001"), "sample post URL should look channel-native");
 assert(files.html.includes("talentRadar"), "missing talent radar mount");
 assert(files.html.includes("ops-strip"), "missing operations status strip");
 assert(files.html.includes("metricPipelineGmv"), "missing pipeline GMV metric mount");
@@ -95,6 +96,8 @@ assert(files.app.includes("renderCommandMetrics"), "command metric renderer miss
 assert(files.app.includes("renderCommerceCommand"), "commerce command renderer missing");
 assert(files.app.includes("renderOperatorActions"), "operator actions renderer missing");
 assert(files.app.includes("runOperationsPipeline"), "operations pipeline runner missing");
+assert(files.app.includes("api_status"), "operations pipeline must expose live/local status");
+assert(files.app.includes("summarizeApiError"), "operations pipeline fallback should preserve API error context");
 assert(files.app.includes("saveImportQualityLog"), "import quality operations API missing");
 assert(files.app.includes("matchCampaignCandidates"), "campaign match operations API missing");
 assert(files.app.includes("evaluateImportQuality"), "import quality evaluator missing");
@@ -119,6 +122,9 @@ requiredEndpoints.forEach((endpoint) =>
   "assets/channel-rutina.svg",
 ].forEach((asset) => assert(existsSync(join(root, asset)), `missing ${asset}`));
 assert(!files.app.includes("autoSend"), "automatic send hook must not exist");
+assert(!files.html.includes("Mock Mode") && !files.app.includes("Mock Mode"), "dashboard should use Preview Mode wording");
+assert(!files.html.includes("example.com") && !files.app.includes("example.com"), "dashboard source should avoid generic example.com demo URLs");
+assert(!files.app.includes("briwell.example"), "dashboard should avoid generic example tracking domains");
 assert(files.css.includes("@media (max-width: 680px)"), "mobile media query missing");
 JSON.parse(files.vercel);
 

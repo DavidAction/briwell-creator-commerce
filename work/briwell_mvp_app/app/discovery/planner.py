@@ -6,6 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.core.policy import ALLOWED_COLLECTION_SOURCE_TYPES
 from app.core.policy import BLOCKED_COLLECTION_SOURCE_TYPES
 
 
@@ -22,12 +23,7 @@ INTENT_BALANCE_ORDER = ["discovery", "concern", "format", "commerce"]
 
 ROOT = Path(__file__).resolve().parents[2]
 KEYWORD_CSV = ROOT / "db" / "seeds" / "keyword_seed_v0.csv"
-ALLOWED_DISCOVERY_SOURCE_TYPES = [
-    "manual",
-    "official_api",
-    "approved_provider",
-    "creator_provided",
-]
+ALLOWED_DISCOVERY_SOURCE_TYPES = sorted(ALLOWED_COLLECTION_SOURCE_TYPES)
 
 
 class KeywordSeedRow(BaseModel):

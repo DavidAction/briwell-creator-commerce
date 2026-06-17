@@ -3,8 +3,8 @@
 Static dashboard scaffold for Briwell creator operations.
 
 The dashboard can run as a local file, a static web server, or a Vercel static
-site. It connects to the FastAPI backend when available and falls back to mock
-data when the API is offline.
+site. It connects to the FastAPI backend when available and uses a local
+preview dataset when the API is offline.
 
 ## Files
 

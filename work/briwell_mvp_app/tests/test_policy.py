@@ -50,6 +50,11 @@ class SourceRiskPolicyTests(unittest.TestCase):
         with self.assertRaises(PolicyError):
             require_allowed_collection_source_type("public page scrape")
 
+    def test_unapproved_collection_source_type_is_blocked(self) -> None:
+        with self.assertRaises(PolicyError) as exc:
+            require_allowed_collection_source_type("random vendor export")
+        self.assertEqual(str(exc.exception), "collection_source_type_not_approved")
+
 
 class OutreachPolicyTests(unittest.TestCase):
     def test_can_generate_dm_for_allowed_creator(self) -> None:

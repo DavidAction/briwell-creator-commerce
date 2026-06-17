@@ -360,6 +360,27 @@ def test_creator_import_rejects_high_risk() -> None:
     assert response.json()["detail"]["code"] == "SOURCE_RISK_NOT_ALLOWED"
 
 
+def test_creator_import_rejects_unapproved_source_type() -> None:
+    response = client.post(
+        "/creators/import",
+        headers={"X-User-Role": "operator"},
+        json={
+            "source_type": "random vendor export",
+            "source_risk_level": "low",
+            "items": [
+                {
+                    "country": "MX",
+                    "username": "creator",
+                    "profile_url": "https://example.com/@creator",
+                }
+            ],
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "COLLECTION_SOURCE_TYPE_NOT_ALLOWED"
+    assert response.json()["detail"]["details"]["reason"] == "collection_source_type_not_approved"
+
+
 def test_creator_import_accepts_medium_without_database() -> None:
     response = client.post(
         "/creators/import",
@@ -756,6 +777,21 @@ def test_performance_snapshot_blocks_scrape_source() -> None:
     )
     assert response.status_code == 400
     assert response.json()["detail"]["code"] == "PERFORMANCE_SOURCE_NOT_ALLOWED"
+
+
+def test_performance_snapshot_blocks_unapproved_source_type() -> None:
+    response = client.post(
+        "/performance/snapshots",
+        headers={"X-User-Role": "operator"},
+        json={
+            "source_type": "agency_screenshot",
+            "source_risk_level": "low",
+            "view_count": 10,
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "PERFORMANCE_SOURCE_NOT_ALLOWED"
+    assert response.json()["detail"]["details"]["reason"] == "collection_source_type_not_approved"
 
 
 def test_compliance_country_claims_check_needs_review() -> None:
