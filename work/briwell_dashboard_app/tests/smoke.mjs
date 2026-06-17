@@ -29,6 +29,9 @@ const requiredEndpoints = [
   "/ops/readiness",
   "/discovery/source-policy",
   "/ai/provider-status",
+  "/providers/tiktok/status",
+  "/providers/tiktok/keyword-playbook",
+  "/providers/tiktok/discovery-runs",
   "/discovery/plans",
   "/creators/import",
   "/videos/import",
@@ -75,6 +78,9 @@ assert(files.html.includes("runRecentScreenButton"), "missing recent 20 posts sc
 assert(files.html.includes("Import Quality Gate"), "missing import quality gate");
 assert(files.html.includes("importQualityGate"), "missing import quality gate mount");
 assert(files.html.includes("coverageAudit"), "missing coverage audit mount");
+assert(files.html.includes("TikTok Provider Acquisition"), "missing TikTok provider acquisition panel");
+assert(files.html.includes("runTiktokProviderButton"), "missing provider discovery action");
+assert(files.html.includes("keywordPlaybookSummary"), "missing provider keyword summary");
 assert(files.html.includes("https://www.tiktok.com/@luzskincare/video/0000000000000000001"), "sample post URL should look channel-native");
 assert(files.html.includes("talentRadar"), "missing talent radar mount");
 assert(files.html.includes("ops-strip"), "missing operations status strip");
@@ -89,6 +95,7 @@ assert(files.css.includes(".profile-avatar"), "profile avatar styling missing");
 assert(files.css.includes(".command-board"), "command board styling missing");
 assert(files.css.includes(".operator-actions"), "operator action styling missing");
 assert(files.css.includes(".operations-pipeline"), "operations pipeline styling missing");
+assert(files.css.includes(".provider-grid"), "provider acquisition styling missing");
 assert(files.css.includes(".quality-gate"), "import quality gate styling missing");
 assert(files.css.includes(".quality-summary"), "quality summary styling missing");
 assert(files.css.includes(".validation-report"), "upload validation report styling missing");
@@ -105,6 +112,8 @@ assert(files.app.includes("renderCommandMetrics"), "command metric renderer miss
 assert(files.app.includes("renderCommerceCommand"), "commerce command renderer missing");
 assert(files.app.includes("renderOperatorActions"), "operator actions renderer missing");
 assert(files.app.includes("runOperationsPipeline"), "operations pipeline runner missing");
+assert(files.app.includes("runTiktokProviderDiscovery"), "TikTok provider discovery runner missing");
+assert(files.app.includes("latam_kbeauty_20s_30s"), "K-beauty keyword strategy missing");
 assert(files.app.includes("api_status"), "operations pipeline must expose live/local status");
 assert(files.app.includes("summarizeApiError"), "operations pipeline fallback should preserve API error context");
 assert(files.app.includes("saveImportQualityLog"), "import quality operations API missing");

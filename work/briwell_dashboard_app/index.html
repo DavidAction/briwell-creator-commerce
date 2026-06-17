@@ -300,6 +300,48 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
+              <h2>TikTok Provider Acquisition</h2>
+              <p class="panel-subtitle">Apify-first provider run for LATAM K-Beauty creators with Gen Z and young millennial keyword coverage</p>
+            </div>
+            <span class="badge green">Provider Layer</span>
+          </div>
+          <div class="form-grid">
+            <label>
+              <span>Provider</span>
+              <select id="tiktokProviderSelect">
+                <option value="apify">Apify</option>
+                <option value="data365">Data365 Benchmark</option>
+                <option value="bright_data">Bright Data Benchmark</option>
+                <option value="tikapi">TikAPI Experiment</option>
+              </select>
+            </label>
+            <label>
+              <span>Provider Mode</span>
+              <select id="tiktokProviderMode">
+                <option value="dry_run">Dry Run Preview</option>
+                <option value="live">Live Provider Call</option>
+              </select>
+            </label>
+            <label>
+              <span>Results / Query</span>
+              <input id="tiktokProviderResults" type="number" min="1" max="50" value="3">
+            </label>
+            <label>
+              <span>Recent Posts</span>
+              <input id="tiktokProviderPosts" type="number" min="1" max="20" value="20">
+            </label>
+          </div>
+          <div class="button-row">
+            <button class="button" id="loadKeywordPlaybookButton">Load K-Beauty Keywords</button>
+            <button class="button primary" id="runTiktokProviderButton">Run Provider Discovery</button>
+          </div>
+          <div class="provider-grid" id="keywordPlaybookSummary"></div>
+          <div id="tiktokProviderResult" class="result-box"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
               <h2>Coverage Audit</h2>
               <p class="panel-subtitle">초기 발굴 조건이 놓칠 수 있는 후보 유형과 보완 액션</p>
             </div>

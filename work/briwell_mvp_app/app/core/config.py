@@ -68,6 +68,21 @@ class Settings:
     ai_live_daily_call_limit: int = int(os.getenv("AI_LIVE_DAILY_CALL_LIMIT", "50"))
     ai_live_daily_cost_limit_usd: float = float(os.getenv("AI_LIVE_DAILY_COST_LIMIT_USD", "2.00"))
     ai_live_per_creator_daily_call_limit: int = int(os.getenv("AI_LIVE_PER_CREATOR_DAILY_CALL_LIMIT", "3"))
+    apify_api_token: str = os.getenv("APIFY_API_TOKEN", "")
+    apify_tiktok_actor_id: str = os.getenv("APIFY_TIKTOK_ACTOR_ID", "clockworks/tiktok-scraper")
+    data365_api_key: str = os.getenv("DATA365_API_KEY", "")
+    brightdata_api_key: str = os.getenv("BRIGHTDATA_API_KEY", "")
+    tikapi_api_key: str = os.getenv("TIKAPI_API_KEY", "")
+    tiktok_provider_dry_run: bool = os.getenv("TIKTOK_PROVIDER_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    allow_live_tiktok_provider_calls: bool = os.getenv(
+        "ALLOW_LIVE_TIKTOK_PROVIDER_CALLS",
+        "false",
+    ).strip().lower() in {"1", "true", "yes"}
+    tiktok_provider_daily_result_limit: int = int(os.getenv("TIKTOK_PROVIDER_DAILY_RESULT_LIMIT", "2000"))
 
 
 settings = Settings()

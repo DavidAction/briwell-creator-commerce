@@ -68,6 +68,11 @@
     getReadiness: () => request("/ops/readiness"),
     getSourcePolicy: () => request("/discovery/source-policy"),
     getAiProvider: () => request("/ai/provider-status"),
+    getTiktokProviderStatus: () => request("/providers/tiktok/status"),
+    getTiktokKeywordPlaybook: (params) =>
+      request(`/providers/tiktok/keyword-playbook${toQuery(params)}`),
+    runTiktokProviderDiscovery: (body) =>
+      request("/providers/tiktok/discovery-runs", { method: "POST", body }),
     listCreators: (params) => request(`/creators${toQuery(params)}`),
     importCreators: (body) => request("/creators/import", { method: "POST", body }),
     importVideos: (body) => request("/videos/import", { method: "POST", body }),

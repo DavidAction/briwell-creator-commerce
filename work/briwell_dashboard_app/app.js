@@ -21,6 +21,8 @@ const state = {
   recentScreenResults: {},
   coverageAudit: buildPreviewCoverageAudit(["MX", "PE", "EC"], "sunscreen", 4),
   recallSafeguards: buildPreviewRecallSafeguards(),
+  keywordPlaybook: null,
+  tiktokProviderRun: null,
   creators: [
     {
       creator_id: "creator-1",
@@ -193,6 +195,8 @@ function bindActions() {
   });
 
   byId("runDiscoveryButton").addEventListener("click", runDiscoveryPlan);
+  byId("loadKeywordPlaybookButton").addEventListener("click", loadKeywordPlaybook);
+  byId("runTiktokProviderButton").addEventListener("click", runTiktokProviderDiscovery);
   byId("saveCampaignButton").addEventListener("click", saveCampaign);
   byId("prepareDraftsButton").addEventListener("click", prepareDrafts);
   byId("claimsCheckButton").addEventListener("click", runClaimsCheck);
@@ -280,6 +284,7 @@ function renderAll() {
   renderImportQualityGate();
   renderRecentScreenResult(state.selectedCreatorId);
   renderCoverageAudit();
+  renderKeywordPlaybookSummary();
 }
 
 function renderCommandMetrics() {
@@ -686,6 +691,13 @@ function incrementCount(target, key) {
   target[normalized] = (target[normalized] || 0) + 1;
 }
 
+function countBy(items, key) {
+  return (items || []).reduce((counts, item) => {
+    incrementCount(counts, item?.[key]);
+    return counts;
+  }, {});
+}
+
 function mergeCountObjects(...objects) {
   return objects.reduce((merged, object) => {
     Object.entries(object || {}).forEach(([key, value]) => {
@@ -745,14 +757,6 @@ function looksLikeUuid(value) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     String(value || "")
   );
-}
-
-function countBy(items, key) {
-  return items.reduce((counts, item) => {
-    const value = String(item[key] || "unknown");
-    counts[value] = (counts[value] || 0) + 1;
-    return counts;
-  }, {});
 }
 
 function formatPipelineValue(label, value) {
@@ -1249,6 +1253,100 @@ async function runDiscoveryPlan() {
   }
 }
 
+async function loadKeywordPlaybook() {
+  const countries = Array.from(byId("discoveryCountries").selectedOptions).map((item) => item.value);
+  const product = byId("discoveryProduct").value;
+  const limit = Number(byId("discoveryLimit").value || 8);
+  try {
+    const payload = await window.BriwellApi.getTiktokKeywordPlaybook({
+      countries: countries.join(","),
+      product_categories: product,
+      max_keywords_per_country_category: limit,
+    });
+    state.keywordPlaybook = payload;
+    renderKeywordPlaybookSummary();
+    showResult("tiktokProviderResult", payload);
+    showToast(`${payload.keyword_count || 0} K-Beauty keywords loaded`);
+  } catch (error) {
+    state.keywordPlaybook = buildLocalKeywordPlaybook(countries, product, limit);
+    renderKeywordPlaybookSummary();
+    showResult("tiktokProviderResult", error.payload || {
+      status: "local_keyword_preview",
+      message: error.message,
+      ...state.keywordPlaybook,
+    });
+  }
+}
+
+async function runTiktokProviderDiscovery() {
+  const countries = Array.from(byId("discoveryCountries").selectedOptions).map((item) => item.value);
+  const product = byId("discoveryProduct").value;
+  const keywordLimit = Number(byId("discoveryLimit").value || 8);
+  const mode = byId("tiktokProviderMode").value;
+  const payload = {
+    provider: byId("tiktokProviderSelect").value,
+    countries,
+    product_categories: [product],
+    max_keywords_per_country_category: keywordLimit,
+    max_results_per_query: Number(byId("tiktokProviderResults").value || 3),
+    recent_posts_per_creator: Number(byId("tiktokProviderPosts").value || 20),
+    include_recent_posts: true,
+    dry_run: mode !== "live",
+    allow_live_provider_calls: mode === "live",
+    persist_imports: false,
+  };
+  try {
+    const response = await window.BriwellApi.runTiktokProviderDiscovery(payload);
+    state.tiktokProviderRun = response;
+    applyProviderRunToPreview(response);
+    renderKeywordPlaybookSummary();
+    showResult("tiktokProviderResult", response);
+    showToast(`${response.creator_count || 0} provider creators prepared`);
+  } catch (error) {
+    showResult("tiktokProviderResult", error.payload || { status: "provider_run_failed", message: error.message });
+  }
+  renderAll();
+}
+
+function renderKeywordPlaybookSummary() {
+  const target = byId("keywordPlaybookSummary");
+  if (!target) return;
+  const playbook = state.keywordPlaybook;
+  const providerRun = state.tiktokProviderRun;
+  const items = playbook?.items || [];
+  const intentCounts = objectCountSummary(countBy(items, "intent_type")) || "Not loaded";
+  const cards = [
+    ["Keywords", playbook?.keyword_count ?? items.length ?? 0],
+    ["Intent Mix", intentCounts],
+    ["Provider", providerRun?.provider || byId("tiktokProviderSelect")?.value || "apify"],
+    ["Creators", providerRun?.creator_count ?? "Pending"],
+    ["Recent Posts", providerRun?.video_count ?? "Pending"],
+  ];
+  target.innerHTML = cards
+    .map(
+      ([label, value]) => `
+      <article class="provider-card">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(String(value))}</strong>
+      </article>
+    `
+    )
+    .join("");
+}
+
+function applyProviderRunToPreview(response) {
+  if (!response || !Array.isArray(response.creators)) return;
+  const creators = response.creators.map(normalizeProviderCreator);
+  state.creators = mergeCreators(state.creators, creators);
+  (response.creators || []).forEach((creator) => {
+    const normalized = normalizeProviderCreator(creator);
+    const videos = response.videos_by_creator?.[creator.provider_creator_id] || [];
+    if (videos.length) {
+      state.recentPostsByCreator[normalized.creator_id] = videos.map((video) => normalizeProviderVideo(video, normalized.creator_id));
+    }
+  });
+}
+
 async function loadCreatorCsv() {
   try {
     const text = await readFileInput("creatorCsvInput");
@@ -1667,6 +1765,63 @@ function buildPreviewDiscoveryRows(countries, product, platform, limit) {
   );
 }
 
+function buildLocalKeywordPlaybook(countries, product, limit) {
+  const bank = {
+    sunscreen: [
+      ["trend", "spf coreano viral tiktok"],
+      ["discovery", "protector solar coreano"],
+      ["concern", "bloqueador coreano sin grasa"],
+      ["format", "grwm protector solar coreano"],
+      ["commerce", "donde comprar protector solar coreano"],
+    ],
+    calming_serum: [
+      ["trend", "serum coreano viral tiktok"],
+      ["discovery", "serum calmante coreano"],
+      ["concern", "barrera de la piel serum"],
+      ["format", "probando serum coreano"],
+      ["commerce", "serum coreano recomendado"],
+    ],
+    cleanser: [
+      ["trend", "limpiador coreano viral tiktok"],
+      ["discovery", "limpiador facial coreano"],
+      ["concern", "limpiador para piel grasa coreano"],
+      ["format", "doble limpieza coreana rutina"],
+      ["commerce", "limpiador coreano recomendado"],
+    ],
+    sheet_mask: [
+      ["trend", "mascarilla coreana viral tiktok"],
+      ["discovery", "mascarilla facial coreana"],
+      ["concern", "mascarilla hidratante coreana"],
+      ["format", "selfcare mascarilla coreana"],
+      ["commerce", "kbeauty barato mascarillas"],
+    ],
+    cushion_foundation: [
+      ["trend", "cushion coreano viral tiktok"],
+      ["discovery", "cushion coreano"],
+      ["concern", "base ligera para diario"],
+      ["format", "glass skin maquillaje"],
+      ["commerce", "dupes maquillaje coreano"],
+    ],
+  };
+  const countryNames = { MX: "mexico", PE: "peru", EC: "ecuador" };
+  const items = countries.flatMap((country) =>
+    (bank[product] || bank.sunscreen).slice(0, limit).map(([intent, query]) => ({
+      country,
+      product_category: product,
+      intent_type: intent,
+      query: `${query} ${countryNames[country] || ""}`.trim(),
+      query_type: "keyword",
+      audience: intent === "trend" || intent === "format" ? "gen_z" : "young_millennial",
+    }))
+  );
+  return {
+    status: "local_keyword_preview",
+    strategy: "latam_kbeauty_20s_30s",
+    keyword_count: items.length,
+    items,
+  };
+}
+
 function buildPreviewCoverageAudit(countries, product, limit) {
   const intents = ["discovery", "concern", "format", "commerce"];
   const selected = intents.slice(0, Math.max(1, Math.min(limit, intents.length)));
@@ -1772,6 +1927,62 @@ function normalizeApiCreator(creator) {
     recommended_products: creator.recommended_products || [],
     recommended_campaign_angle: creator.recommended_campaign_angle || "",
   };
+}
+
+function normalizeProviderCreator(creator) {
+  return normalizeApiCreator({
+    ...creator,
+    id: creator.creator_id || creator.provider_creator_id || stableCreatorId(creator.username || "creator"),
+    creator_id: creator.creator_id || creator.provider_creator_id || stableCreatorId(creator.username || "creator"),
+    username: creator.username,
+    display_name: creator.display_name,
+    country: creator.country,
+    profile_url: creator.profile_url,
+    profile_image_url: creator.profile_image_url,
+    follower_count: creator.follower_count,
+    avg_views: creator.avg_views,
+    engagement_rate: creator.engagement_rate,
+    platform: "tiktok",
+    source_type: creator.source_type || "approved_provider",
+    source_risk_level: creator.source_risk_level || "low_medium",
+    final_score: providerPreviewScore(creator),
+    risk_penalty: creator.source_risk_level === "low" ? 3 : 6,
+    segment: "provider_discovered",
+    signals: creator.kbeauty_fit_signals || [creator.matched_intent || "provider"],
+    recommended_products: [creator.product_category].filter(Boolean),
+    recommended_campaign_angle: `${formatProductCategory(creator.product_category)} creator found through ${creator.provider || "provider"} query "${creator.matched_query || ""}".`,
+  });
+}
+
+function normalizeProviderVideo(video, creatorId) {
+  return {
+    creator_id: creatorId,
+    video_id: video.platform_video_id || video.url,
+    platform_video_id: video.platform_video_id || "",
+    url: video.url,
+    caption: video.caption || "",
+    transcript: video.transcript || "",
+    hashtags: video.hashtags || [],
+    posted_at: normalizeDate(video.posted_at),
+    view_count: toNumber(video.view_count),
+    like_count: toNumber(video.like_count),
+    comment_count: toNumber(video.comment_count),
+    share_count: toNumber(video.share_count),
+    save_count: toNumber(video.save_count),
+    duration_seconds: toNumber(video.duration_seconds),
+    thumbnail_url: video.thumbnail_url || "",
+    source_type: video.source_type || "approved_provider",
+    source_risk_level: video.source_risk_level || "low_medium",
+    source_url: video.url,
+  };
+}
+
+function providerPreviewScore(creator) {
+  const signals = creator.kbeauty_fit_signals || [];
+  const base = 72 + Math.min(12, signals.length * 3);
+  const engagementBonus = Math.min(8, Math.round(toNumber(creator.engagement_rate) || 0));
+  const audienceBonus = creator.audience_age_fit === "both" ? 4 : 6;
+  return Math.min(96, base + engagementBonus + audienceBonus);
 }
 
 function normalizeCsvCreator(row, index) {

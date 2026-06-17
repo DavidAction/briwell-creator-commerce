@@ -71,12 +71,13 @@ Authorization: Bearer <supabase-jwt>
 10. Growth Operations Engine for import logging, enrichment, recent-post apply, campaign match, outreach plan, CRM board, and performance rollup
 11. Recent 20 posts screening via `/analysis-jobs/run-recent-posts-screen` with Dry Run Preview or Live Gemini Analysis mode
 12. Live Gemini mode is enabled only when `/ai/provider-status` reports `live_ready=true`
-13. Campaign draft creation
-14. Campaign outreach draft preparation
-15. DM claims check and human approval gate
-16. Manual send status recording
-17. Performance snapshot capture
-18. Settlement contract capture
+13. TikTok Provider Acquisition via `/providers/tiktok/keyword-playbook` and `/providers/tiktok/discovery-runs`
+14. Campaign draft creation
+15. Campaign outreach draft preparation
+16. DM claims check and human approval gate
+17. Manual send status recording
+18. Performance snapshot capture
+19. Settlement contract capture
 
 ## Executive Overview Standard
 

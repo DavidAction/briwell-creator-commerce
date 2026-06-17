@@ -20,6 +20,7 @@ from app.routers import (
     outreach,
     performance,
     products,
+    providers,
     settlements,
     videos,
 )
@@ -72,6 +73,7 @@ app.include_router(campaigns.router)
 app.include_router(outreach.router)
 app.include_router(performance.router)
 app.include_router(products.router)
+app.include_router(providers.router)
 app.include_router(settlements.router)
 app.include_router(ops.router)
 app.include_router(operations.router)

@@ -260,6 +260,9 @@ python scripts/validate_csv_imports.py
 44. `POST /operations/outreach-plan`
 45. `POST /operations/outreach-crm/board`
 46. `POST /operations/performance-rollup`
+47. `GET /providers/tiktok/status`
+48. `GET /providers/tiktok/keyword-playbook`
+49. `POST /providers/tiktok/discovery-runs`
 
 The initial routers are scaffolded with policy validation, placeholder responses
 when DB mode is disabled, and repository-backed persistence when
@@ -342,6 +345,74 @@ Rules currently enforced:
 
 `GET /discovery/source-policy` returns the allowed and blocked source-type policy
 for UI and operator education.
+
+## TikTok Provider Acquisition
+
+TikTok acquisition is provider-led. The MVP does not maintain a direct browser
+automation crawler. It normalizes data from paid TikTok data providers into the
+same creator, video, recent-20, AI screening, campaign, outreach, performance,
+and settlement workflows.
+
+Recommended provider strategy:
+
+1. Apify-first MVP connector for fast live validation.
+2. Data365 as the production benchmark candidate.
+3. Bright Data as the scale and fallback provider.
+4. TikAPI as an experimental fallback only.
+
+Provider endpoints:
+
+```text
+GET /providers/tiktok/status
+GET /providers/tiktok/keyword-playbook
+POST /providers/tiktok/discovery-runs
+```
+
+`GET /providers/tiktok/keyword-playbook` returns the LATAM K-Beauty keyword set
+optimized for Gen Z and young millennial Spanish-speaking beauty buyers. The
+playbook balances:
+
+1. trend intent such as viral TikTok and GRWM searches
+2. discovery intent such as core K-beauty product queries
+3. concern intent such as oily, mixed, or sensitive skin routines
+4. format intent such as honest reviews, try-on, tutorial, and UGC
+5. commerce intent such as where-to-buy, recommended, dupe, and affordable searches
+
+Dry-run provider discovery:
+
+```bash
+curl -X POST http://127.0.0.1:8030/providers/tiktok/discovery-runs ^
+  -H "Content-Type: application/json" ^
+  -H "X-User-Role: operator" ^
+  -d "{\"provider\":\"apify\",\"countries\":[\"MX\",\"PE\",\"EC\"],\"product_categories\":[\"sunscreen\",\"calming_serum\",\"cleanser\"],\"max_keywords_per_country_category\":8,\"max_results_per_query\":3,\"dry_run\":true}"
+```
+
+Live Apify discovery prerequisites:
+
+```text
+APIFY_API_TOKEN=<managed-secret>
+APIFY_TIKTOK_ACTOR_ID=clockworks/tiktok-scraper
+TIKTOK_PROVIDER_DRY_RUN=false
+ALLOW_LIVE_TIKTOK_PROVIDER_CALLS=true
+TIKTOK_PROVIDER_DAILY_RESULT_LIMIT=2000
+```
+
+Live provider calls return normalized `creator_import_payload` and
+`video_import_payloads`. Set `persist_imports=true` only after a small smoke
+run passes. In DB mode, persisted creators enter `creator`, recent post
+snapshots enter `video`, and operators can immediately run the recent-20 screen.
+
+The first benchmark should compare Apify, Data365, and Bright Data on the same
+MX/PE/EC K-beauty keywords using these quality metrics:
+
+1. country match accuracy
+2. beauty and K-beauty relevance
+3. recent-20 post availability
+4. comment and subtitle availability
+5. duplicate rate
+6. provider failure rate
+7. cost per qualified creator
+8. pass rate after recent-20 screening
 
 ## AI Adapter Scaffold
 

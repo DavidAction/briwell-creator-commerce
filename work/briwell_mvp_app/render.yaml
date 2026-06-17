@@ -44,6 +44,22 @@ services:
         value: "false"
       - key: ALLOW_LIVE_PROVIDER_CALLS
         value: "true"
+      - key: APIFY_API_TOKEN
+        sync: false
+      - key: APIFY_TIKTOK_ACTOR_ID
+        value: clockworks/tiktok-scraper
+      - key: DATA365_API_KEY
+        sync: false
+      - key: BRIGHTDATA_API_KEY
+        sync: false
+      - key: TIKAPI_API_KEY
+        sync: false
+      - key: TIKTOK_PROVIDER_DRY_RUN
+        value: "false"
+      - key: ALLOW_LIVE_TIKTOK_PROVIDER_CALLS
+        value: "true"
+      - key: TIKTOK_PROVIDER_DAILY_RESULT_LIMIT
+        value: "10000"
       - key: RATE_LIMIT_ENABLED
         value: "true"
       - key: BACKUP_RESTORE_TESTED_AT
