@@ -44,6 +44,40 @@ docs/                       GitHub handoff and development notes
 .githooks/                  Local git hooks, including auto-push after commit
 ```
 
+## Use On Another Computer
+
+Clone from GitHub:
+
+```powershell
+git clone https://github.com/DavidAction/briwell-creator-commerce.git
+cd briwell-creator-commerce
+```
+
+Run one-time Windows setup:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1
+```
+
+Start backend and dashboard:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start_local_stack_windows.ps1
+```
+
+Open:
+
+```text
+Dashboard: http://127.0.0.1:8070
+API docs:  http://127.0.0.1:8030/docs
+```
+
+Full guide:
+
+```text
+docs/USE_ON_OTHER_COMPUTER.md
+```
+
 ## Backend Quick Start
 
 ```powershell
