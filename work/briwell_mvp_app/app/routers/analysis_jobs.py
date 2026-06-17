@@ -20,6 +20,10 @@ from app.workers.multimodal_analysis import (
     MultimodalAnalysisRequest,
     run_multimodal_analysis,
 )
+from app.workers.recent_posts_screening import (
+    RecentPostsScreenRequest,
+    run_recent_posts_screen,
+)
 
 
 router = APIRouter(prefix="/analysis-jobs", tags=["analysis-jobs"])
@@ -29,6 +33,7 @@ JobType = Literal[
     "comment_analysis",
     "transcription",
     "multimodal_analysis",
+    "recent_posts_screen",
     "final_review",
     "dm_generation",
     "claims_check",
@@ -161,6 +166,15 @@ def run_multimodal_analysis_job(
     _user: UserContext = Depends(require_roles("admin", "operator")),
 ) -> dict[str, Any]:
     result = run_multimodal_analysis(payload)
+    return result.model_dump()
+
+
+@router.post("/run-recent-posts-screen")
+def run_recent_posts_screen_job(
+    payload: RecentPostsScreenRequest,
+    _user: UserContext = Depends(require_roles("admin", "operator")),
+) -> dict[str, Any]:
+    result = run_recent_posts_screen(payload)
     return result.model_dump()
 
 

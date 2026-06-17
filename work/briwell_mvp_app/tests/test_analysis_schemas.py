@@ -99,6 +99,37 @@ def test_final_review_schema_rejects_unknown_recommendation() -> None:
         )
 
 
+def test_recent_posts_screen_schema_accepts_valid_output() -> None:
+    validated = validate_analysis_output(
+        "recent_posts_screen",
+        {
+            "status": "ok",
+            "post_count_analyzed": 20,
+            "expected_post_count": 20,
+            "suitability_decision": "pass_to_full_analysis",
+            "suitability_score": 82,
+            "beauty_content_ratio": 0.85,
+            "kbeauty_signal_ratio": 0.5,
+            "skincare_relevance_score": 88,
+            "commerce_signal_score": 72,
+            "consistency_score": 80,
+            "brand_safety_precheck_score": 90,
+            "matched_product_categories": ["sunscreen"],
+            "recent_post_observations": ["Strong skincare routine content."],
+            "coverage_gaps": [],
+            "risk_notes": [],
+            "next_step": "run_full_profile_comment_multimodal_analysis",
+            "evidence": ["Recent 20 posts analyzed."],
+            "missing_data": [],
+            "confidence": 0.82,
+            "review_required": False,
+            "review_required_reason": None,
+        },
+    )
+
+    assert validated.model_dump()["post_count_analyzed"] == 20
+
+
 def test_unsupported_analysis_schema_rejected() -> None:
     with pytest.raises(AnalysisSchemaError):
         validate_analysis_output("unknown_task", {"status": "ok"})

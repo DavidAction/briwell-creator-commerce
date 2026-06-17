@@ -9,6 +9,17 @@ The system currently includes:
 3. PostgreSQL migrations, seed data, import templates, and local validation scripts.
 4. Handoff documents for external developers and AI coding tools.
 
+## Current Analysis Gate
+
+Creator fit should start with the latest 20 approved recent post snapshots.
+
+Flow:
+
+1. Import or provide recent post snapshots through compliant sources only.
+2. Run `POST /analysis-jobs/run-recent-posts-screen`.
+3. Only creators that pass or need human review continue to profile, comment, multimodal, and score analysis.
+4. Do not reject a creator only because of low follower count or narrow initial keyword discovery.
+
 ## Current Product Rule
 
 The MVP only supports Low, Low/Medium, and Medium risk sources.
@@ -103,4 +114,3 @@ git push -u origin main
 ```
 
 After that, each new local commit will attempt to push automatically.
-

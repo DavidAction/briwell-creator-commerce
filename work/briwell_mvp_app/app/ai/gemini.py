@@ -14,6 +14,7 @@ MODEL_BY_ALIAS = {
     "final_review": "gemini-3.5-flash",
     "dm_generation": "gemini-3-flash",
     "multimodal_default": "gemini-3-flash",
+    "recent_posts_screen": "gemini-3.1-flash-lite",
 }
 
 
@@ -160,6 +161,8 @@ class GeminiTextAdapter(AIAdapter):
             return _dry_run_comment_analysis(request.payload)
         if request.task_type == "multimodal_analysis":
             return _dry_run_multimodal_analysis(request.payload)
+        if request.task_type == "recent_posts_screen":
+            return _dry_run_recent_posts_screen(request.payload)
         if request.task_type == "final_review":
             return _dry_run_final_review(request.payload)
         raise AnalysisSchemaError(f"unsupported_analysis_task:{request.task_type}")
@@ -274,6 +277,149 @@ def _dry_run_multimodal_analysis(payload: dict[str, Any]) -> dict[str, Any]:
         "confidence": 0.72 if frame_samples else 0.52,
         "review_required": review_required,
         "review_required_reason": "multimodal_review_required" if review_required else None,
+    }
+
+
+def _dry_run_recent_posts_screen(payload: dict[str, Any]) -> dict[str, Any]:
+    posts = list(payload.get("recent_posts", []))[:20]
+    expected_post_count = int(payload.get("expected_post_count") or 20)
+    post_count = len(posts)
+    texts = [
+        " ".join(
+            [
+                str(post.get("caption") or ""),
+                str(post.get("transcript") or ""),
+                " ".join(str(tag) for tag in post.get("hashtags", [])),
+            ]
+        ).lower()
+        for post in posts
+    ]
+
+    beauty_terms = (
+        "beauty",
+        "belleza",
+        "skincare",
+        "skin care",
+        "piel",
+        "maquillaje",
+        "rutina",
+        "spf",
+        "protector",
+        "serum",
+        "limpiador",
+        "mascarilla",
+    )
+    kbeauty_terms = ("kbeauty", "k-beauty", "coreano", "coreana", "korean")
+    commerce_terms = ("link", "codigo", "código", "descuento", "comprar", "tienda", "precio", "donde")
+    risk_terms = ("cura", "curar", "trata acne", "dermatitis", "melasma", "resultado garantizado")
+    product_terms = {
+        "sunscreen": ("spf", "protector", "bloqueador", "solar"),
+        "calming_serum": ("serum", "calmante", "barrera", "rojeces"),
+        "cleanser": ("limpiador", "limpieza", "cleanser", "doble limpieza"),
+        "sheet_mask": ("mascarilla", "mask"),
+        "cushion_foundation": ("cushion", "base", "maquillaje"),
+    }
+
+    def ratio_for(terms: tuple[str, ...]) -> float:
+        if not texts:
+            return 0.0
+        matched = sum(1 for text in texts if any(term in text for term in terms))
+        return matched / len(texts)
+
+    beauty_ratio = ratio_for(beauty_terms)
+    kbeauty_ratio = ratio_for(kbeauty_terms)
+    commerce_ratio = ratio_for(commerce_terms)
+    risk_matches = sorted({term for text in texts for term in risk_terms if term in text})
+    matched_categories = [
+        category
+        for category, terms in product_terms.items()
+        if any(any(term in text for term in terms) for text in texts)
+    ]
+
+    view_counts = [int(post.get("view_count") or 0) for post in posts if post.get("view_count") is not None]
+    consistency_score = min(100.0, 45.0 + beauty_ratio * 35.0 + min(post_count, expected_post_count) / expected_post_count * 20.0)
+    if view_counts:
+        sorted_views = sorted(view_counts)
+        median_view = sorted_views[len(sorted_views) // 2]
+        if median_view >= 10000:
+            consistency_score = min(100.0, consistency_score + 6.0)
+
+    skincare_relevance_score = min(100.0, beauty_ratio * 70.0 + kbeauty_ratio * 20.0 + (10.0 if matched_categories else 0.0))
+    commerce_signal_score = min(100.0, commerce_ratio * 85.0 + 10.0)
+    brand_safety_score = 55.0 if risk_matches else 88.0
+    suitability_score = round(
+        skincare_relevance_score * 0.34
+        + consistency_score * 0.26
+        + commerce_signal_score * 0.18
+        + brand_safety_score * 0.17
+        + min(post_count, expected_post_count) / expected_post_count * 5.0,
+        2,
+    )
+
+    coverage_gaps: list[str] = []
+    if post_count < expected_post_count:
+        coverage_gaps.append("recent_posts_below_20")
+    if not any(post.get("transcript") for post in posts):
+        coverage_gaps.append("transcripts_missing")
+    if not matched_categories:
+        coverage_gaps.append("product_category_signal_missing")
+    if commerce_ratio == 0:
+        coverage_gaps.append("commerce_intent_signal_missing")
+
+    review_required = bool(risk_matches) or post_count < expected_post_count or 50 <= suitability_score < 75
+    if risk_matches:
+        decision = "human_review"
+        next_step = "operator_review"
+        review_reason = "brand_safety_precheck_risk"
+    elif post_count < expected_post_count:
+        decision = "human_review"
+        next_step = "collect_more_recent_posts"
+        review_reason = "insufficient_recent_posts"
+    elif suitability_score >= 75:
+        decision = "pass_to_full_analysis"
+        next_step = "run_full_profile_comment_multimodal_analysis"
+        review_reason = None
+    elif suitability_score >= 50:
+        decision = "human_review"
+        next_step = "operator_review"
+        review_reason = "borderline_recent_content_fit"
+    else:
+        decision = "recheck_later"
+        next_step = "do_not_prioritize"
+        review_reason = None
+
+    evidence = [
+        f"Analyzed {post_count} recent posts from approved inputs.",
+        f"Beauty content ratio: {beauty_ratio:.2f}.",
+    ]
+    if matched_categories:
+        evidence.append(f"Matched product categories: {', '.join(matched_categories[:5])}.")
+
+    return {
+        "status": "ok",
+        "post_count_analyzed": post_count,
+        "expected_post_count": expected_post_count,
+        "suitability_decision": decision,
+        "suitability_score": suitability_score,
+        "beauty_content_ratio": round(beauty_ratio, 3),
+        "kbeauty_signal_ratio": round(kbeauty_ratio, 3),
+        "skincare_relevance_score": round(skincare_relevance_score, 2),
+        "commerce_signal_score": round(commerce_signal_score, 2),
+        "consistency_score": round(consistency_score, 2),
+        "brand_safety_precheck_score": brand_safety_score,
+        "matched_product_categories": matched_categories[:5],
+        "recent_post_observations": [
+            "Recent content screen uses captions, transcripts, hashtags, and public metrics provided through approved sources.",
+            "Pass decisions should continue to profile, comment, and multimodal analysis before outreach.",
+        ],
+        "coverage_gaps": coverage_gaps,
+        "risk_notes": risk_matches,
+        "next_step": next_step,
+        "evidence": evidence[:5],
+        "missing_data": coverage_gaps,
+        "confidence": 0.78 if post_count >= expected_post_count and not coverage_gaps else 0.58,
+        "review_required": review_required,
+        "review_required_reason": review_reason if review_required else None,
     }
 
 

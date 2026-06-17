@@ -100,6 +100,34 @@ class MultimodalVideoAnalysisOutput(EvidenceSchema):
     suggested_campaign_angle: str = Field(min_length=1, max_length=1000)
 
 
+class RecentPostsScreenOutput(EvidenceSchema):
+    post_count_analyzed: int = Field(ge=0, le=20)
+    expected_post_count: int = Field(ge=1, le=20)
+    suitability_decision: Literal[
+        "pass_to_full_analysis",
+        "human_review",
+        "recheck_later",
+        "avoid",
+    ]
+    suitability_score: float = Field(ge=0, le=100)
+    beauty_content_ratio: float = Field(ge=0, le=1)
+    kbeauty_signal_ratio: float = Field(ge=0, le=1)
+    skincare_relevance_score: float = Field(ge=0, le=100)
+    commerce_signal_score: float = Field(ge=0, le=100)
+    consistency_score: float = Field(ge=0, le=100)
+    brand_safety_precheck_score: float = Field(ge=0, le=100)
+    matched_product_categories: list[ProductCategory] = Field(default_factory=list, max_length=5)
+    recent_post_observations: list[str] = Field(default_factory=list, max_length=10)
+    coverage_gaps: list[str] = Field(default_factory=list, max_length=10)
+    risk_notes: list[str] = Field(default_factory=list, max_length=10)
+    next_step: Literal[
+        "run_full_profile_comment_multimodal_analysis",
+        "collect_more_recent_posts",
+        "operator_review",
+        "do_not_prioritize",
+    ]
+
+
 class FinalCreatorReviewOutput(EvidenceSchema):
     recommendation: Literal["approve_for_outreach", "human_review", "recheck_later", "avoid"]
     recommended_products: list[ProductCategory] = Field(default_factory=list, max_length=5)
@@ -151,6 +179,7 @@ ANALYSIS_OUTPUT_SCHEMAS: dict[str, type[BaseModel]] = {
     "profile_analysis": CreatorProfileAnalysisOutput,
     "comment_analysis": CommentAnalysisOutput,
     "multimodal_analysis": MultimodalVideoAnalysisOutput,
+    "recent_posts_screen": RecentPostsScreenOutput,
     "final_review": FinalCreatorReviewOutput,
     "creator_score": CreatorAnalysisScoreOutput,
 }

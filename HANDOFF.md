@@ -46,13 +46,26 @@ Documentation:
 
 ## Recommended Next Development Order
 
-1. Replace local header RBAC in the dashboard with Supabase Auth/OIDC bearer tokens.
-2. Move development DB from portable PostgreSQL to managed PostgreSQL.
-3. Connect the dashboard to production API environment config.
-4. Implement approved-provider or manual import flows for real creator data.
-5. Add live Gemini calls behind cost, logging, and operator review controls.
-6. Build real media asset ingestion for creator-provided or approved-provider content.
-7. Add production monitoring, error alerts, backup restore drills, and rate limits.
+1. Use `POST /analysis-jobs/run-recent-posts-screen` as the first creator-fit gate with the latest 20 approved recent post snapshots.
+2. Replace local header RBAC in the dashboard with Supabase Auth/OIDC bearer tokens.
+3. Move development DB from portable PostgreSQL to managed PostgreSQL.
+4. Connect the dashboard to production API environment config.
+5. Implement approved-provider or manual import flows for real creator and recent-post data.
+6. Add live Gemini calls behind cost, logging, and operator review controls.
+7. Build real media asset ingestion for creator-provided or approved-provider content.
+8. Add production monitoring, error alerts, backup restore drills, and rate limits.
+
+## Creator Discovery Recall Policy
+
+The discovery planner returns `coverage_audit` and `recall_safeguards`.
+
+Use these fields before concluding that a market or product has weak creator supply:
+
+1. Keep discovery, concern, format, and commerce keyword intent coverage balanced.
+2. Run second-pass expansion when any intent type is missing.
+3. Avoid hard follower-count cutoffs during initial discovery.
+4. Screen the latest 20 approved posts before excluding borderline creators.
+5. Keep TikTok, Instagram, approved provider exports, manual import, and creator-provided lists as separate source lanes.
 
 ## Local Commands
 
@@ -101,4 +114,3 @@ To re-enable:
 ```powershell
 Remove-Item Env:\DISABLE_AUTO_PUSH
 ```
-

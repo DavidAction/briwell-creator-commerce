@@ -242,15 +242,16 @@ python scripts/validate_csv_imports.py
 27. `POST /discovery/plans`
 28. `GET /ai/provider-status`
 29. `POST /analysis-jobs/run-multimodal`
-30. `POST /outreach/status-transition`
-31. `POST /performance/snapshots`
-32. `GET /performance/campaigns/{campaign_id}/summary`
-33. `POST /settlements/contracts`
-34. `POST /settlements/payouts`
-35. `GET /compliance/rules`
-36. `POST /compliance/country-claims-check`
-37. `GET /ops/readiness`
-38. `GET /ops/security-policy`
+30. `POST /analysis-jobs/run-recent-posts-screen`
+31. `POST /outreach/status-transition`
+32. `POST /performance/snapshots`
+33. `GET /performance/campaigns/{campaign_id}/summary`
+34. `POST /settlements/contracts`
+35. `POST /settlements/payouts`
+36. `GET /compliance/rules`
+37. `POST /compliance/country-claims-check`
+38. `GET /ops/readiness`
+39. `GET /ops/security-policy`
 
 The initial routers are scaffolded with policy validation, placeholder responses
 when DB mode is disabled, and repository-backed persistence when
@@ -310,6 +311,9 @@ Rules currently enforced:
 4. Unauthorized scraping paths such as `browser_automation`, `captcha_bypass`, and `public_page_scrape` are listed as blocked.
 5. Plans produce tasks only; they do not crawl TikTok, bypass login, or send messages.
 6. Candidate profiles collected from the plan should enter the system through `POST /creators/import`.
+7. Discovery plans include `coverage_audit` and `recall_safeguards` so operators can identify false-negative risk before concluding that a country/product lacks good creators.
+8. Keyword selection is balanced across discovery, concern, format, and commerce intents when the keyword budget allows.
+9. Do not apply hard follower-count cutoffs in the discovery stage; first screen content fit and audience intent.
 
 `GET /discovery/source-policy` returns the allowed and blocked source-type policy
 for UI and operator education.
@@ -392,6 +396,21 @@ Multimodal output includes:
 
 Live Gemini calls remain gated by `AI_DRY_RUN=false`,
 `ALLOW_LIVE_PROVIDER_CALLS=true`, and `GEMINI_API_KEY`.
+
+## Recent 20 Posts First-Pass Screen
+
+`POST /analysis-jobs/run-recent-posts-screen` evaluates the latest 20 approved
+recent post snapshots for one creator before deeper profile, comment,
+multimodal, and scoring analysis.
+
+Rules currently enforced:
+
+1. Accepts at most 20 recent post snapshots.
+2. Uses only approved input data supplied through manual, official API, approved provider, or creator-provided paths.
+3. High Risk and Not Allowed source risk inputs are rejected before provider calls.
+4. Fewer than 20 posts can be validated, but the output requires human review or more recent posts.
+5. The screen returns `suitability_decision`, `suitability_score`, product category matches, coverage gaps, and next step.
+6. Passing this screen does not approve outreach by itself; it only moves the creator to full analysis.
 
 ## Analysis to Score Handoff
 

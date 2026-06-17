@@ -1026,6 +1026,39 @@ def test_multimodal_analysis_job_runs_without_database() -> None:
     assert "sunscreen" in body["result"]["output"]["visible_product_types"]
 
 
+def test_recent_posts_screen_job_runs_without_database() -> None:
+    recent_posts = [
+        {
+            "video_id": f"video-{index}",
+            "caption": "Rutina skincare con protector solar coreano SPF y link de compra.",
+            "transcript": "Protector solar coreano ligero para la piel.",
+            "hashtags": ["skincare", "kbeauty", "protectorsolar"],
+            "view_count": 15000 + index,
+        }
+        for index in range(20)
+    ]
+    response = client.post(
+        "/analysis-jobs/run-recent-posts-screen",
+        headers={"X-User-Role": "operator"},
+        json={
+            "creator_id": "creator-1",
+            "source_risk_level": "low",
+            "recent_posts": recent_posts,
+            "creator_snapshot": {"username": "luzskincare", "country": "MX"},
+            "product_context": {"product_category": "sunscreen"},
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "success"
+    assert body["persistence_status"] == "validated_not_persisted"
+    output = body["result"]["output"]
+    assert output["post_count_analyzed"] == 20
+    assert output["suitability_decision"] == "pass_to_full_analysis"
+    assert output["next_step"] == "run_full_profile_comment_multimodal_analysis"
+
+
 def test_analysis_job_run_dry_run_returns_log_preview() -> None:
     response = client.post(
         "/analysis-jobs/run-dry-run",
