@@ -41,6 +41,14 @@ This script:
 
 ## Start The App
 
+Easiest, double-click the launcher in the repo root (also available as the desktop
+shortcuts "Briwell 켜기" / "Briwell 끄기" on the original machine):
+
+```text
+START_Briwell.bat   (starts API + dashboard, opens the browser)
+STOP_Briwell.bat    (stops both servers)
+```
+
 Option A, start both backend and dashboard in separate PowerShell windows:
 
 ```powershell
@@ -75,7 +83,7 @@ powershell -ExecutionPolicy Bypass -File scripts\test_local_windows.ps1
 Expected backend result:
 
 ```text
-149 passed, 5 skipped
+189 passed, 7 skipped
 ```
 
 Dashboard smoke test should print:
