@@ -1,0 +1,118 @@
+{
+  "version": "creator_eval_set_v0",
+  "created": "2026-06-27",
+  "description": "Labeled recent-20 screen cases. Ground-truth decisions encode expert judgment of the right call so the harness can measure AI decision accuracy and calibration (over-confidence). Used by app/evals/creator_eval.py.",
+  "cases": [
+    {
+      "id": "strong_kbeauty_mx",
+      "label": {
+        "expected_decision": "pass_to_full_analysis",
+        "expected_score_min": 75,
+        "rationale": "Consistent K-beauty skincare + commerce intent, MX, enough posts."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 5,
+      "product_context": {"product_category": "sunscreen"},
+      "creator": {"country": "MX", "username": "luz_kbeauty"},
+      "recent_posts": [
+        {"caption": "Rutina de skincare con protector solar coreano SPF, resena honesta y link de compra.", "hashtags": ["kbeauty", "skincare", "protectorsolar"], "view_count": 22000},
+        {"caption": "Mi rutina coreana de skincare con protector solar SPF, link de compra en bio.", "hashtags": ["kbeauty", "skincare"], "view_count": 21000},
+        {"caption": "Protector solar coreano SPF, reseña honesta, donde comprar con link.", "hashtags": ["kbeauty", "protectorsolar"], "view_count": 24000},
+        {"caption": "Skincare coreano: protector solar SPF para piel diaria, link de compra.", "hashtags": ["kbeauty", "skincare"], "view_count": 23000},
+        {"caption": "Rutina skincare coreana con SPF y protector solar, link de compra hoy.", "hashtags": ["kbeauty", "skincare"], "view_count": 25000}
+      ]
+    },
+    {
+      "id": "strong_kbeauty_pe",
+      "label": {
+        "expected_decision": "pass_to_full_analysis",
+        "expected_score_min": 75,
+        "rationale": "Strong K-beauty + commerce, PE market."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 5,
+      "product_context": {"product_category": "sunscreen"},
+      "creator": {"country": "PE", "username": "andrea_skin"},
+      "recent_posts": [
+        {"caption": "Rutina de skincare con protector solar coreano SPF y link de compra.", "hashtags": ["kbeauty", "skincare"], "view_count": 18000},
+        {"caption": "Skincare coreano con protector solar SPF, donde comprar con link.", "hashtags": ["kbeauty"], "view_count": 19000},
+        {"caption": "Protector solar coreano SPF, reseña honesta, link de compra en bio.", "hashtags": ["kbeauty", "protectorsolar"], "view_count": 20000},
+        {"caption": "Mi rutina coreana skincare con SPF protector solar, link de compra.", "hashtags": ["kbeauty", "skincare"], "view_count": 17000},
+        {"caption": "Rutina skincare coreana protector solar SPF, link de compra.", "hashtags": ["kbeauty"], "view_count": 21000}
+      ]
+    },
+    {
+      "id": "borderline_weak_beauty",
+      "label": {
+        "expected_decision": "human_review",
+        "expected_score_min": 50,
+        "expected_score_max": 75,
+        "rationale": "Only partial beauty content, no clear commerce intent; needs an operator look."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 5,
+      "product_context": {"product_category": "sunscreen"},
+      "creator": {"country": "MX", "username": "mixed_creator"},
+      "recent_posts": [
+        {"caption": "Rutina de skincare con protector solar SPF para piel diaria.", "hashtags": ["skincare"], "view_count": 5000},
+        {"caption": "Skincare con protector solar SPF, cuido mi piel todos los dias.", "hashtags": ["skincare"], "view_count": 4800},
+        {"caption": "Vlog de mi dia comiendo tacos en la ciudad, sin filtros.", "hashtags": ["vlog"], "view_count": 5200},
+        {"caption": "Dia de viaje a la playa con amigos, puro relax.", "hashtags": ["travel"], "view_count": 5100},
+        {"caption": "Receta facil de cocina para la semana, rapida y rica.", "hashtags": ["food"], "view_count": 4900}
+      ]
+    },
+    {
+      "id": "brand_safety_risk",
+      "label": {
+        "expected_decision": "human_review",
+        "rationale": "Beauty content but contains medical/guaranteed-result claims; must be operator-reviewed regardless of score."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 5,
+      "product_context": {"product_category": "calming_serum"},
+      "creator": {"country": "MX", "username": "claims_risk_creator"},
+      "recent_posts": [
+        {"caption": "Rutina de skincare coreano con serum y protector solar SPF, link de compra.", "hashtags": ["kbeauty", "skincare"], "view_count": 16000},
+        {"caption": "Skincare coreano serum calmante para la piel, link de compra en bio.", "hashtags": ["kbeauty"], "view_count": 15000},
+        {"caption": "Mi rutina coreana de skincare con serum y SPF, donde comprar con link.", "hashtags": ["kbeauty", "skincare"], "view_count": 17000},
+        {"caption": "Serum coreano skincare con SPF protector solar, link de compra.", "hashtags": ["kbeauty"], "view_count": 16500},
+        {"caption": "Este serum cura el acne en una semana, resultado garantizado.", "hashtags": ["serum"], "view_count": 18000}
+      ]
+    },
+    {
+      "id": "poor_no_beauty",
+      "label": {
+        "expected_decision": "recheck_later",
+        "expected_score_max": 50,
+        "rationale": "No beauty/skincare signal; not a fit now."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 5,
+      "product_context": {"product_category": "sunscreen"},
+      "creator": {"country": "EC", "username": "lifestyle_only"},
+      "recent_posts": [
+        {"caption": "Vlog de mi dia comiendo tacos en la ciudad, sin filtros.", "hashtags": ["vlog"], "view_count": 6000},
+        {"caption": "Dia de viaje a la playa con amigos, puro relax.", "hashtags": ["travel"], "view_count": 6200},
+        {"caption": "Receta facil de cocina para la semana, rapida y rica.", "hashtags": ["food"], "view_count": 5800},
+        {"caption": "Rutina de gym y motivacion para la semana.", "hashtags": ["fitness"], "view_count": 6100},
+        {"caption": "Unboxing de mis nuevos tenis para correr.", "hashtags": ["sneakers"], "view_count": 5900}
+      ]
+    },
+    {
+      "id": "insufficient_posts",
+      "label": {
+        "expected_decision": "human_review",
+        "rationale": "Strong fit but fewer than the required 20 recent posts; collect more before excluding."
+      },
+      "source_risk_level": "low",
+      "expected_post_count": 20,
+      "product_context": {"product_category": "sunscreen"},
+      "creator": {"country": "MX", "username": "thin_history"},
+      "recent_posts": [
+        {"caption": "Rutina de skincare con protector solar coreano SPF y link de compra.", "hashtags": ["kbeauty", "skincare"], "view_count": 20000},
+        {"caption": "Skincare coreano con protector solar SPF, donde comprar con link.", "hashtags": ["kbeauty"], "view_count": 19500},
+        {"caption": "Protector solar coreano SPF, reseña honesta, link de compra en bio.", "hashtags": ["kbeauty"], "view_count": 21000}
+      ]
+    }
+  ]
+}

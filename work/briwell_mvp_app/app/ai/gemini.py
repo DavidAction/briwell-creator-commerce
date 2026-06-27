@@ -23,6 +23,21 @@ MODEL_BY_ALIAS = {
 }
 
 
+# Calibration guidance injected into every live prompt to counter the observed tendency of
+# flash models to return inflated scores and over-high confidence. Keeps AI judgments
+# discriminating so the evaluation harness can measure real signal.
+CALIBRATION_GUIDANCE = (
+    "Calibration: be conservative and discriminating, not generous. Scores are 0-100; "
+    "confidence is 0-1. Reserve scores above 85 and confidence above 0.85 ONLY for cases with "
+    "strong, explicit, consistent evidence across multiple posts. When evidence is thin, mixed, "
+    "or partial, lower BOTH the score and the confidence. A typical real creator falls in the "
+    "45-75 range; do not default to high scores or high confidence. Score anchors: 85-100 = "
+    "exceptional, clearly proven fit; 70-84 = strong fit; 55-69 = moderate/uncertain; 40-54 = "
+    "weak; below 40 = poor. If evidence is insufficient for a confident call, set "
+    "review_required=true and keep confidence at or below 0.6."
+)
+
+
 class GeminiTextAdapter(AIAdapter):
     """Gemini adapter scaffold with dry-run schema validation by default."""
 
@@ -86,7 +101,7 @@ class GeminiTextAdapter(AIAdapter):
             "contents": [
                 {
                     "role": "user",
-                    "parts": [{"text": self._build_prompt(request)}],
+                    "parts": self._build_parts(request),
                 }
             ],
             "generationConfig": self._generation_config(request),
@@ -128,6 +143,21 @@ class GeminiTextAdapter(AIAdapter):
             raise ValueError("Gemini response did not include text content.")
         return text
 
+    def _build_parts(self, request: AnalysisRequest) -> list[dict[str, Any]]:
+        """Build Gemini content parts: the text prompt plus any inline image frames.
+
+        For multimodal_analysis, real video frame images supplied as base64 are sent as
+        inlineData parts so Gemini actually sees the content instead of only a text
+        description of it. Non-multimodal tasks send the text prompt alone.
+        """
+        parts: list[dict[str, Any]] = [{"text": self._build_prompt(request)}]
+        if request.task_type == "multimodal_analysis":
+            for image in _collect_inline_images(request.payload):
+                parts.append(
+                    {"inlineData": {"mimeType": image["mime_type"], "data": image["data"]}}
+                )
+        return parts
+
     def _build_prompt(self, request: AnalysisRequest) -> str:
         if request.task_type == "recent_posts_screen":
             return _build_recent_posts_screen_prompt(request)
@@ -138,6 +168,7 @@ class GeminiTextAdapter(AIAdapter):
                     "Peru, and Ecuador. Return valid JSON only. Use only the "
                     "provided data. Do not invent missing facts."
                 ),
+                "calibration": CALIBRATION_GUIDANCE,
                 "task_type": request.task_type,
                 "prompt_version": request.prompt_version,
                 "source_risk_level": request.source_risk_level,
@@ -207,6 +238,7 @@ def _build_recent_posts_screen_prompt(request: AnalysisRequest) -> str:
                 "missing data. Treat medical, treatment, guaranteed-result, unsafe, or non-cosmetic "
                 "claims as brand-safety risk notes."
             ),
+            "calibration": CALIBRATION_GUIDANCE,
             "decision_policy": {
                 "pass_to_full_analysis": (
                     "Use only when recent content strongly fits beauty/skincare/K-beauty, has no "
@@ -240,6 +272,30 @@ def _build_recent_posts_screen_prompt(request: AnalysisRequest) -> str:
         ensure_ascii=True,
         default=str,
     )
+
+
+def _collect_inline_images(payload: dict[str, Any], limit: int = 8) -> list[dict[str, str]]:
+    """Extract base64 image frames from a multimodal payload for inline Gemini parts.
+
+    Each frame_sample may carry ``image_base64`` (raw base64, no data URI prefix) and an
+    optional ``image_mime_type``. Capped to keep request size and cost bounded.
+    """
+    images: list[dict[str, str]] = []
+    for frame in payload.get("frame_samples") or []:
+        if not isinstance(frame, dict):
+            continue
+        data = frame.get("image_base64")
+        if not data:
+            continue
+        images.append(
+            {
+                "mime_type": str(frame.get("image_mime_type") or "image/jpeg"),
+                "data": str(data),
+            }
+        )
+        if len(images) >= limit:
+            break
+    return images
 
 
 def _schema_for_gemini(schema: dict[str, Any]) -> dict[str, Any]:

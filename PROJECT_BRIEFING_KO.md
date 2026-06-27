@@ -39,6 +39,23 @@
 남은 핵심: B''(DM은 여전히 템플릿 — 진짜 AI 개인화 생성은 후속),
 C(보안: rate limit·전역 예외 핸들러·감사 로깅·OIDC).
 
+## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
+
+"최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):
+
+1. **AI Evaluation Harness**(`app/evals/creator_eval.py` + `data/golden/creator_eval_set_v0.json`) —
+   라벨된 골든셋으로 AI 결정 정확도·과신(calibration_gap)을 측정. **라이브 검증으로 효과 입증**:
+   Gemini가 `poor_no_beauty`를 conf 0.95로 오판하는 것을 harness가 포착(틀릴 때 confidence 0.95).
+2. **프롬프트 보정**(`gemini.py` CALIBRATION_GUIDANCE) — 과신 억제·점수 앵커 주입. **측정으로 효과 확인**:
+   라이브 점수 95/100/conf 0.95 → 82/50/15·conf 0.745로 변별력 확보.
+3. **성과 피드백 루프**(`app/scoring/calibration.py`) — 실제 성과와 상관 높은 점수 차원에 가중치 재배분
+   제안(상한 재분배로 합=1 유지). 인간 승인 전제(자동 적용 안 함).
+4. **실 멀티모달**(`gemini.py` inlineData) — 영상 프레임 실제 이미지(base64)를 Gemini에 전송. 텍스트 설명만이 아닌 실제 화면 분석.
+5. **Live Data Intake v1**(`app/operations/intake.py` + `POST /operations/intake-validate`) — 4개 소스 레인을
+   단일 검증 계약으로: 정책 결정·필수컬럼·권장컬럼 커버리지·품질게이트. provider_scrape 레인 별도 표기.
+
+다음 최고화 후보: harness 골든셋 확장·라이브 정기 측정, 성과 피드백 실데이터 연결, 멀티프로바이더 라우팅(아래 §3.4).
+
 ## 1. 현재 진행 상태 (정직한 평가)
 
 ### 1.1 동작 검증 결과 (로컬, 2026-06-27)
@@ -146,6 +163,39 @@ b2b-b2c-1-dm/
 - 배포(예정): **Render.com**(`render.yaml`), Supabase Auth/OIDC(예정)
 
 ---
+
+### 3.4 Gemini 모델 평가 + 타 AI API 비교 (2026-06, 웹조사 기준)
+
+**현재 설정은 합리적인 티어링.** 고볼륨 단계엔 최저가, 최종 판단엔 프리미엄을 씀:
+
+| 용도 | 모델 | 입력/출력($/1M) | 평가 |
+|---|---|---|---|
+| 스크린·프로필(고볼륨) | gemini-3.1-flash-lite | $0.25 / $1.50 | ✅ 최저가·최고속, 깔때기 입구에 적합 |
+| 최종 리뷰(소수·중요) | gemini-3.5-flash | $1.50 / $9.00 | 프리미엄. 비용 민감 시 3-flash-preview로 하향 가능 |
+| 멀티모달·DM | gemini-3-flash-preview | $0.50 / $3.00 | 중간 티어 |
+
+**가성비·성능 비교 (경쟁 모델, $/1M in·out):**
+
+| 모델 | 입력/출력 | 강점 | 약점 |
+|---|---|---|---|
+| **Gemini 3.1 Flash-Lite** | $0.25/$1.50 | 최저가급·최고속·**네이티브 영상/오디오/PDF** | 품질 약간 하위 |
+| Gemini 3.5 Flash | $1.50/$9.00 | 프런티어 성능·1M 컨텍스트·네이티브 멀티모달 | 출력 비쌈(가격 상승) |
+| GPT-5.4 Mini | $0.75/$4.50 | **품질 최상위**(벤치 1위)·범용 | 텍스트·이미지만(영상 X) |
+| Claude Haiku 4.5 | $1.00/$5.00 | 에이전트/툴·캐시 프롬프트 강함 | 텍스트·이미지만(영상 X) |
+| DeepSeek V4 | $0.30/$0.50 | **초저가** 대량 분류 | 품질 최하위·지연 |
+
+**판정 — 이 용도(LATAM TikTok 크리에이터 영상 분석, 고볼륨, 스페인어)엔 Gemini가 최적의 primary:**
+1. **결정적 이유 = 네이티브 영상 멀티모달**. ④의 실제 영상 프레임 분석은 Gemini만 네이티브 지원(GPT·Claude는 텍스트+이미지만). 제품 핵심이 "영상 콘텐츠 평가"라 이게 승부처.
+2. 속도 1위(고볼륨 스크린에 유리) + Flash-Lite 최저가급 + 무료 티어.
+3. 단점: 순수 텍스트 판단 품질은 GPT-5.4 Mini·Haiku가 3~7%p 우위, Gemini Flash 출력가 상승 추세.
+
+**최고 시스템을 위한 권고 = 멀티프로바이더 라우팅** (`ai_model_config` 테이블이 google/openai/anthropic 이미 지원):
+- 멀티모달·스크린 → **Gemini**(네이티브 영상·속도·가격)
+- 최종 리뷰처럼 미묘한 텍스트 판단 → **GPT-5.4 Mini 또는 Claude Haiku**(품질 우위) 후보
+- 초대량 1차 분류 → **DeepSeek V4**(초저가)
+- 공통 절감: **Batch API -50%, 컨텍스트 캐싱 -90%** 적용
+
+출처: [metacto](https://www.metacto.com/blogs/the-true-cost-of-google-gemini-a-guide-to-api-pricing-and-integration), [artificialanalysis](https://artificialanalysis.ai/articles/gemini-3-5-flash-everything-you-need-to-know), [respan](https://www.respan.ai/blog/fast-model-comparison), [tokenmix](https://tokenmix.ai/blog/gpt-5-4-mini-vs-claude-haiku), [intuitionlabs](https://intuitionlabs.ai/articles/ai-api-pricing-comparison-grok-gemini-openai-claude).
 
 ## 4. 비용 구조 & 가드레일
 

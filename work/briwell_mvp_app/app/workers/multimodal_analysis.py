@@ -17,6 +17,10 @@ class FrameSample(BaseModel):
     timestamp_seconds: float = Field(ge=0)
     description: str = Field(min_length=1, max_length=1000)
     asset_url: str | None = Field(default=None, max_length=2000)
+    # Optional raw base64 image (no data: prefix) so live Gemini analyzes the actual
+    # frame, not just its text description. Only used on live multimodal calls.
+    image_base64: str | None = Field(default=None, repr=False)
+    image_mime_type: str = "image/jpeg"
 
 
 class MultimodalVideoSnapshot(BaseModel):

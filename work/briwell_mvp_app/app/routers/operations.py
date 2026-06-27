@@ -13,6 +13,7 @@ from app.core.policy import (
     require_allowed_collection_source_type,
     require_allowed_source_risk,
 )
+from app.operations.intake import validate_intake
 from app.operations.orchestration import run_acquisition_orchestration_workflow
 from app.operations.workflows import (
     apply_recent_screen_results,
@@ -88,6 +89,16 @@ class ImportQualityLogRequest(BaseModel):
     creator_candidates: list[CreatorCandidate] = Field(default_factory=list, max_length=200)
     recent_posts_by_creator: dict[str, list[RecentPostInput]] = Field(default_factory=dict)
     quality_gate: dict[str, Any] | None = None
+
+
+class IntakeValidateRequest(BaseModel):
+    # Loose dict rows on purpose: the validator REPORTS missing required columns rather
+    # than rejecting the upload at the schema layer, so operators see what to fix.
+    source_type: str = Field(min_length=1)
+    source_risk_level: str = Field(min_length=1)
+    expected_countries: list[Country] = Field(default_factory=lambda: ["MX", "PE", "EC"], max_length=3)
+    creators: list[dict[str, Any]] = Field(default_factory=list, max_length=500)
+    recent_posts_by_creator: dict[str, list[dict[str, Any]]] = Field(default_factory=dict)
 
 
 class CreatorEnrichmentRequest(BaseModel):
@@ -204,6 +215,22 @@ def create_import_quality_log(
         "import_log": persisted,
         "next_action": _quality_next_action(quality_gate),
     }
+
+
+@router.post("/intake-validate")
+def validate_data_intake(
+    payload: IntakeValidateRequest,
+    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+) -> dict[str, Any]:
+    # Returns 200 with a report (including status "blocked"); it is a pre-import linter,
+    # not a gate that rejects the request.
+    return validate_intake(
+        source_type=payload.source_type,
+        source_risk_level=payload.source_risk_level,
+        creators=payload.creators,
+        recent_posts_by_creator=payload.recent_posts_by_creator,
+        expected_countries=payload.expected_countries,
+    )
 
 
 @router.post("/acquisition-orchestration")
