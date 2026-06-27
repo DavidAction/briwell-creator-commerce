@@ -11,7 +11,16 @@ ALLOWED_COLLECTION_SOURCE_TYPES = {
     "official_api",
     "approved_provider",
     "creator_provided",
+    # provider_scrape: data collected through a managed third-party scraping provider
+    # (e.g. Apify). Kept as an allowed but HONESTLY-LABELED lane so the pipeline can use it
+    # without masquerading as a licensed "approved_provider". Live calls stay opt-in
+    # (default OFF). Legal/ToS confirmation of this lane is deferred to a later review.
+    "provider_scrape",
 }
+# Source types that represent third-party scraping. Allowed and functional, but flagged
+# for elevated review and deferred legal/ToS confirmation. Distinct from the hard-blocked
+# raw-scrape types below (self-run scrapers, captcha/login bypass, etc.).
+PROVIDER_SCRAPE_SOURCE_TYPES = {"provider_scrape"}
 BLOCKED_COLLECTION_SOURCE_TYPES = {
     "automated_scrape",
     "browser_automation",

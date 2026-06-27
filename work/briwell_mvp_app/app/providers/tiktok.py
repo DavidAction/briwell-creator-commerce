@@ -53,7 +53,7 @@ class NormalizedTikTokCreator(BaseModel):
     follower_count: int | None = Field(default=None, ge=0)
     avg_views: int | None = Field(default=None, ge=0)
     engagement_rate: float | None = Field(default=None, ge=0)
-    source_type: Literal["approved_provider"] = "approved_provider"
+    source_type: Literal["provider_scrape"] = "provider_scrape"
     source_risk_level: Literal["low_medium"] = "low_medium"
     matched_query: str
     matched_intent: str
@@ -80,7 +80,7 @@ class NormalizedTikTokVideo(BaseModel):
     duration_seconds: int | None = Field(default=None, ge=0)
     thumbnail_url: str | None = None
     transcript: str | None = None
-    source_type: Literal["approved_provider"] = "approved_provider"
+    source_type: Literal["provider_scrape"] = "provider_scrape"
     source_risk_level: Literal["low_medium"] = "low_medium"
     raw_metadata: dict[str, Any] = Field(default_factory=dict)
 
@@ -500,7 +500,7 @@ def _persist_if_requested(
             "reason": "USE_DATABASE=true is required.",
         }
     imported_creators = creator_repository.import_creators(
-        source_type="approved_provider",
+        source_type="provider_scrape",
         source_risk_level="low_medium",
         items=[
             {
@@ -527,7 +527,7 @@ def _persist_if_requested(
             continue
         imported = video_repository.import_videos(
             creator_id=db_creator_id,
-            source_type="approved_provider",
+            source_type="provider_scrape",
             source_risk_level="low_medium",
             items=[_video_to_import_item(video) for video in videos],
         )
@@ -541,7 +541,7 @@ def _persist_if_requested(
 
 def _creator_import_payload(creators: list[NormalizedTikTokCreator]) -> dict[str, Any]:
     return {
-        "source_type": "approved_provider",
+        "source_type": "provider_scrape",
         "source_risk_level": "low_medium",
         "items": [
             {
@@ -567,7 +567,7 @@ def _video_import_payloads(
         payloads.append(
             {
                 "provider_creator_id": provider_creator_id,
-                "source_type": "approved_provider",
+                "source_type": "provider_scrape",
                 "source_risk_level": "low_medium",
                 "items": [_video_to_import_item(video) for video in videos],
             }

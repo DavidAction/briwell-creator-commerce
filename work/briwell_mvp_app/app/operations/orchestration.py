@@ -17,10 +17,14 @@ from app.operations.workflows import (
     match_campaign_candidates,
     rollup_performance,
 )
+from app.ai.contracts import AnalysisRequest
 from app.repositories import creators as creator_repository
 from app.repositories import operations as operations_repository
 from app.repositories import videos as video_repository
+from app.schemas.analysis import CommentAnalysisOutput, CreatorProfileAnalysisOutput
+from app.workers.analysis_runner import AnalysisRunRequest, run_analysis
 from app.workers.recent_posts_screening import RecentPostSnapshot, RecentPostsScreenRequest, run_recent_posts_screen
+from app.workers.scoring_handoff import CreatorScoringHandoffRequest, run_creator_scoring_handoff
 
 
 def run_acquisition_orchestration_workflow(
@@ -63,10 +67,18 @@ def run_acquisition_orchestration_workflow(
         for item in recent_screen["apply_items"]
         if item.get("creator_id") and item.get("screen_result")
     }
+    analysis_by_creator = _run_full_analysis_batch(
+        payload=payload,
+        creators=resolved_creators,
+        posts_by_creator=posts_by_input_key,
+        screen_results_by_creator=screen_results_by_creator,
+        source_risk_level=source_risk_level,
+    )
     campaign_match = _build_campaign_match_section(
         payload=payload,
         creators=resolved_creators,
         screen_results_by_creator=screen_results_by_creator,
+        analysis_by_creator=analysis_by_creator,
     )
     outreach_plan = (
         _build_outreach_section(payload, campaign_match["items"])
@@ -95,7 +107,8 @@ def run_acquisition_orchestration_workflow(
             "applied_items": applied_recent,
             "queue_counts": _count_by(applied_recent, "queue"),
         },
-        "analysis_pipeline": _build_analysis_pipeline_section(applied_recent),
+        "full_analysis": _build_full_analysis_summary(analysis_by_creator),
+        "analysis_pipeline": _build_analysis_pipeline_section(applied_recent, analysis_by_creator),
         "campaign_match": campaign_match,
         "outreach_plan": outreach_plan,
         "crm_board": crm_board,
@@ -328,22 +341,49 @@ def _build_campaign_match_section(
     payload: dict[str, Any],
     creators: list[dict[str, Any]],
     screen_results_by_creator: dict[str, dict[str, Any]],
+    analysis_by_creator: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
     if not payload.get("run_campaign_match", True):
         return {"status": "skipped", "items": [], "reason": "run_campaign_match=false"}
 
     match_ready_candidates = []
+    score_source_counts: dict[str, int] = {}
     for creator in creators:
         creator_id = str(creator.get("creator_id") or creator.get("username"))
         screen = screen_results_by_creator.get(creator_id, {})
+        analysis = analysis_by_creator.get(creator_id) or {}
         risk_notes = screen.get("risk_notes") or []
-        score = creator.get("final_score")
-        if score is None:
+
+        # Prefer the SYSTEM-COMPUTED creator score from the full-analysis chain.
+        # Operator-supplied final_score is only a fallback when no analysis ran.
+        if analysis.get("final_score") is not None:
+            score = analysis["final_score"]
+            score_source = "system_analysis"
+        elif creator.get("final_score") is not None:
+            score = creator.get("final_score")
+            score_source = "operator_supplied"
+        elif screen.get("suitability_score") is not None:
             score = screen.get("suitability_score")
-        risk_penalty = creator.get("risk_penalty")
-        if risk_penalty is None:
+            score_source = "recent_screen_fallback"
+        else:
+            score = 0
+            score_source = "unscored"
+
+        if analysis.get("risk_penalty") is not None:
+            risk_penalty = analysis["risk_penalty"]
+        elif creator.get("risk_penalty") is not None:
+            risk_penalty = creator.get("risk_penalty")
+        else:
             risk_penalty = 12 if risk_notes else 3
-        matched_products = creator.get("recommended_products") or screen.get("matched_product_categories") or []
+
+        matched_products = (
+            analysis.get("recommended_products")
+            or creator.get("recommended_products")
+            or screen.get("matched_product_categories")
+            or []
+        )
+        segment = analysis.get("segment") or creator.get("segment") or "review_creator"
+        score_source_counts[score_source] = score_source_counts.get(score_source, 0) + 1
         match_ready_candidates.append(
             {
                 **creator,
@@ -351,7 +391,8 @@ def _build_campaign_match_section(
                 "final_score": score or 0,
                 "risk_penalty": risk_penalty,
                 "recommended_products": matched_products,
-                "segment": creator.get("segment") or "review_creator",
+                "segment": segment,
+                "score_source": score_source,
             }
         )
 
@@ -372,6 +413,7 @@ def _build_campaign_match_section(
             "matched_count": len(items),
             "priority_outreach": sum(1 for item in items if item.get("priority_label") == "priority_outreach"),
             "human_review": sum(1 for item in items if item.get("priority_label") == "human_review"),
+            "score_source_counts": score_source_counts,
         },
     }
 
@@ -451,12 +493,20 @@ def _build_compliance_section(
     }
 
 
-def _build_analysis_pipeline_section(applied_recent: list[dict[str, Any]]) -> dict[str, Any]:
+def _build_analysis_pipeline_section(
+    applied_recent: list[dict[str, Any]],
+    analysis_by_creator: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
     queues = []
+    executed_count = 0
     for item in applied_recent:
         creator_id = item.get("creator_id")
         decision = item.get("suitability_decision")
         if decision == "pass_to_full_analysis":
+            analysis = analysis_by_creator.get(str(creator_id)) or {}
+            executed = analysis.get("final_score") is not None
+            if executed:
+                executed_count += 1
             queues.append(
                 {
                     "creator_id": creator_id,
@@ -468,7 +518,15 @@ def _build_analysis_pipeline_section(applied_recent: list[dict[str, Any]]) -> di
                         "creator_score_handoff",
                         "final_review",
                     ],
-                    "mode": "dry_run_default_live_ready",
+                    "status": "executed" if executed else "pending",
+                    "executed_tasks": analysis.get("executed_tasks", []),
+                    "pending_tasks": ["multimodal_analysis", "final_review"] if executed else [],
+                    "final_score": analysis.get("final_score"),
+                    "segment": analysis.get("segment"),
+                    "risk_penalty": analysis.get("risk_penalty"),
+                    "score_confidence": analysis.get("score_confidence"),
+                    "review_required_reason": analysis.get("review_required_reason"),
+                    "mode": analysis.get("mode", "dry_run_default_live_ready"),
                 }
             )
         elif decision == "human_review":
@@ -478,7 +536,8 @@ def _build_analysis_pipeline_section(applied_recent: list[dict[str, Any]]) -> di
         else:
             queues.append({"creator_id": creator_id, "queue": "recheck_later_queue", "tasks": ["backfill_recent_posts"]})
     return {
-        "status": "planned",
+        "status": "executed" if executed_count else "planned",
+        "executed_count": executed_count,
         "items": queues,
         "live_ai_ready": bool(settings.gemini_api_key) and settings.allow_live_provider_calls and not settings.ai_dry_run,
         "multimodal_requirements": [
@@ -488,6 +547,176 @@ def _build_analysis_pipeline_section(applied_recent: list[dict[str, Any]]) -> di
             "brand-safety claim review",
         ],
     }
+
+
+def _run_full_analysis_batch(
+    payload: dict[str, Any],
+    creators: list[dict[str, Any]],
+    posts_by_creator: dict[str, list[dict[str, Any]]],
+    screen_results_by_creator: dict[str, dict[str, Any]],
+    source_risk_level: str,
+) -> dict[str, dict[str, Any]]:
+    """Run the post-screen full-analysis chain for creators that passed the recent-20
+    screen: profile analysis (+ comment analysis when comments are supplied) feeding a
+    deterministic creator-score handoff. This makes the campaign-match score
+    SYSTEM-COMPUTED instead of operator-supplied. Runs in dry-run by default; the scoring
+    is deterministic, so a real final_score is produced even without live AI calls.
+    Multimodal and final-review remain operator/asset-gated downstream steps.
+    """
+    if not payload.get("run_full_analysis", True):
+        return {}
+
+    dry_run = bool(payload.get("analysis_dry_run", payload.get("recent_screen_dry_run", True)))
+    allow_live = False if dry_run else settings.allow_live_provider_calls
+    comments_by_creator = payload.get("comments_by_creator") or {}
+    max_creators = int(payload.get("max_full_analysis_creators") or 50)
+    persist_scores = bool(payload.get("persist_scores", True))
+    results: dict[str, dict[str, Any]] = {}
+
+    for creator in creators[:max_creators]:
+        creator_id = str(creator.get("creator_id") or creator.get("username"))
+        screen = screen_results_by_creator.get(creator_id, {})
+        if screen.get("suitability_decision") != "pass_to_full_analysis":
+            continue
+
+        persist_log = database_enabled() and _is_uuidish(creator.get("creator_id"))
+        executed_tasks: list[str] = []
+
+        profile_run = run_analysis(
+            AnalysisRunRequest(
+                target_entity_type="creator",
+                target_entity_id=creator_id,
+                dry_run=dry_run,
+                allow_live_provider_calls=allow_live,
+                persist_log=persist_log,
+                mark_job_status=False,
+                request=AnalysisRequest(
+                    task_type="profile_analysis",
+                    model_alias="low_cost_text",
+                    source_risk_level=source_risk_level,
+                    prompt_version="profile_analysis_v0",
+                    payload={"creator": creator},
+                ),
+            )
+        )
+        profile_output = (
+            CreatorProfileAnalysisOutput.model_validate(profile_run.result.output)
+            if profile_run.status == "success"
+            else None
+        )
+        if profile_output is not None:
+            executed_tasks.append("profile_analysis")
+
+        comment_output = None
+        comments = _comments_for_creator(creator, comments_by_creator)
+        if comments:
+            comment_run = run_analysis(
+                AnalysisRunRequest(
+                    target_entity_type="creator",
+                    target_entity_id=creator_id,
+                    dry_run=dry_run,
+                    allow_live_provider_calls=allow_live,
+                    persist_log=persist_log,
+                    mark_job_status=False,
+                    request=AnalysisRequest(
+                        task_type="comment_analysis",
+                        model_alias="low_cost_text",
+                        source_risk_level=source_risk_level,
+                        prompt_version="comment_analysis_v0",
+                        payload={"comments": comments},
+                    ),
+                )
+            )
+            if comment_run.status == "success":
+                comment_output = CommentAnalysisOutput.model_validate(comment_run.result.output)
+                executed_tasks.append("comment_analysis")
+
+        handoff = run_creator_scoring_handoff(
+            CreatorScoringHandoffRequest(
+                creator_id=creator_id,
+                source_risk_level=source_risk_level,
+                creator_snapshot=creator,
+                video_metrics=_video_metrics_from_posts(
+                    _posts_for_creator(creator, posts_by_creator, creator_id)
+                ),
+                profile_analysis=profile_output,
+                comment_analysis=comment_output,
+                final_review=None,
+                persist_score=persist_scores and persist_log,
+            )
+        )
+
+        if handoff.status == "scored" and handoff.score is not None:
+            executed_tasks.append("creator_score_handoff")
+            results[creator_id] = {
+                "final_score": handoff.score.final_score,
+                "risk_penalty": handoff.score.risk_penalty,
+                "segment": handoff.score.segment,
+                "recommended_products": list(handoff.score.recommended_products),
+                "recommended_campaign_angle": handoff.score.recommended_campaign_angle,
+                "score_confidence": handoff.score.score_confidence,
+                "review_required_reason": handoff.score.review_required_reason,
+                "score_source": "system_analysis",
+                "executed_tasks": executed_tasks,
+                "persisted_analysis_id": handoff.persisted_analysis_id,
+                "persistence_status": handoff.persistence_status,
+                "mode": "dry_run" if dry_run else "live",
+            }
+        else:
+            results[creator_id] = {
+                "status": "rejected",
+                "review_notes": handoff.review_notes,
+                "executed_tasks": executed_tasks,
+                "mode": "dry_run" if dry_run else "live",
+            }
+    return results
+
+
+def _build_full_analysis_summary(analysis_by_creator: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    scored = [item for item in analysis_by_creator.values() if item.get("final_score") is not None]
+    return {
+        "status": "executed" if analysis_by_creator else "skipped",
+        "scored_count": len(scored),
+        "rejected_count": len(analysis_by_creator) - len(scored),
+        "score_source": "system_analysis",
+        "note": (
+            "final_score is computed by the profile(+comment) -> deterministic creator-score chain, "
+            "not taken from operator input. Add multimodal asset review and final review for full confirmation."
+        ),
+        "results": analysis_by_creator,
+    }
+
+
+def _comments_for_creator(
+    creator: dict[str, Any],
+    comments_by_creator: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    for key in (str(creator.get("creator_id") or ""), str(creator.get("username") or "")):
+        if key and key in comments_by_creator:
+            return comments_by_creator[key]
+    return []
+
+
+def _video_metrics_from_posts(posts: list[dict[str, Any]]) -> dict[str, Any]:
+    if not posts:
+        return {}
+    views = [int(post.get("view_count") or 0) for post in posts if post.get("view_count") is not None]
+    metrics: dict[str, Any] = {}
+    if views:
+        metrics["avg_view_count"] = round(sum(views) / len(views), 2)
+    engagement_rates: list[float] = []
+    for post in posts:
+        view_count = post.get("view_count")
+        if not view_count:
+            continue
+        interactions = sum(
+            int(post.get(field) or 0)
+            for field in ("like_count", "comment_count", "share_count", "save_count")
+        )
+        engagement_rates.append(interactions / int(view_count))
+    if engagement_rates:
+        metrics["engagement_rate"] = round(sum(engagement_rates) / len(engagement_rates), 4)
+    return metrics
 
 
 def _build_settlement_section(outreach_items: list[dict[str, Any]]) -> dict[str, Any]:
@@ -583,7 +812,10 @@ def _orchestration_next_actions(
     if recent_queue_counts.get("human_review_queue"):
         actions.append("Review recent-20 borderline or risk cases before campaign matching.")
     if recent_queue_counts.get("full_analysis_queue"):
-        actions.append("Run profile, comment, multimodal, and creator-score handoff for pass candidates.")
+        actions.append(
+            "Profile and creator-score analysis ran automatically; add multimodal asset review "
+            "and final review for pass candidates."
+        )
     if matched_count:
         actions.append("Run claims check, approve DM drafts, then manually send outreach.")
     else:

@@ -43,7 +43,7 @@ def test_tiktok_provider_dry_run_returns_recent_20_payloads() -> None:
     assert result.provider == "apify"
     assert result.creator_count == 2
     assert result.video_count == 40
-    assert result.creator_import_payload["source_type"] == "approved_provider"
+    assert result.creator_import_payload["source_type"] == "provider_scrape"
     assert result.quality_gates["recent_20_coverage"]["ready_creators"] == 2
     assert result.provider_request_preview is not None
     assert "searchQueries" in result.provider_request_preview["input"]

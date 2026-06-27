@@ -512,6 +512,7 @@ def test_db_acquisition_orchestration_persists_import_and_screen(monkeypatch: py
             "persist_recent_screen_results": True,
             "run_campaign_match": True,
             "build_outreach_plan": True,
+            "min_score": 55,
         },
     )
 

@@ -10,11 +10,15 @@ from app.core.config import settings
 from app.schemas.analysis import ANALYSIS_OUTPUT_SCHEMAS
 
 
+# Model ids verified against the live Gemini ListModels API on 2026-06-27.
+# `gemini-3-flash` does NOT exist; the available gen-3 flash model is
+# `gemini-3-flash-preview`. `gemini-3.1-flash-lite` and `gemini-3.5-flash`
+# are valid non-preview models. Re-verify before enabling production live calls.
 MODEL_BY_ALIAS = {
     "low_cost_text": "gemini-3.1-flash-lite",
     "final_review": "gemini-3.5-flash",
-    "dm_generation": "gemini-3-flash",
-    "multimodal_default": "gemini-3-flash",
+    "dm_generation": "gemini-3-flash-preview",
+    "multimodal_default": "gemini-3-flash-preview",
     "recent_posts_screen": "gemini-3.1-flash-lite",
 }
 

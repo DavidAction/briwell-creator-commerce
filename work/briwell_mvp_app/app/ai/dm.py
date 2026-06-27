@@ -42,6 +42,28 @@ def build_dm_drafts(
             "product_angle": "resena honesta de producto",
             "claims_check_status": "needs_review",
         },
+        {
+            "variant": "ugc_collaboration",
+            "message": (
+                f"Hola {display_name}, nos encanto tu estilo y nos gustaria invitarte a crear contenido "
+                f"UGC con {product_label} para las campanas de Briwell en LatAm. Tu defines el formato; "
+                "nosotros coordinamos producto, brief y aprobacion previa de los detalles."
+            ),
+            "personalization_evidence": evidence,
+            "product_angle": "contenido UGC de marca",
+            "claims_check_status": "needs_review",
+        },
+        {
+            "variant": "commerce_collaboration",
+            "message": (
+                f"Hola {display_name}, en Briwell preparamos una colaboracion de comercio con {product_label}: "
+                "codigo de descuento y link de compra para tu comunidad, con condiciones claras y aprobacion "
+                "previa. Si te interesa, te comparto los detalles de la comision."
+            ),
+            "personalization_evidence": evidence,
+            "product_angle": "colaboracion de comercio con link",
+            "claims_check_status": "needs_review",
+        },
     ]
 
 

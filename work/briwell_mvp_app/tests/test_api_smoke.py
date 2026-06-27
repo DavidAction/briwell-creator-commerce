@@ -1386,6 +1386,7 @@ def test_acquisition_orchestration_runs_offline_operations_flow() -> None:
             "persist_recent_screen_results": False,
             "run_campaign_match": True,
             "build_outreach_plan": True,
+            "min_score": 55,
             "spend_usd": 150,
             "performance_snapshots": [
                 {
@@ -1415,7 +1416,16 @@ def test_acquisition_orchestration_runs_offline_operations_flow() -> None:
         "creator_score_handoff",
         "final_review",
     ]
+    # Full-analysis chain now actually executes and produces a system-computed score,
+    # rather than trusting the operator-supplied final_score.
+    assert body["full_analysis"]["status"] == "executed"
+    assert body["full_analysis"]["scored_count"] == 1
+    assert body["analysis_pipeline"]["status"] == "executed"
+    assert body["analysis_pipeline"]["items"][0]["status"] == "executed"
+    assert "creator_score_handoff" in body["analysis_pipeline"]["items"][0]["executed_tasks"]
     assert body["campaign_match"]["summary"]["matched_count"] == 1
+    assert body["campaign_match"]["items"][0]["score_source"] == "system_analysis"
+    assert body["campaign_match"]["summary"]["score_source_counts"].get("system_analysis") == 1
     assert body["outreach_plan"]["send_policy"]["auto_send_enabled"] is False
     assert body["compliance"]["policy"]["auto_send_enabled"] is False
     assert body["performance"]["summary"]["roas"] == 2.4
