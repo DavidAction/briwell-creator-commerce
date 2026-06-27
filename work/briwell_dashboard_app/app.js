@@ -1,9 +1,9 @@
 const state = {
   apiOnline: false,
   systemReadiness: {
-    api: "Preview",
-    readiness: "Local",
-    note: "API offline; using local preview dataset",
+    api: "미리보기",
+    readiness: "로컬",
+    note: "API 오프라인 · 로컬 미리보기 데이터 사용",
   },
   activeCountry: "ALL",
   selectedCreatorId: "creator-1",
@@ -242,11 +242,11 @@ async function refreshFromApi() {
     ]);
 
     state.apiOnline = true;
-    setApiStatus("online", "API Online");
+    setApiStatus("online", "API 연결됨");
     state.systemReadiness = {
-      api: health?.status === "ok" ? "Online" : health?.status || "Online",
+      api: health?.status === "ok" ? "연결됨" : health?.status || "연결됨",
       readiness: formatReadiness(readiness?.status),
-      note: "Connected to live API",
+      note: "라이브 API 연결됨",
     };
     renderSourcePolicy(sourcePolicy);
     renderAiProvider(aiProvider);
@@ -256,11 +256,11 @@ async function refreshFromApi() {
     }
   } catch (_error) {
     state.apiOnline = false;
-    setApiStatus("offline", "Preview Mode");
+    setApiStatus("offline", "미리보기 모드");
     state.systemReadiness = {
-      api: "Preview",
-      readiness: "Local",
-      note: "API offline; using local preview dataset",
+      api: "미리보기",
+      readiness: "로컬",
+      note: "API 오프라인 · 로컬 미리보기 데이터 사용",
     };
     renderSourcePolicy(null);
     renderAiProvider(null);
@@ -290,41 +290,41 @@ function renderAll() {
 function renderCommandMetrics() {
   const metrics = buildCommandMetrics();
   byId("metricPipelineGmv").textContent = formatCurrencyCompact(metrics.pipelineGmvUsd);
-  byId("metricPipelineNote").textContent = `${metrics.targetProgress}% of USD 25K pilot target`;
+  byId("metricPipelineNote").textContent = `USD 25K 파일럿 목표의 ${metrics.targetProgress}%`;
   byId("metricScreeningCoverage").textContent = `${metrics.loadedRecentPosts}/${metrics.requiredRecentPosts}`;
-  byId("metricCoverageNote").textContent = `${metrics.coveragePercent}% recent-post coverage`;
+  byId("metricCoverageNote").textContent = `최근 게시물 커버리지 ${metrics.coveragePercent}%`;
   byId("metricOutreachReady").textContent = String(metrics.outreachReadyCount);
-  byId("metricOutreachNote").textContent = `${metrics.screenedCount} screened · ${metrics.lowRiskCount} low-risk candidates`;
+  byId("metricOutreachNote").textContent = `스크리닝 ${metrics.screenedCount} · 낮은 리스크 ${metrics.lowRiskCount}명`;
   byId("metricQueue").textContent = String(metrics.humanReviewLoad);
-  byId("metricQueueNote").textContent = `${metrics.postGapCount} data gaps · ${state.reviewItems.length} approval tasks`;
+  byId("metricQueueNote").textContent = `데이터 공백 ${metrics.postGapCount} · 승인 작업 ${state.reviewItems.length}`;
 }
 
 function renderCommerceCommand() {
   const metrics = buildCommandMetrics();
   const stages = [
-    ["Discovered", state.creators.length + state.intakeCreators.length, "candidate pool"],
-    ["Recent 20", `${metrics.loadedRecentPosts}/${metrics.requiredRecentPosts}`, `${metrics.coveragePercent}% coverage`],
-    ["Screened", metrics.screenedCount, "AI first pass"],
-    ["Outreach Ready", metrics.outreachReadyCount, "pass + low risk"],
-    ["Human Review", metrics.humanReviewLoad, "risk/data gates"],
-    ["Live Posts", 0, "tracking pending"],
+    ["발굴", state.creators.length + state.intakeCreators.length, "후보 풀"],
+    ["최근 20", `${metrics.loadedRecentPosts}/${metrics.requiredRecentPosts}`, `커버리지 ${metrics.coveragePercent}%`],
+    ["스크리닝", metrics.screenedCount, "AI 1차"],
+    ["아웃리치 준비", metrics.outreachReadyCount, "통과 + 낮은 리스크"],
+    ["수동 검수", metrics.humanReviewLoad, "리스크·데이터 게이트"],
+    ["게시 추적", 0, "추적 대기"],
   ];
   byId("commerceCommand").innerHTML = `
     <div class="command-summary">
       <div>
-        <span>Forecast GMV</span>
+        <span>예상 GMV</span>
         <strong>${escapeHtml(formatCurrencyCompact(metrics.pipelineGmvUsd))}</strong>
-        <small>${escapeHtml(metrics.targetProgress)}% to pilot target</small>
+        <small>파일럿 목표 대비 ${escapeHtml(metrics.targetProgress)}%</small>
       </div>
       <div>
-        <span>Qualified Reach</span>
+        <span>유효 도달</span>
         <strong>${escapeHtml(formatCompactNumber(metrics.qualifiedReach))}</strong>
-        <small>monthly avg view base</small>
+        <small>월 평균 조회 기반</small>
       </div>
       <div>
-        <span>Data Confidence</span>
+        <span>데이터 신뢰도</span>
         <strong>${escapeHtml(String(metrics.coveragePercent))}%</strong>
-        <small>recent 20 completeness</small>
+        <small>최근 20개 완성도</small>
       </div>
     </div>
     <div class="funnel-board">
@@ -352,22 +352,22 @@ function renderOperatorActions() {
   if (gapCreators.length) {
     actions.push({
       tier: "high",
-      label: "Data Completion",
-      title: "Recent 20 posts gap",
+      label: "데이터 보완",
+      title: "최근 20개 게시물 공백",
       detail: gapCreators
         .map((creator) => `@${creator.username} ${loadedRecentPostsCount(creator)}/20`)
         .join(" · "),
-      next: "Talent Intake",
+      next: "후보 인테이크",
     });
   }
 
   if (readyCreators.length) {
     actions.push({
       tier: "green",
-      label: "Outreach",
-      title: "DM review-ready talent",
+      label: "아웃리치",
+      title: "DM 검수 준비 후보",
       detail: readyCreators.map((creator) => `@${creator.username}`).join(" · "),
-      next: "Brand Safety Desk",
+      next: "브랜드 세이프티",
     });
   }
 
@@ -375,19 +375,19 @@ function renderOperatorActions() {
   if (auditRisk.length) {
     actions.push({
       tier: "blue",
-      label: "Discovery Recall",
-      title: "Second-pass expansion",
-      detail: `${auditRisk.length} market/category cells have missing intent coverage`,
-      next: "Creator Discovery",
+      label: "발굴 리콜",
+      title: "2차 확장",
+      detail: `시장/제품 셀 ${auditRisk.length}곳에 intent 커버리지 누락`,
+      next: "크리에이터 발굴",
     });
   }
 
   actions.push({
     tier: state.apiOnline ? "green" : "neutral",
-    label: "System",
+    label: "시스템",
     title: `${state.systemReadiness.api} · ${state.systemReadiness.readiness}`,
     detail: state.systemReadiness.note,
-    next: `${formatCompactNumber(metrics.qualifiedReach)} qualified view base`,
+    next: `유효 조회 기반 ${formatCompactNumber(metrics.qualifiedReach)}`,
   });
 
   byId("operatorActions").innerHTML = actions
@@ -410,14 +410,14 @@ function renderOperationsPipelineSummary() {
   if (!target) return;
   const pipeline = state.operationsPipeline;
   const steps = [
-    ["Acquisition", pipeline?.acquisition?.status || "Ready"],
-    ["Import Log", pipeline?.importQuality?.status || "Ready"],
-    ["Enrichment", pipeline?.enrichment?.status || "Pending"],
-    ["Recent 20 Apply", pipeline?.recentApply?.status || "Pending"],
-    ["Campaign Match", pipeline?.match?.summary?.matched_count ?? "Pending"],
-    ["Outreach Plan", pipeline?.outreachPlan?.items?.length ?? "Pending"],
-    ["CRM Board", pipeline?.crm?.board?.total ?? "Pending"],
-    ["Performance", pipeline?.performance?.rollup?.summary?.revenue_usd ?? "Pending"],
+    ["수집", pipeline?.acquisition?.status || "준비"],
+    ["임포트 로그", pipeline?.importQuality?.status || "준비"],
+    ["Enrichment", pipeline?.enrichment?.status || "대기"],
+    ["최근 20 반영", pipeline?.recentApply?.status || "대기"],
+    ["캠페인 매칭", pipeline?.match?.summary?.matched_count ?? "대기"],
+    ["아웃리치 플랜", pipeline?.outreachPlan?.items?.length ?? "대기"],
+    ["CRM 보드", pipeline?.crm?.board?.total ?? "대기"],
+    ["성과", pipeline?.performance?.rollup?.summary?.revenue_usd ?? "대기"],
   ];
   target.innerHTML = steps
     .map(
@@ -667,9 +667,9 @@ function validateRecentPostDataset(creators) {
 }
 
 function buildQualitySummary(status, blockers, warnings) {
-  if (status === "blocked") return `${blockers} blockers must be fixed before import or screening.`;
-  if (status === "needs_review") return `${warnings} warnings need operator review before outreach.`;
-  return "Ready for import, screening, and operator review.";
+  if (status === "blocked") return `등록·스크리닝 전 블로커 ${blockers}건을 해결해야 합니다.`;
+  if (status === "needs_review") return `아웃리치 전 경고 ${warnings}건에 대한 운영자 검수가 필요합니다.`;
+  return "등록·스크리닝·운영자 검수 준비 완료.";
 }
 
 function buildHeaderReport(headers, requiredColumns, recommendedColumns) {
@@ -743,9 +743,9 @@ function qualityStatusClass(status) {
 
 function formatQualityStatus(status) {
   const labels = {
-    ready: "Ready",
-    needs_review: "Needs Review",
-    blocked: "Blocked",
+    ready: "준비완료",
+    needs_review: "검수 필요",
+    blocked: "차단",
   };
   return labels[status] || status;
 }
@@ -761,7 +761,7 @@ function looksLikeUuid(value) {
 }
 
 function formatPipelineValue(label, value) {
-  if (label === "Performance" && typeof value === "number") {
+  if (label === "성과" && typeof value === "number") {
     return formatCurrencyCompact(value);
   }
   return String(value);
@@ -799,9 +799,9 @@ function renderTalentRadar() {
           </div>
         </div>
         <div class="radar-footer">
-          <span>Fit ${escapeHtml(String(creator.final_score || 0))}</span>
-          <span>${escapeHtml(formatCompactNumber(creator.avg_views))} avg views</span>
-          <span>${escapeHtml(formatPercent(creator.engagement_rate))} ER</span>
+          <span>적합 ${escapeHtml(String(creator.final_score || 0))}</span>
+          <span>평균조회 ${escapeHtml(formatCompactNumber(creator.avg_views))}</span>
+          <span>ER ${escapeHtml(formatPercent(creator.engagement_rate))}</span>
         </div>
       </button>
     `
@@ -821,7 +821,7 @@ function renderPriorityTable() {
         <td>${scoreCell(creator.final_score)}</td>
         <td>${riskBadge(creator.source_risk_level)}</td>
         <td>${escapeHtml(formatSegment(creator.segment || "review_creator"))}</td>
-        <td><button class="button" data-select-creator="${escapeHtml(creator.creator_id)}">Review</button></td>
+        <td><button class="button" data-select-creator="${escapeHtml(creator.creator_id)}">검수</button></td>
       </tr>
     `
     )
@@ -878,7 +878,7 @@ function renderCandidateTable() {
         <td>${audienceCell(creator)}</td>
         <td>${scoreCell(creator.final_score)}</td>
         <td>${signalTags(creator.signals)}</td>
-        <td><button class="button" data-select-creator="${escapeHtml(creator.creator_id)}">Open Profile</button></td>
+        <td><button class="button" data-select-creator="${escapeHtml(creator.creator_id)}">프로필 열기</button></td>
       </tr>
     `
       )
@@ -906,19 +906,19 @@ function renderCandidateDetail(creator) {
       ${riskBadge(creator.source_risk_level)}
     </div>
     <div class="creator-stat-grid">
-      <div><span>Followers</span><strong>${escapeHtml(formatCompactNumber(creator.follower_count))}</strong></div>
-      <div><span>Avg Views</span><strong>${escapeHtml(formatCompactNumber(creator.avg_views))}</strong></div>
-      <div><span>Engagement</span><strong>${escapeHtml(formatPercent(creator.engagement_rate))}</strong></div>
-      <div><span>Fit Score</span><strong>${escapeHtml(String(creator.final_score || 0))}</strong></div>
+      <div><span>팔로워</span><strong>${escapeHtml(formatCompactNumber(creator.follower_count))}</strong></div>
+      <div><span>평균 조회</span><strong>${escapeHtml(formatCompactNumber(creator.avg_views))}</strong></div>
+      <div><span>인게이지먼트</span><strong>${escapeHtml(formatPercent(creator.engagement_rate))}</strong></div>
+      <div><span>적합 점수</span><strong>${escapeHtml(String(creator.final_score || 0))}</strong></div>
     </div>
     <div class="signal-list">${signalTags(creator.signals)}</div>
-    <div class="policy-line"><span>Risk Penalty</span><strong>${escapeHtml(String(creator.risk_penalty || 0))}</strong></div>
-    <div class="policy-line"><span>Best Format</span><strong>${escapeHtml(formatSegment(creator.segment || "review_creator"))}</strong></div>
+    <div class="policy-line"><span>리스크 패널티</span><strong>${escapeHtml(String(creator.risk_penalty || 0))}</strong></div>
+    <div class="policy-line"><span>추천 포맷</span><strong>${escapeHtml(formatSegment(creator.segment || "review_creator"))}</strong></div>
     <p>${escapeHtml(creator.recommended_campaign_angle || "협업 전 최종 검수 필요")}</p>
     ${screen ? renderScreenCompact(screen) : renderScreenPlaceholder(creator.creator_id)}
     <div class="detail-actions">
-      <button class="button primary" data-add-to-campaign="${escapeHtml(creator.creator_id)}">Shortlist Talent</button>
-      <button class="button" data-run-recent-screen="${escapeHtml(creator.creator_id)}">Run Recent 20 Posts Screen</button>
+      <button class="button primary" data-add-to-campaign="${escapeHtml(creator.creator_id)}">후보 숏리스트</button>
+      <button class="button" data-run-recent-screen="${escapeHtml(creator.creator_id)}">최근 20개 스크리닝 실행</button>
     </div>
   `;
   bindShortlistButtons();
@@ -932,8 +932,8 @@ function renderSourcePolicy(payload) {
     policy: "Unauthorized scraping is blocked in MVP v0.1.",
   };
   byId("sourcePolicy").innerHTML = `
-    <div class="policy-line"><span>Allowed Sources</span><strong>${escapeHtml(formatSourceTypes(source.allowed_source_types).join(", "))}</strong></div>
-    <div class="policy-line"><span>Blocked Sources</span><strong>${escapeHtml(formatSourceTypes(source.blocked_source_types).join(", "))}</strong></div>
+    <div class="policy-line"><span>허용 소스</span><strong>${escapeHtml(formatSourceTypes(source.allowed_source_types).join(", "))}</strong></div>
+    <div class="policy-line"><span>차단 소스</span><strong>${escapeHtml(formatSourceTypes(source.blocked_source_types).join(", "))}</strong></div>
     <div>${escapeHtml(formatPolicyText(source.policy))}</div>
   `;
 }
@@ -947,10 +947,10 @@ function renderAiProvider(payload) {
   };
   state.aiProvider = source;
   byId("aiProvider").innerHTML = `
-    <div class="policy-line"><span>Primary Provider</span><strong>${escapeHtml(formatProvider(source.provider || "google"))}</strong></div>
-    <div class="policy-line"><span>Adapter</span><strong>${escapeHtml(formatAdapter(source.default_adapter || "GeminiTextAdapter"))}</strong></div>
-    <div class="policy-line"><span>Live Calls</span><strong>${escapeHtml(formatBoolean(Boolean(source.live_ready)))}</strong></div>
-    <div class="policy-line"><span>Dry Run</span><strong>${escapeHtml(formatBoolean(Boolean(source.dry_run)))}</strong></div>
+    <div class="policy-line"><span>기본 Provider</span><strong>${escapeHtml(formatProvider(source.provider || "google"))}</strong></div>
+    <div class="policy-line"><span>어댑터</span><strong>${escapeHtml(formatAdapter(source.default_adapter || "GeminiTextAdapter"))}</strong></div>
+    <div class="policy-line"><span>라이브 호출</span><strong>${escapeHtml(formatBoolean(Boolean(source.live_ready)))}</strong></div>
+    <div class="policy-line"><span>드라이런</span><strong>${escapeHtml(formatBoolean(Boolean(source.dry_run)))}</strong></div>
   `;
   updateRecentScreenModeAvailability();
 }
@@ -968,16 +968,16 @@ function updateRecentScreenModeAvailability() {
   }
   if (hint) {
     hint.textContent = liveReady
-      ? "Live Gemini ready. Calls are cost/rate limited and logged."
-      : "Live Gemini unavailable. Check API, AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, and GEMINI_API_KEY.";
+      ? "라이브 Gemini 준비됨. 호출은 비용·횟수 제한 및 로깅됩니다."
+      : "라이브 Gemini 사용 불가. API, AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, GEMINI_API_KEY를 확인하세요.";
   }
 }
 
 function renderPayoutTable() {
   const rows = [
-    ["@luzskincare", "$150", "pending", "Post URL"],
-    ["@pielconandrea", "$220", "blocked", "Invoice URL"],
-    ["@rutina.ec", "$120", "pending", "Tax Document"],
+    ["@luzskincare", "$150", "pending", "게시물 URL"],
+    ["@pielconandrea", "$220", "blocked", "인보이스 URL"],
+    ["@rutina.ec", "$120", "pending", "세금 증빙"],
   ];
   byId("payoutTable").innerHTML = rows
     .map(
@@ -985,7 +985,7 @@ function renderPayoutTable() {
       <tr>
         <td>${escapeHtml(creator)}</td>
         <td>${escapeHtml(amount)}</td>
-        <td>${status === "blocked" ? '<span class="badge red">Blocked</span>' : '<span class="badge amber">Pending</span>'}</td>
+        <td>${status === "blocked" ? '<span class="badge red">차단</span>' : '<span class="badge amber">대기</span>'}</td>
         <td>${escapeHtml(blocker)}</td>
       </tr>
     `
@@ -1050,32 +1050,32 @@ function renderImportQualityGate() {
   gate.innerHTML = `
     <div class="quality-summary">
       <article class="${escapeHtml(qualityStatusClass(quality.overall_status))}">
-        <span>Overall Status</span>
+        <span>전체 상태</span>
         <strong>${escapeHtml(formatQualityStatus(quality.overall_status))}</strong>
         <small>${escapeHtml(quality.summary)}</small>
       </article>
       <article>
-        <span>Creator Data</span>
+        <span>크리에이터 데이터</span>
         <strong>${escapeHtml(String(quality.creator.total))}</strong>
-        <small>${escapeHtml(quality.creator.valid)} valid · ${escapeHtml(quality.creator.blockers.length)} blockers</small>
+        <small>유효 ${escapeHtml(quality.creator.valid)} · 블로커 ${escapeHtml(quality.creator.blockers.length)}</small>
       </article>
       <article>
-        <span>Recent Posts</span>
+        <span>최근 게시물</span>
         <strong>${escapeHtml(String(quality.posts.loaded))}/${escapeHtml(String(quality.posts.required))}</strong>
-        <small>${escapeHtml(quality.posts.coverage_percent)}% coverage · ${escapeHtml(quality.posts.blockers.length)} blockers</small>
+        <small>커버리지 ${escapeHtml(quality.posts.coverage_percent)}% · 블로커 ${escapeHtml(quality.posts.blockers.length)}</small>
       </article>
       <article>
-        <span>Market Coverage</span>
-        <strong>${escapeHtml(quality.creator.market_coverage.join(" · ") || "None")}</strong>
-        <small>MX, PE, EC launch cluster</small>
+        <span>시장 커버리지</span>
+        <strong>${escapeHtml(quality.creator.market_coverage.join(" · ") || "없음")}</strong>
+        <small>MX·PE·EC 런칭 클러스터</small>
       </article>
     </div>
     ${renderValidationReport(quality)}
     <div class="quality-columns">
-      ${renderQualityColumn("Creator Blockers", quality.creator.blockers, "red")}
-      ${renderQualityColumn("Creator Warnings", quality.creator.warnings, "amber")}
-      ${renderQualityColumn("Post Blockers", quality.posts.blockers, "red")}
-      ${renderQualityColumn("Post Warnings", quality.posts.warnings, "amber")}
+      ${renderQualityColumn("크리에이터 블로커", quality.creator.blockers, "red")}
+      ${renderQualityColumn("크리에이터 경고", quality.creator.warnings, "amber")}
+      ${renderQualityColumn("게시물 블로커", quality.posts.blockers, "red")}
+      ${renderQualityColumn("게시물 경고", quality.posts.warnings, "amber")}
     </div>
     <div class="quality-readiness">
       ${quality.creator.readiness
@@ -1107,43 +1107,43 @@ function renderValidationReport(quality) {
   const dbReady = quality.overall_status !== "blocked";
   const cards = [
     {
-      title: "Creator CSV Contract",
-      value: creatorContractReady ? "Ready" : "Fix Required",
+      title: "크리에이터 CSV 계약",
+      value: creatorContractReady ? "준비" : "수정 필요",
       tone: creatorContractReady ? "green" : "red",
-      meta: `${quality.creator.total} rows · ${creatorHeader.detected_count || "seed"} columns`,
+      meta: `${quality.creator.total}행 · ${creatorHeader.detected_count || "시드"}열`,
       items: creatorHeader.missing_required.length
-        ? creatorHeader.missing_required.map((column) => `Required: ${column}`)
+        ? creatorHeader.missing_required.map((column) => `필수: ${column}`)
         : (creatorHeader.missing_recommended.length
-          ? creatorHeader.missing_recommended.slice(0, 4).map((column) => `Recommended: ${column}`)
-          : ["Required columns detected"]),
+          ? creatorHeader.missing_recommended.slice(0, 4).map((column) => `권장: ${column}`)
+          : ["필수 컬럼 확인됨"]),
     },
     {
-      title: "Recent 20 Contract",
-      value: postsContractReady ? "Screen Ready" : `${quality.posts.creators_ready}/${quality.creator.total} Ready`,
+      title: "최근 20개 계약",
+      value: postsContractReady ? "스크리닝 준비" : `${quality.posts.creators_ready}/${quality.creator.total} 준비`,
       tone: postsContractReady ? "green" : "amber",
-      meta: `${quality.posts.loaded}/${quality.posts.required} posts · ${quality.posts.coverage_percent}% coverage`,
+      meta: `게시물 ${quality.posts.loaded}/${quality.posts.required} · 커버리지 ${quality.posts.coverage_percent}%`,
       items: postMissingRequired.length
-        ? postMissingRequired.map((column) => `Required: ${column}`)
+        ? postMissingRequired.map((column) => `필수: ${column}`)
         : (postMissingRecommended.length
-          ? postMissingRecommended.slice(0, 4).map((column) => `Recommended: ${column}`)
-          : ["Recent post contract clear"]),
+          ? postMissingRecommended.slice(0, 4).map((column) => `권장: ${column}`)
+          : ["최근 게시물 계약 충족"]),
     },
     {
-      title: "Source Governance",
-      value: sourceReady ? "Approved" : "Blocked",
+      title: "소스 거버넌스",
+      value: sourceReady ? "승인" : "차단",
       tone: sourceReady ? "blue" : "red",
-      meta: objectCountSummary(sourceTypes) || "manual preview",
-      items: [`Risk mix: ${objectCountSummary(riskMix) || "low"}`],
+      meta: objectCountSummary(sourceTypes) || "수동 미리보기",
+      items: [`리스크 구성: ${objectCountSummary(riskMix) || "low"}`],
     },
     {
-      title: "DB E2E Gate",
-      value: dbReady ? "Persistable" : "Hold",
+      title: "DB E2E 게이트",
+      value: dbReady ? "저장 가능" : "보류",
       tone: dbReady ? "green" : "red",
-      meta: dbReady ? "Ready for import log and DB workflow" : "Resolve blockers before persistence",
+      meta: dbReady ? "임포트 로그·DB 워크플로우 준비" : "저장 전 블로커 해결 필요",
       items: [
         quality.overall_status === "ready"
-          ? "Creator, post, and source checks clear"
-          : `${quality.creator.blockers.length + quality.posts.blockers.length} blockers · ${quality.creator.warnings.length + quality.posts.warnings.length} warnings`,
+          ? "크리에이터·게시물·소스 검사 통과"
+          : `블로커 ${quality.creator.blockers.length + quality.posts.blockers.length} · 경고 ${quality.creator.warnings.length + quality.posts.warnings.length}`,
       ],
     },
   ];
@@ -1170,7 +1170,7 @@ function renderValidationReportCard(card) {
 function renderQualityColumn(title, items, tone) {
   const rendered = items.length
     ? items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
-    : `<li class="quality-empty">Clear</li>`;
+    : `<li class="quality-empty">없음</li>`;
   return `
     <section class="quality-column ${escapeHtml(tone)}">
       <h3>${escapeHtml(title)}</h3>
@@ -1188,8 +1188,8 @@ function renderRecentScreenResult(creatorId) {
   if (!result) {
     target.innerHTML = `
       <div class="screening-empty">
-        <strong>${creator ? `@${escapeHtml(creator.username)}` : "Target Talent"}</strong>
-        <span>${escapeHtml(posts.length)} / 20 recent posts loaded</span>
+        <strong>${creator ? `@${escapeHtml(creator.username)}` : "대상 크리에이터"}</strong>
+        <span>최근 게시물 ${escapeHtml(posts.length)} / 20 적재</span>
         <p class="muted">CSV 또는 수동 입력 후 Run Recent 20 Posts Screen으로 1차 적합성을 확인</p>
       </div>
     `;
@@ -1210,17 +1210,17 @@ function renderCoverageAudit() {
           <span>${escapeHtml(formatProductCategory(item.product_category))}</span>
         </div>
         <div class="audit-metrics">
-          <div><span>Selected</span><strong>${escapeHtml(String(item.selected_count || 0))}</strong></div>
-          <div><span>Available</span><strong>${escapeHtml(String(item.available_count || 0))}</strong></div>
-          <div><span>Missing</span><strong>${escapeHtml(String((item.missing_intent_types || []).length))}</strong></div>
+          <div><span>선택</span><strong>${escapeHtml(String(item.selected_count || 0))}</strong></div>
+          <div><span>가능</span><strong>${escapeHtml(String(item.available_count || 0))}</strong></div>
+          <div><span>누락</span><strong>${escapeHtml(String((item.missing_intent_types || []).length))}</strong></div>
         </div>
-        <div class="tag-row">${(item.missing_intent_types || []).map((value) => `<span class="badge amber">${escapeHtml(formatIntent(value))}</span>`).join("") || '<span class="badge green">Balanced</span>'}</div>
+        <div class="tag-row">${(item.missing_intent_types || []).map((value) => `<span class="badge amber">${escapeHtml(formatIntent(value))}</span>`).join("") || '<span class="badge green">균형</span>'}</div>
         <p>${escapeHtml((item.false_negative_risks || [])[0] || "초기 조건으로 인한 누락 리스크 낮음")}</p>
         <small>${escapeHtml((item.recommended_actions || [])[0] || "최근 20개 게시물 스크리닝으로 최종 제외 전 확인")}</small>
       </article>
     `
       )
-      .join("") || `<div class="screening-empty"><strong>Coverage audit 없음</strong><span>Discovery brief 생성 후 표시</span></div>`;
+      .join("") || `<div class="screening-empty"><strong>커버리지 감사 없음</strong><span>발굴 브리프 생성 후 표시</span></div>`;
 
   byId("recallSafeguards").innerHTML = (state.recallSafeguards || [])
     .map((item) => `<span>${escapeHtml(item)}</span>`)
@@ -1267,7 +1267,7 @@ async function loadKeywordPlaybook() {
     state.keywordPlaybook = payload;
     renderKeywordPlaybookSummary();
     showResult("tiktokProviderResult", payload);
-    showToast(`${payload.keyword_count || 0} K-Beauty keywords loaded`);
+    showToast(`K-Beauty 키워드 ${payload.keyword_count || 0}개 불러옴`);
   } catch (error) {
     state.keywordPlaybook = buildLocalKeywordPlaybook(countries, product, limit);
     renderKeywordPlaybookSummary();
@@ -1302,7 +1302,7 @@ async function runTiktokProviderDiscovery() {
     applyProviderRunToPreview(response);
     renderKeywordPlaybookSummary();
     showResult("tiktokProviderResult", response);
-    showToast(`${response.creator_count || 0} provider creators prepared`);
+    showToast(`Provider 크리에이터 ${response.creator_count || 0}명 준비됨`);
   } catch (error) {
     showResult("tiktokProviderResult", error.payload || { status: "provider_run_failed", message: error.message });
   }
@@ -1363,7 +1363,7 @@ async function loadCreatorCsv() {
       missing_required_columns: state.importQuality?.creator?.header_report?.missing_required || [],
       missing_recommended_columns: state.importQuality?.creator?.header_report?.missing_recommended || [],
     });
-    showToast(`${state.intakeCreators.length} creator candidates loaded`);
+    showToast(`후보 크리에이터 ${state.intakeCreators.length}명 불러옴`);
   } catch (error) {
     showResult("creatorImportResult", { status: "preview_failed", message: error.message });
   }
@@ -1391,7 +1391,7 @@ async function importCreators() {
     showResult("creatorImportResult", error.payload || { status: "local_preview_imported", accepted: state.intakeCreators.length });
   }
   renderAll();
-  showToast("Creator import workflow completed");
+  showToast("크리에이터 등록 완료");
 }
 
 async function loadPostCsv() {
@@ -1458,7 +1458,7 @@ async function importVideos() {
   } catch (error) {
     showResult("postImportResult", error.payload || { status: "local_preview_imported", creator_id: creatorId, accepted: posts.length });
   }
-  showToast(`${posts.length} recent posts linked to candidate`);
+  showToast(`최근 게시물 ${posts.length}개 연결됨`);
 }
 
 async function runRecentScreenForCreator(creatorId) {
@@ -1473,7 +1473,7 @@ async function runRecentScreenForCreator(creatorId) {
       message: "Live Gemini requires API online, AI_DRY_RUN=false, ALLOW_LIVE_PROVIDER_CALLS=true, and GEMINI_API_KEY.",
       provider: state.aiProvider,
     });
-    showToast("Live Gemini is not ready; using Dry Run Preview");
+    showToast("라이브 Gemini 미준비 · 드라이런 미리보기 사용");
     byId("recentScreenMode").value = "dry_run";
     localStorage.setItem("briwell.recentScreenMode", "dry_run");
     return;
@@ -1529,7 +1529,7 @@ async function runRecentScreenForCreator(creatorId) {
   }
   renderAll();
   document.querySelector('[data-view="intake"]').click();
-  showToast(`@${creator.username} recent 20 posts screened`);
+  showToast(`@${creator.username} 최근 20개 스크리닝 완료`);
 }
 
 async function runOperationsPipeline() {
@@ -1688,7 +1688,7 @@ async function runOperationsPipeline() {
   };
   renderOperationsPipelineSummary();
   showResult("operationsEngineResult", state.operationsPipeline);
-  showToast("Operations pipeline completed");
+  showToast("운영 파이프라인 완료");
 }
 
 async function saveCampaign() {
@@ -1924,7 +1924,7 @@ function bindShortlistButtons() {
   document.querySelectorAll("[data-add-to-campaign]").forEach((button) => {
     button.onclick = () => {
       const creator = state.creators.find((item) => item.creator_id === button.dataset.addToCampaign);
-      showToast(`@${creator?.username || "creator"} shortlisted for campaign review`);
+      showToast(`@${creator?.username || "creator"} 캠페인 검토 숏리스트 추가`);
     };
   });
 }
@@ -2530,8 +2530,8 @@ function renderScreenCompact(result) {
         <span class="decision-pill ${decisionClass(result.suitability_decision)}">${escapeHtml(decisionLabel(result.suitability_decision))}</span>
         <strong>${escapeHtml(String(Math.round(Number(result.suitability_score || 0))))}</strong>
       </div>
-      <div class="policy-line"><span>Products</span><strong>${escapeHtml(formatProductList(result.matched_product_categories).join(", ") || "Needs data")}</strong></div>
-      <div class="policy-line"><span>Missing Data</span><strong>${escapeHtml((result.coverage_gaps || result.missing_data || []).slice(0, 2).join(", ") || "None")}</strong></div>
+      <div class="policy-line"><span>제품</span><strong>${escapeHtml(formatProductList(result.matched_product_categories).join(", ") || "데이터 필요")}</strong></div>
+      <div class="policy-line"><span>부족 데이터</span><strong>${escapeHtml((result.coverage_gaps || result.missing_data || []).slice(0, 2).join(", ") || "없음")}</strong></div>
     </div>
   `;
 }
@@ -2541,10 +2541,10 @@ function renderScreenPlaceholder(creatorId) {
   return `
     <div class="screen-compact">
       <div class="screen-compact-head">
-        <span class="decision-pill decision-review">Not Screened</span>
+        <span class="decision-pill decision-review">미스크리닝</span>
         <strong>${escapeHtml(String(count))}/20</strong>
       </div>
-      <div class="policy-line"><span>Next</span><strong>Run Recent 20 Posts Screen</strong></div>
+      <div class="policy-line"><span>다음</span><strong>최근 20개 스크리닝 실행</strong></div>
     </div>
   `;
 }
@@ -2554,37 +2554,37 @@ function renderScreenFull(result, creator, postCount) {
   return `
     <div class="screening-grid">
       <article class="screening-card score-card">
-        <span>Suitability Score</span>
+        <span>적합성 점수</span>
         <strong>${escapeHtml(String(Math.round(Number(result.suitability_score || 0))))}</strong>
-        <small>${creator ? `@${escapeHtml(creator.username)}` : "Candidate"} · ${escapeHtml(postCount)} / 20 posts</small>
+        <small>${creator ? `@${escapeHtml(creator.username)}` : "후보"} · 게시물 ${escapeHtml(postCount)} / 20</small>
       </article>
       <article class="screening-card">
-        <span>Decision</span>
+        <span>판정</span>
         <strong><span class="decision-pill ${decisionClass(result.suitability_decision)}">${escapeHtml(decisionLabel(result.suitability_decision))}</span></strong>
         <small>${escapeHtml(result.next_step || "operator_review")}</small>
       </article>
       <article class="screening-card">
-        <span>Product Match</span>
-        <strong>${escapeHtml(formatProductList(result.matched_product_categories).join(", ") || "Needs Data")}</strong>
-        <small>${escapeHtml(formatPercent(Number(result.kbeauty_signal_ratio || 0) * 100))} K-Beauty signal</small>
+        <span>제품 매칭</span>
+        <strong>${escapeHtml(formatProductList(result.matched_product_categories).join(", ") || "데이터 필요")}</strong>
+        <small>K-Beauty 신호 ${escapeHtml(formatPercent(Number(result.kbeauty_signal_ratio || 0) * 100))}</small>
       </article>
       <article class="screening-card">
-        <span>Missing Data</span>
+        <span>부족 데이터</span>
         <strong>${escapeHtml(String(gaps.length))}</strong>
-        <small>${escapeHtml(gaps.slice(0, 3).join(", ") || "None")}</small>
+        <small>${escapeHtml(gaps.slice(0, 3).join(", ") || "없음")}</small>
       </article>
     </div>
     <div class="screening-notes">
       <div>
-        <h3>Risk Notes</h3>
-        <p>${escapeHtml((result.risk_notes || []).join(", ") || "No precheck risk notes")}</p>
+        <h3>리스크 메모</h3>
+        <p>${escapeHtml((result.risk_notes || []).join(", ") || "사전 리스크 메모 없음")}</p>
       </div>
       <div>
-        <h3>Next Action</h3>
+        <h3>다음 액션</h3>
         <p>${escapeHtml(formatNextStep(result.next_step))}</p>
       </div>
       <div>
-        <h3>Observations</h3>
+        <h3>관찰</h3>
         <p>${escapeHtml((result.recent_post_observations || []).join(" "))}</p>
       </div>
     </div>
@@ -2750,8 +2750,8 @@ function audienceCell(creator) {
   return `
     <div class="audience-cell">
       <strong>${escapeHtml(formatCompactNumber(creator.follower_count))}</strong>
-      <span>${escapeHtml(formatCompactNumber(creator.avg_views))} avg views</span>
-      <span>${escapeHtml(formatPercent(creator.engagement_rate))} engagement</span>
+      <span>평균조회 ${escapeHtml(formatCompactNumber(creator.avg_views))}</span>
+      <span>인게이지먼트 ${escapeHtml(formatPercent(creator.engagement_rate))}</span>
     </div>
   `;
 }
@@ -2805,10 +2805,10 @@ function scoreCell(score) {
 
 function riskBadge(level) {
   const normalized = String(level || "low").toLowerCase();
-  if (normalized === "low") return '<span class="badge green">Low</span>';
-  if (normalized === "low_medium") return '<span class="badge amber">Low/Medium</span>';
-  if (normalized === "medium") return '<span class="badge amber">Medium</span>';
-  return '<span class="badge red">Blocked</span>';
+  if (normalized === "low") return '<span class="badge green">낮음</span>';
+  if (normalized === "low_medium") return '<span class="badge amber">낮음/중간</span>';
+  if (normalized === "medium") return '<span class="badge amber">중간</span>';
+  return '<span class="badge red">차단</span>';
 }
 
 function signalTags(signals) {
@@ -2911,46 +2911,47 @@ function unique(values) {
 
 function formatSegment(segment) {
   const labels = {
-    review_creator: "Review Creator",
-    beauty_educator: "Beauty Educator",
-    ugc_creator: "UGC Producer",
-    viral_micro: "Viral Micro",
-    commerce_creator: "Commerce Creator",
-    brand_builder: "Brand Builder",
-    avoid: "Do Not Use",
+    review_creator: "리뷰 크리에이터",
+    beauty_educator: "뷰티 에듀케이터",
+    ugc_creator: "UGC 제작자",
+    viral_micro: "바이럴 마이크로",
+    commerce_creator: "커머스 크리에이터",
+    brand_builder: "브랜드 빌더",
+    avoid: "사용 안 함",
   };
   return labels[segment] || segment;
 }
 
 function formatSourceTypes(types) {
   const labels = {
-    manual: "Manual Import",
-    official_api: "Official API",
-    approved_provider: "Approved Provider",
-    creator_provided: "Creator Provided",
-    browser_automation: "Browser Automation",
-    captcha_bypass: "CAPTCHA Bypass",
-    public_page_scrape: "Public Page Scrape",
+    manual: "수동 임포트",
+    official_api: "공식 API",
+    approved_provider: "승인 Provider",
+    creator_provided: "크리에이터 제공",
+    provider_scrape: "Provider 스크래핑",
+    browser_automation: "브라우저 자동화",
+    captcha_bypass: "CAPTCHA 우회",
+    public_page_scrape: "공개 페이지 스크래핑",
   };
   return (types || []).map((type) => labels[type] || type);
 }
 
 function formatMarket(country) {
   const labels = {
-    MX: "Mexico",
-    PE: "Peru",
-    EC: "Ecuador",
+    MX: "멕시코",
+    PE: "페루",
+    EC: "에콰도르",
   };
   return labels[country] || country || "";
 }
 
 function formatProductCategory(category) {
   const labels = {
-    sunscreen: "Sunscreen",
-    calming_serum: "Calming Serum",
-    cleanser: "Cleanser",
-    sheet_mask: "Sheet Mask",
-    cushion_foundation: "Cushion Foundation",
+    sunscreen: "선스크린",
+    calming_serum: "카밍 세럼",
+    cleanser: "클렌저",
+    sheet_mask: "시트 마스크",
+    cushion_foundation: "쿠션 파운데이션",
   };
   return labels[category] || category;
 }
@@ -2968,23 +2969,23 @@ function formatPlatform(platform) {
 }
 
 function formatBoolean(value) {
-  return value ? "Enabled" : "Disabled";
+  return value ? "활성" : "비활성";
 }
 
 function formatReadiness(status) {
   const labels = {
-    ok: "Ready",
-    blocked: "Blocked",
-    ready_with_warnings: "Warnings",
-    unknown: "Unknown",
+    ok: "준비",
+    blocked: "차단",
+    ready_with_warnings: "경고",
+    unknown: "알 수 없음",
   };
-  return labels[status] || status || "Unknown";
+  return labels[status] || status || "알 수 없음";
 }
 
 function formatPolicyText(policy) {
-  if (!policy) return "Only compliant acquisition paths are allowed for candidate analysis.";
+  if (!policy) return "후보 분석에는 승인된 수집 경로만 허용됩니다.";
   if (policy.includes("Unauthorized scraping")) {
-    return "Unauthorized scraping is blocked. Use manual import, official APIs, approved providers, or creator-provided data only.";
+    return "무단 스크래핑은 차단됩니다. 수동 임포트, 공식 API, 승인 Provider, 크리에이터 제공 데이터만 사용하세요.";
   }
   return policy;
 }
@@ -3005,23 +3006,23 @@ function formatAdapter(adapter) {
 
 function formatIntent(value) {
   const labels = {
-    discovery: "Discovery",
-    concern: "Concern",
-    format: "Format",
-    commerce: "Commerce",
+    discovery: "발굴",
+    concern: "고민",
+    format: "포맷",
+    commerce: "커머스",
   };
   return labels[value] || value;
 }
 
 function decisionLabel(decision) {
   const labels = {
-    pass_to_full_analysis: "Pass",
-    pass: "Pass",
-    human_review: "Human Review",
-    recheck_later: "Recheck Later",
-    avoid: "Avoid",
+    pass_to_full_analysis: "통과",
+    pass: "통과",
+    human_review: "수동 검수",
+    recheck_later: "추후 재검토",
+    avoid: "제외",
   };
-  return labels[decision] || "Human Review";
+  return labels[decision] || "수동 검수";
 }
 
 function decisionClass(decision) {
@@ -3033,7 +3034,7 @@ function decisionClass(decision) {
 
 function formatNextStep(value) {
   const labels = {
-    run_full_profile_comment_multimodal_analysis: "Profile, comment, multimodal full analysis 실행",
+    run_full_profile_comment_multimodal_analysis: "프로필·댓글·멀티모달 전체 분석 실행",
     collect_more_recent_posts: "최근 게시물 20개까지 추가 수집",
     operator_review: "운영자 검수 후 다음 단계 결정",
     do_not_prioritize: "현재 캠페인 우선순위에서 제외 후 추후 재검토",

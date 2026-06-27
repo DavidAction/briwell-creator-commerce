@@ -13,42 +13,42 @@
         <div class="brand-mark">BR</div>
         <div>
           <div class="brand-name">Briwell</div>
-          <div class="brand-subtitle">Creator Commerce Intelligence</div>
+          <div class="brand-subtitle">크리에이터 커머스 인텔리전스</div>
         </div>
       </div>
 
       <nav class="main-nav" aria-label="Briwell 운영 메뉴">
         <button class="nav-item active" data-view="command">
-          <span>Executive Overview</span>
-          <small>경영 현황</small>
+          <span>경영 현황</span>
+          <small>전체 운영 요약</small>
         </button>
         <button class="nav-item" data-view="discovery">
-          <span>Creator Discovery</span>
+          <span>크리에이터 발굴</span>
           <small>발굴 전략</small>
         </button>
         <button class="nav-item" data-view="intake">
-          <span>Talent Intake</span>
+          <span>후보 인테이크</span>
           <small>후보 업로드</small>
         </button>
         <button class="nav-item" data-view="candidates">
-          <span>Talent Intelligence</span>
+          <span>후보 인텔리전스</span>
           <small>후보 검증</small>
         </button>
         <button class="nav-item" data-view="campaign">
-          <span>Campaign Studio</span>
+          <span>캠페인 스튜디오</span>
           <small>캠페인 설계</small>
         </button>
         <button class="nav-item" data-view="review">
-          <span>Brand Safety Desk</span>
+          <span>브랜드 세이프티</span>
           <small>DM·표현 검수</small>
         </button>
         <button class="nav-item" data-view="tracking">
-          <span>Performance Analytics</span>
+          <span>성과 분석</span>
           <small>성과 추적</small>
         </button>
         <button class="nav-item" data-view="settlement">
-          <span>Contracts & Payouts</span>
-          <small>계약·정산</small>
+          <span>계약·정산</span>
+          <small>계약 및 지급</small>
         </button>
       </nav>
 
@@ -61,72 +61,72 @@
     <main class="workspace">
       <header class="topbar">
         <div>
-          <div class="eyebrow">LATAM K-BEAUTY CREATOR OPERATIONS</div>
-          <h1>LATAM Creator Commerce Command Center</h1>
+          <div class="eyebrow">LATAM K-뷰티 크리에이터 운영</div>
+          <h1>LATAM 크리에이터 커머스 운영 센터</h1>
           <p class="muted">MX, PE, EC K-Beauty launch에서 후보 발굴, 최근 20개 게시물 스크리닝, DM 승인, 매출 추적까지 연결하는 글로벌 MCN 운영 콘솔</p>
         </div>
         <div class="connection-panel">
           <label>
-            <span>API Endpoint</span>
+            <span>API 주소</span>
             <input id="apiBaseInput" value="http://127.0.0.1:8030">
           </label>
           <label>
-            <span>Operator Role</span>
+            <span>운영자 권한</span>
             <select id="roleSelect">
-              <option value="admin">Admin</option>
-              <option value="operator">Operator</option>
-              <option value="campaign_manager">Campaign Manager</option>
-              <option value="viewer">Viewer</option>
+              <option value="admin">관리자</option>
+              <option value="operator">운영자</option>
+              <option value="campaign_manager">캠페인 매니저</option>
+              <option value="viewer">뷰어</option>
             </select>
           </label>
-          <button class="button primary" id="refreshButton">Sync</button>
+          <button class="button primary" id="refreshButton">동기화</button>
         </div>
       </header>
 
       <section class="ops-strip" aria-label="커머스 운영 요약">
         <article>
-          <span>GMV Objective</span>
+          <span>GMV 목표</span>
           <strong>USD 25K</strong>
-          <small>30-day pilot target</small>
+          <small>30일 파일럿 목표</small>
         </article>
         <article>
-          <span>Creator Funnel</span>
-          <strong>Discovery → Paid</strong>
-          <small>Screen, outreach, deliver</small>
+          <span>크리에이터 퍼널</span>
+          <strong>발굴 → 유료</strong>
+          <small>스크리닝·아웃리치·납품</small>
         </article>
         <article>
-          <span>Quality Gate</span>
-          <strong>Recent 20 Required</strong>
-          <small>No one-post approvals</small>
+          <span>품질 게이트</span>
+          <strong>최근 20개 필수</strong>
+          <small>단일 게시물 승인 불가</small>
         </article>
         <article>
-          <span>Governance</span>
-          <strong>Low / Low-Medium</strong>
-          <small>No auto-send, no scrape</small>
+          <span>거버넌스</span>
+          <strong>낮음 / 낮음-중간</strong>
+          <small>자동발송·스크래핑 금지</small>
         </article>
       </section>
 
       <section class="view active" id="view-command">
         <div class="metric-grid">
           <article class="metric-card">
-            <span class="metric-label">Pipeline GMV Forecast</span>
+            <span class="metric-label">파이프라인 GMV 예측</span>
             <strong id="metricPipelineGmv">$0</strong>
-            <small id="metricPipelineNote">Forecast from active shortlist</small>
+            <small id="metricPipelineNote">활성 숏리스트 기반 예측</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Recent-20 Coverage</span>
+            <span class="metric-label">최근 20개 커버리지</span>
             <strong id="metricScreeningCoverage">0/0</strong>
-            <small id="metricCoverageNote">Approved post data loaded</small>
+            <small id="metricCoverageNote">승인 게시물 데이터 적재</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Outreach Ready</span>
+            <span class="metric-label">아웃리치 준비</span>
             <strong id="metricOutreachReady">0</strong>
-            <small id="metricOutreachNote">Pass + low risk + product match</small>
+            <small id="metricOutreachNote">통과 + 낮은 리스크 + 제품 매칭</small>
           </article>
           <article class="metric-card">
-            <span class="metric-label">Human Review Load</span>
+            <span class="metric-label">수동 검수 대기</span>
             <strong id="metricQueue">0</strong>
-            <small id="metricQueueNote">Claims, missing data, risk gates</small>
+            <small id="metricQueueNote">클레임·부족 데이터·리스크 게이트</small>
           </article>
         </div>
 
@@ -134,10 +134,10 @@
           <section class="panel span-8">
             <div class="panel-heading">
               <div>
-                <h2>Commerce Command Board</h2>
+                <h2>커머스 커맨드 보드</h2>
                 <p class="panel-subtitle">크리에이터 발굴부터 매출 추적까지 연결되는 운영 퍼널과 병목 지점</p>
               </div>
-              <span class="badge blue">Executive Control</span>
+              <span class="badge blue">경영 컨트롤</span>
             </div>
             <div class="command-board" id="commerceCommand"></div>
           </section>
@@ -145,10 +145,10 @@
           <section class="panel span-4">
             <div class="panel-heading">
               <div>
-                <h2>Operator Next Actions</h2>
+                <h2>운영자 다음 액션</h2>
                 <p class="panel-subtitle">오늘 처리해야 할 최고 우선순위 액션</p>
               </div>
-              <span class="badge amber">Action Queue</span>
+              <span class="badge amber">액션 큐</span>
             </div>
             <div class="operator-actions" id="operatorActions"></div>
           </section>
@@ -156,10 +156,10 @@
           <section class="panel span-12">
             <div class="panel-heading">
               <div>
-                <h2>Growth Operations Engine</h2>
+                <h2>성장 운영 엔진</h2>
                 <p class="panel-subtitle">Import 로그, 프로필 enrichment, 최근 20개 반영, 캠페인 매칭, DM 플랜, CRM 보드, 성과 rollup을 순차 실행</p>
               </div>
-              <button class="button primary" id="runOperationsPipelineButton">Run Operations Pipeline</button>
+              <button class="button primary" id="runOperationsPipelineButton">운영 파이프라인 실행</button>
             </div>
             <div class="operations-pipeline" id="operationsPipelineSummary"></div>
             <div id="operationsEngineResult" class="result-box"></div>
@@ -168,10 +168,10 @@
           <section class="panel span-12 talent-radar-panel">
             <div class="panel-heading">
               <div>
-                <h2>Creator Portfolio Leaders</h2>
+                <h2>핵심 크리에이터 포트폴리오</h2>
                 <p class="panel-subtitle">시장별 핵심 후보의 채널 비주얼, 최근 콘텐츠 적합도, 커머스 전환 가능성</p>
               </div>
-              <span class="badge blue">Visual Intelligence</span>
+              <span class="badge blue">비주얼 인텔리전스</span>
             </div>
             <div class="talent-radar" id="talentRadar"></div>
           </section>
@@ -179,11 +179,11 @@
           <section class="panel span-8">
             <div class="panel-heading">
               <div>
-                <h2>Shortlist Decision Queue</h2>
+                <h2>숏리스트 결정 큐</h2>
                 <p class="panel-subtitle">브랜드 적합도, 최근 20개 데이터, 리스크, 시장성을 기준으로 정렬된 후보</p>
               </div>
               <div class="segmented">
-                <button class="segment active" data-country="ALL">All</button>
+                <button class="segment active" data-country="ALL">전체</button>
                 <button class="segment" data-country="MX">MX</button>
                 <button class="segment" data-country="PE">PE</button>
                 <button class="segment" data-country="EC">EC</button>
@@ -193,12 +193,12 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Talent</th>
-                    <th>Market</th>
-                    <th>Fit Score</th>
-                    <th>Risk Tier</th>
-                    <th>Profile</th>
-                    <th>Action</th>
+                    <th>크리에이터</th>
+                    <th>시장</th>
+                    <th>적합 점수</th>
+                    <th>리스크</th>
+                    <th>유형</th>
+                    <th>액션</th>
                   </tr>
                 </thead>
                 <tbody id="priorityTable"></tbody>
@@ -209,10 +209,10 @@
           <section class="panel span-4">
             <div class="panel-heading">
               <div>
-                <h2>Risk & Approval Queue</h2>
+                <h2>리스크·승인 큐</h2>
                 <p class="panel-subtitle">클레임, 연락 가능성, 부족 데이터, 승인 상태를 수동 검수</p>
               </div>
-              <span class="badge amber">Human Gate</span>
+              <span class="badge amber">수동 게이트</span>
             </div>
             <div class="queue-list" id="reviewQueue"></div>
           </section>
@@ -220,10 +220,10 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Data Acquisition Policy</h2>
+                <h2>데이터 수집 정책</h2>
                 <p class="panel-subtitle">승인된 수집 경로 기반 후보 분석</p>
               </div>
-              <span class="badge green">Compliant Sources</span>
+              <span class="badge green">승인 소스</span>
             </div>
             <div id="sourcePolicy" class="policy-block"></div>
           </section>
@@ -231,10 +231,10 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>AI Operations Layer</h2>
+                <h2>AI 운영 레이어</h2>
                 <p class="panel-subtitle">Gemini 중심 분석 파이프라인 준비 상태</p>
               </div>
-              <span class="badge blue">Gemini First</span>
+              <span class="badge blue">Gemini 우선</span>
             </div>
             <div id="aiProvider" class="policy-block"></div>
           </section>
@@ -245,39 +245,39 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Creator Discovery Brief</h2>
+              <h2>크리에이터 발굴 브리프</h2>
               <p class="panel-subtitle">시장, 제품군, 플랫폼 기준으로 합법적 후보 발굴 계획 생성</p>
             </div>
-            <button class="button primary" id="runDiscoveryButton">Generate Brief</button>
+            <button class="button primary" id="runDiscoveryButton">브리프 생성</button>
           </div>
           <div class="form-grid">
             <label>
-              <span>Target Markets</span>
+              <span>대상 시장</span>
               <select id="discoveryCountries" multiple>
-                <option value="MX" selected>Mexico</option>
-                <option value="PE" selected>Peru</option>
-                <option value="EC" selected>Ecuador</option>
+                <option value="MX" selected>멕시코</option>
+                <option value="PE" selected>페루</option>
+                <option value="EC" selected>에콰도르</option>
               </select>
             </label>
             <label>
-              <span>Product Category</span>
+              <span>제품군</span>
               <select id="discoveryProduct">
-                <option value="sunscreen">Sunscreen</option>
-                <option value="calming_serum">Calming Serum</option>
-                <option value="cleanser">Cleanser</option>
-                <option value="sheet_mask">Sheet Mask</option>
-                <option value="cushion_foundation">Cushion Foundation</option>
+                <option value="sunscreen">선스크린</option>
+                <option value="calming_serum">카밍 세럼</option>
+                <option value="cleanser">클렌저</option>
+                <option value="sheet_mask">시트 마스크</option>
+                <option value="cushion_foundation">쿠션 파운데이션</option>
               </select>
             </label>
             <label>
-              <span>Channel</span>
+              <span>채널</span>
               <select id="discoveryPlatform">
                 <option value="tiktok">TikTok</option>
                 <option value="instagram">Instagram</option>
               </select>
             </label>
             <label>
-              <span>Keyword Depth</span>
+              <span>키워드 수</span>
               <input id="discoveryLimit" type="number" min="1" max="20" value="4">
             </label>
           </div>
@@ -285,11 +285,11 @@
             <table>
               <thead>
                 <tr>
-                  <th>Market</th>
-                  <th>Category</th>
-                  <th>Keyword</th>
-                  <th>Channel</th>
-                  <th>Acquisition Path</th>
+                  <th>시장</th>
+                  <th>제품군</th>
+                  <th>키워드</th>
+                  <th>채널</th>
+                  <th>수집 경로</th>
                 </tr>
               </thead>
               <tbody id="discoveryTable"></tbody>
@@ -300,40 +300,40 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
-              <h2>TikTok Provider Acquisition</h2>
-              <p class="panel-subtitle">Apify-first provider run for LATAM K-Beauty creators with Gen Z and young millennial keyword coverage</p>
+              <h2>TikTok Provider 수집</h2>
+              <p class="panel-subtitle">Gen Z·영 밀레니얼 키워드를 포함한 LATAM K-Beauty 크리에이터용 Apify 우선 provider 실행</p>
             </div>
-            <span class="badge green">Provider Layer</span>
+            <span class="badge green">Provider 레이어</span>
           </div>
           <div class="form-grid">
             <label>
               <span>Provider</span>
               <select id="tiktokProviderSelect">
                 <option value="apify">Apify</option>
-                <option value="data365">Data365 Benchmark</option>
-                <option value="bright_data">Bright Data Benchmark</option>
-                <option value="tikapi">TikAPI Experiment</option>
+                <option value="data365">Data365 벤치마크</option>
+                <option value="bright_data">Bright Data 벤치마크</option>
+                <option value="tikapi">TikAPI 실험</option>
               </select>
             </label>
             <label>
-              <span>Provider Mode</span>
+              <span>Provider 모드</span>
               <select id="tiktokProviderMode">
-                <option value="dry_run">Dry Run Preview</option>
-                <option value="live">Live Provider Call</option>
+                <option value="dry_run">드라이런 미리보기</option>
+                <option value="live">라이브 Provider 호출</option>
               </select>
             </label>
             <label>
-              <span>Results / Query</span>
+              <span>쿼리당 결과수</span>
               <input id="tiktokProviderResults" type="number" min="1" max="50" value="3">
             </label>
             <label>
-              <span>Recent Posts</span>
+              <span>최근 게시물수</span>
               <input id="tiktokProviderPosts" type="number" min="1" max="20" value="20">
             </label>
           </div>
           <div class="button-row">
-            <button class="button" id="loadKeywordPlaybookButton">Load K-Beauty Keywords</button>
-            <button class="button primary" id="runTiktokProviderButton">Run Provider Discovery</button>
+            <button class="button" id="loadKeywordPlaybookButton">K-Beauty 키워드 불러오기</button>
+            <button class="button primary" id="runTiktokProviderButton">Provider 발굴 실행</button>
           </div>
           <div class="provider-grid" id="keywordPlaybookSummary"></div>
           <div id="tiktokProviderResult" class="result-box"></div>
@@ -342,10 +342,10 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Coverage Audit</h2>
+              <h2>커버리지 감사</h2>
               <p class="panel-subtitle">초기 발굴 조건이 놓칠 수 있는 후보 유형과 보완 액션</p>
             </div>
-            <span class="badge blue">Recall Control</span>
+            <span class="badge blue">리콜 제어</span>
           </div>
           <div class="audit-grid" id="coverageAudit"></div>
           <div class="safeguard-list" id="recallSafeguards"></div>
@@ -357,20 +357,20 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Creator Import</h2>
+                <h2>크리에이터 임포트</h2>
                 <p class="panel-subtitle">CSV 후보를 검토 후 /creators/import로 등록</p>
               </div>
-              <span class="badge green">Low Risk</span>
+              <span class="badge green">낮은 리스크</span>
             </div>
             <div class="upload-zone">
               <label>
-                <span>Candidate CSV</span>
+                <span>후보 CSV</span>
                 <input id="creatorCsvInput" type="file" accept=".csv,text/csv">
               </label>
               <div class="button-row">
-                <a class="button" id="downloadCreatorTemplateButton" href="./templates/creator_candidates_template.csv" download>Download Template</a>
-                <button class="button" id="loadCreatorCsvButton">Preview CSV</button>
-                <button class="button primary" id="importCreatorsButton">Import Creators</button>
+                <a class="button" id="downloadCreatorTemplateButton" href="./templates/creator_candidates_template.csv" download>템플릿 다운로드</a>
+                <button class="button" id="loadCreatorCsvButton">CSV 미리보기</button>
+                <button class="button primary" id="importCreatorsButton">크리에이터 등록</button>
               </div>
               <div class="column-hints">
                 <span>username</span><span>country</span><span>profile_url</span><span>follower_count</span><span>profile_image_url</span>
@@ -380,10 +380,10 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Talent</th>
-                    <th>Market</th>
-                    <th>Followers</th>
-                    <th>Risk</th>
+                    <th>크리에이터</th>
+                    <th>시장</th>
+                    <th>팔로워</th>
+                    <th>리스크</th>
                   </tr>
                 </thead>
                 <tbody id="creatorImportTable"></tbody>
@@ -395,48 +395,48 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Recent 20 Posts Intake</h2>
+                <h2>최근 게시물 20개 인테이크</h2>
                 <p class="panel-subtitle">최근 게시물 CSV 또는 수동 입력을 /videos/import와 스크리닝에 연결</p>
               </div>
-              <span class="badge blue">First Pass</span>
+              <span class="badge blue">1차 스크리닝</span>
             </div>
             <div class="stacked-form">
               <label>
-                <span>Target Talent</span>
+                <span>대상 크리에이터</span>
                 <select id="postCreatorSelect"></select>
               </label>
               <label>
-                <span>Recent Posts CSV</span>
+                <span>최근 게시물 CSV</span>
                 <input id="postCsvInput" type="file" accept=".csv,text/csv">
               </label>
               <label>
-                <span>Manual Recent Posts</span>
+                <span>최근 게시물 수동 입력</span>
                 <textarea id="manualPostsInput" placeholder="url,caption,hashtags,view_count,like_count,comment_count"></textarea>
               </label>
               <label>
-                <span>AI Screening Mode</span>
+                <span>AI 스크리닝 모드</span>
                 <select id="recentScreenMode">
-                  <option value="dry_run">Dry Run Preview</option>
-                  <option value="live">Live Gemini Analysis</option>
+                  <option value="dry_run">드라이런 미리보기</option>
+                  <option value="live">라이브 Gemini 분석</option>
                 </select>
-                <small class="field-hint" id="recentScreenModeHint">Live mode requires a connected API with Gemini enabled.</small>
+                <small class="field-hint" id="recentScreenModeHint">라이브 모드는 Gemini가 활성화된 API 연결이 필요합니다.</small>
               </label>
               <div class="button-row">
-                <a class="button" id="downloadPostTemplateButton" href="./templates/recent_posts_20_template.csv" download>Download Template</a>
-                <button class="button" id="loadPostCsvButton">Preview CSV</button>
-                <button class="button" id="loadManualPostsButton">Load Manual</button>
-                <button class="button primary" id="importVideosButton">Import Videos</button>
-                <button class="button success" id="runRecentScreenButton">Run Recent 20 Posts Screen</button>
+                <a class="button" id="downloadPostTemplateButton" href="./templates/recent_posts_20_template.csv" download>템플릿 다운로드</a>
+                <button class="button" id="loadPostCsvButton">CSV 미리보기</button>
+                <button class="button" id="loadManualPostsButton">수동 입력 불러오기</button>
+                <button class="button primary" id="importVideosButton">영상 등록</button>
+                <button class="button success" id="runRecentScreenButton">최근 20개 스크리닝 실행</button>
               </div>
             </div>
             <div class="table-wrap intake-preview">
               <table>
                 <thead>
                   <tr>
-                    <th>Post</th>
-                    <th>Views</th>
-                    <th>Engagement</th>
-                    <th>Signals</th>
+                    <th>게시물</th>
+                    <th>조회수</th>
+                    <th>인게이지먼트</th>
+                    <th>신호</th>
                   </tr>
                 </thead>
                 <tbody id="postImportTable"></tbody>
@@ -448,10 +448,10 @@
           <section class="panel span-12">
             <div class="panel-heading">
               <div>
-                <h2>Import Quality Gate</h2>
+                <h2>임포트 품질 게이트</h2>
                 <p class="panel-subtitle">후보 등록 전 필수값, 국가 커버리지, 중복, 최근 20개 데이터 품질을 점검</p>
               </div>
-              <span class="badge blue">Data QA</span>
+              <span class="badge blue">데이터 QA</span>
             </div>
             <div class="quality-gate" id="importQualityGate"></div>
           </section>
@@ -459,10 +459,10 @@
           <section class="panel span-12">
             <div class="panel-heading">
               <div>
-                <h2>Recent 20 Posts Screening Result</h2>
+                <h2>최근 20개 스크리닝 결과</h2>
                 <p class="panel-subtitle">적합성 점수, 판정, 부족 데이터, 제품군 매칭, 리스크 메모, 다음 액션</p>
               </div>
-              <span class="badge amber">Human Review Ready</span>
+              <span class="badge amber">수동 검수 대기</span>
             </div>
             <div class="screening-result" id="recentScreenResult"></div>
           </section>
@@ -473,21 +473,21 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Talent Intelligence Inbox</h2>
+              <h2>후보 인텔리전스</h2>
               <p class="panel-subtitle">점수, 시장, 콘텐츠 신호 기반 작업 후보 검증</p>
             </div>
             <div class="filters">
               <input id="candidateSearch" placeholder="계정명 또는 콘텐츠 신호 검색">
               <select id="candidateCountry">
-                <option value="ALL">All Markets</option>
-                <option value="MX">Mexico</option>
-                <option value="PE">Peru</option>
-                <option value="EC">Ecuador</option>
+                <option value="ALL">전체 시장</option>
+                <option value="MX">멕시코</option>
+                <option value="PE">페루</option>
+                <option value="EC">에콰도르</option>
               </select>
               <select id="candidateScore">
-                <option value="70">Fit 70+</option>
-                <option value="80">Fit 80+</option>
-                <option value="90">Fit 90+</option>
+                <option value="70">적합 70+</option>
+                <option value="80">적합 80+</option>
+                <option value="90">적합 90+</option>
               </select>
             </div>
           </div>
@@ -496,11 +496,11 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Talent</th>
-                    <th>Audience</th>
-                    <th>Fit</th>
-                    <th>Signals</th>
-                    <th>Action</th>
+                    <th>크리에이터</th>
+                    <th>오디언스</th>
+                    <th>적합도</th>
+                    <th>신호</th>
+                    <th>액션</th>
                   </tr>
                 </thead>
                 <tbody id="candidateTable"></tbody>
@@ -516,19 +516,19 @@
           <section class="panel span-5">
             <div class="panel-heading">
               <div>
-                <h2>Campaign Studio</h2>
+                <h2>캠페인 스튜디오</h2>
                 <p class="panel-subtitle">시장별 크리에이터 커머스 캠페인 설계</p>
               </div>
-              <span class="badge blue">Draft</span>
+              <span class="badge blue">초안</span>
             </div>
             <div class="stacked-form">
-              <label><span>Campaign Name</span><input id="campaignName" value="MX Sunscreen Creator Launch"></label>
-              <label><span>Market</span><select id="campaignCountry"><option value="MX">Mexico</option><option value="PE">Peru</option><option value="EC">Ecuador</option></select></label>
-              <label><span>Product Category</span><select id="campaignProduct"><option value="sunscreen">Sunscreen</option><option value="calming_serum">Calming Serum</option><option value="cleanser">Cleanser</option></select></label>
-              <label><span>Commerce Channel</span><select id="campaignChannel"><option value="tiktok_shop">TikTok Shop</option><option value="shopify">Shopify</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
-              <label><span>Budget USD</span><input id="campaignBudget" type="number" min="0" value="1200"></label>
-              <label><span>Strategic Objective</span><textarea id="campaignGoal">스페인어권 LATAM 크리에이터의 루틴 리뷰와 커머스 링크 기반 K-Beauty 선스크린 시장 검증</textarea></label>
-              <button class="button primary" id="saveCampaignButton">Save Campaign</button>
+              <label><span>캠페인명</span><input id="campaignName" value="MX 선스크린 크리에이터 런칭"></label>
+              <label><span>시장</span><select id="campaignCountry"><option value="MX">멕시코</option><option value="PE">페루</option><option value="EC">에콰도르</option></select></label>
+              <label><span>제품군</span><select id="campaignProduct"><option value="sunscreen">선스크린</option><option value="calming_serum">카밍 세럼</option><option value="cleanser">클렌저</option></select></label>
+              <label><span>커머스 채널</span><select id="campaignChannel"><option value="tiktok_shop">TikTok Shop</option><option value="shopify">Shopify</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
+              <label><span>예산 USD</span><input id="campaignBudget" type="number" min="0" value="1200"></label>
+              <label><span>전략 목표</span><textarea id="campaignGoal">스페인어권 LATAM 크리에이터의 루틴 리뷰와 커머스 링크 기반 K-Beauty 선스크린 시장 검증</textarea></label>
+              <button class="button primary" id="saveCampaignButton">캠페인 저장</button>
             </div>
             <div id="campaignSaveResult" class="result-box"></div>
           </section>
@@ -536,17 +536,17 @@
           <section class="panel span-7">
             <div class="panel-heading">
               <div>
-                <h2>Execution Funnel</h2>
+                <h2>실행 퍼널</h2>
                 <p class="panel-subtitle">선정, 검수, 승인, 응답 단계별 전환 흐름</p>
               </div>
-              <button class="button" id="prepareDraftsButton">Prepare Outreach</button>
+              <button class="button" id="prepareDraftsButton">아웃리치 준비</button>
             </div>
             <div class="funnel-row">
-              <div style="--stage:100%"><strong>24</strong><span>Shortlisted</span><em>100%</em></div>
-              <div style="--stage:58%"><strong>14</strong><span>Drafted</span><em>58%</em></div>
-              <div style="--stage:38%"><strong>9</strong><span>Brand Safe</span><em>38%</em></div>
-              <div style="--stage:25%"><strong>6</strong><span>Approved</span><em>25%</em></div>
-              <div style="--stage:8%"><strong>2</strong><span>Replied</span><em>8%</em></div>
+              <div style="--stage:100%"><strong>24</strong><span>숏리스트</span><em>100%</em></div>
+              <div style="--stage:58%"><strong>14</strong><span>초안 작성</span><em>58%</em></div>
+              <div style="--stage:38%"><strong>9</strong><span>브랜드 세이프</span><em>38%</em></div>
+              <div style="--stage:25%"><strong>6</strong><span>승인</span><em>25%</em></div>
+              <div style="--stage:8%"><strong>2</strong><span>응답</span><em>8%</em></div>
             </div>
             <div id="draftResult" class="result-box"></div>
           </section>
@@ -558,37 +558,37 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Outreach Copy Review</h2>
+                <h2>아웃리치 카피 검수</h2>
                 <p class="panel-subtitle">협업 DM 표현 리스크와 브랜드 세이프티 검수</p>
               </div>
-              <span class="badge amber">Claims Review</span>
+              <span class="badge amber">클레임 검수</span>
             </div>
-            <label class="full-label"><span>Product Category</span><select id="claimProduct"><option value="sunscreen">Sunscreen</option><option value="calming_serum">Calming Serum</option><option value="cleanser">Cleanser</option></select></label>
-            <label class="full-label"><span>Outreach Message</span><textarea id="dmMessage">Hola Luz, equipo Creator Partnerships de Briwell. Tu contenido de skincare destaca por claridad y confianza; propuesta de colaboración para review de K-Beauty sunscreen.</textarea></label>
+            <label class="full-label"><span>제품군</span><select id="claimProduct"><option value="sunscreen">선스크린</option><option value="calming_serum">카밍 세럼</option><option value="cleanser">클렌저</option></select></label>
+            <label class="full-label"><span>아웃리치 메시지</span><textarea id="dmMessage">Hola Luz, equipo Creator Partnerships de Briwell. Tu contenido de skincare destaca por claridad y confianza; propuesta de colaboración para review de K-Beauty sunscreen.</textarea></label>
             <div class="action-row">
-              <button class="button primary" id="claimsCheckButton">Run Brand Safety Check</button>
-              <button class="button success" id="approveDmButton">Approve</button>
-              <button class="button danger" id="rejectDmButton">Reject</button>
+              <button class="button primary" id="claimsCheckButton">브랜드 세이프티 검사</button>
+              <button class="button success" id="approveDmButton">승인</button>
+              <button class="button danger" id="rejectDmButton">반려</button>
             </div>
             <div id="claimsResult" class="result-box"></div>
           </section>
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Manual Send Control</h2>
+                <h2>수동 발송 관리</h2>
                 <p class="panel-subtitle">플랫폼 자동 발송 차단, 승인 이력만 기록</p>
               </div>
-              <span class="badge red">No Auto-Send</span>
+              <span class="badge red">자동 발송 금지</span>
             </div>
             <div class="timeline">
-              <div class="step done">Drafted</div>
-              <div class="step done">Brand Safe</div>
-              <div class="step done">Approved</div>
-              <div class="step">Manual Send</div>
-              <div class="step">Replied</div>
-              <div class="step">Accepted</div>
+              <div class="step done">초안</div>
+              <div class="step done">브랜드 세이프</div>
+              <div class="step done">승인</div>
+              <div class="step">수동 발송</div>
+              <div class="step">응답</div>
+              <div class="step">수락</div>
             </div>
-            <button class="button" id="manualSendButton">Record Manual Send</button>
+            <button class="button" id="manualSendButton">수동 발송 기록</button>
             <div id="manualSendResult" class="result-box"></div>
           </section>
         </div>
@@ -598,18 +598,18 @@
         <section class="panel">
           <div class="panel-heading">
             <div>
-              <h2>Performance Analytics</h2>
+              <h2>성과 분석</h2>
               <p class="panel-subtitle">게시물, 쿠폰, 조회수, 매출 데이터의 캠페인 단위 추적</p>
             </div>
-            <button class="button primary" id="saveSnapshotButton">Save Snapshot</button>
+            <button class="button primary" id="saveSnapshotButton">스냅샷 저장</button>
           </div>
           <div class="form-grid">
-            <label><span>Campaign ID</span><input id="snapshotCampaign" value="campaign-1"></label>
-            <label><span>Talent ID</span><input id="snapshotCreator" value="creator-1"></label>
-            <label><span>Post URL</span><input id="snapshotPostUrl" value="https://www.tiktok.com/@luzskincare/video/0000000000000000001"></label>
-            <label><span>Coupon Code</span><input id="snapshotCoupon" value="BRI-MX-10"></label>
-            <label><span>Views</span><input id="snapshotViews" type="number" min="0" value="12000"></label>
-            <label><span>Revenue USD</span><input id="snapshotRevenue" type="number" min="0" value="320"></label>
+            <label><span>캠페인 ID</span><input id="snapshotCampaign" value="campaign-1"></label>
+            <label><span>크리에이터 ID</span><input id="snapshotCreator" value="creator-1"></label>
+            <label><span>게시물 URL</span><input id="snapshotPostUrl" value="https://www.tiktok.com/@luzskincare/video/0000000000000000001"></label>
+            <label><span>쿠폰 코드</span><input id="snapshotCoupon" value="BRI-MX-10"></label>
+            <label><span>조회수</span><input id="snapshotViews" type="number" min="0" value="12000"></label>
+            <label><span>매출 USD</span><input id="snapshotRevenue" type="number" min="0" value="320"></label>
           </div>
           <div id="snapshotResult" class="result-box"></div>
         </section>
@@ -620,31 +620,31 @@
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Creator Contract Terms</h2>
+                <h2>크리에이터 계약 조건</h2>
                 <p class="panel-subtitle">납품 조건, 비용, 사용권 기간 지정</p>
               </div>
-              <span class="badge blue">Deliverables</span>
+              <span class="badge blue">납품물</span>
             </div>
             <div class="stacked-form">
-              <label><span>Talent ID</span><input id="contractCreator" value="creator-1"></label>
-              <label><span>Campaign ID</span><input id="contractCampaign" value="campaign-1"></label>
-              <label><span>Fee USD</span><input id="contractFee" type="number" min="0" value="150"></label>
-              <label><span>Video Deliverables</span><input id="contractVideos" type="number" min="1" value="1"></label>
-              <button class="button primary" id="saveContractButton">Save Contract</button>
+              <label><span>크리에이터 ID</span><input id="contractCreator" value="creator-1"></label>
+              <label><span>캠페인 ID</span><input id="contractCampaign" value="campaign-1"></label>
+              <label><span>비용 USD</span><input id="contractFee" type="number" min="0" value="150"></label>
+              <label><span>영상 납품 수</span><input id="contractVideos" type="number" min="1" value="1"></label>
+              <button class="button primary" id="saveContractButton">계약 저장</button>
             </div>
             <div id="contractResult" class="result-box"></div>
           </section>
           <section class="panel span-6">
             <div class="panel-heading">
               <div>
-                <h2>Payout Operations</h2>
+                <h2>지급 운영</h2>
                 <p class="panel-subtitle">지급 상태, 인보이스, 세금 증빙, 게시물 URL 확인</p>
               </div>
-              <span class="badge amber">Evidence Required</span>
+              <span class="badge amber">증빙 필수</span>
             </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Talent</th><th>Amount</th><th>Status</th><th>Required Evidence</th></tr></thead>
+                <thead><tr><th>크리에이터</th><th>금액</th><th>상태</th><th>필수 증빙</th></tr></thead>
                 <tbody id="payoutTable"></tbody>
               </table>
             </div>
