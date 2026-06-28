@@ -146,6 +146,24 @@ class FinalCreatorReviewOutput(EvidenceSchema):
     operator_notes: str = Field(default="", max_length=1500)
 
 
+class DmDraftVariant(StrictSchema):
+    variant: Literal["soft_intro", "product_review", "ugc_collaboration", "commerce_collaboration"]
+    message: str = Field(min_length=1, max_length=2000)
+    product_angle: str = Field(default="", max_length=300)
+    personalization_evidence: list[str] = Field(default_factory=list, max_length=8)
+
+
+class DmGenerationOutput(StrictSchema):
+    status: Literal["ok"]
+    language: str = Field(default="es", min_length=2, max_length=10)
+    country: str | None = None
+    variants: list[DmDraftVariant] = Field(min_length=1, max_length=4)
+    evidence: list[str] = Field(default_factory=list, max_length=10)
+    confidence: float = Field(default=0.7, ge=0, le=1)
+    review_required: bool = True
+    review_required_reason: str | None = "operator_approval_required"
+
+
 class CreatorAnalysisScoreOutput(StrictSchema):
     analysis_version: str = Field(min_length=1)
     beauty_fit_score: float = Field(ge=0, le=100)
@@ -182,4 +200,5 @@ ANALYSIS_OUTPUT_SCHEMAS: dict[str, type[BaseModel]] = {
     "recent_posts_screen": RecentPostsScreenOutput,
     "final_review": FinalCreatorReviewOutput,
     "creator_score": CreatorAnalysisScoreOutput,
+    "dm_generation": DmGenerationOutput,
 }

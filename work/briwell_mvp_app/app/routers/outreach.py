@@ -4,8 +4,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.ai.dm import build_dm_drafts
+from app.ai.dm import build_ai_dm_drafts, build_dm_drafts
 from app.compliance.claims import ClaimsCheckInput, run_claims_check
+from app.core.config import settings
 from app.compliance.outreach_review import ClaimsCheckStatus
 from app.compliance.outreach_review import OutreachReviewInput
 from app.compliance.outreach_review import OutreachStatus
@@ -55,6 +56,8 @@ class GenerateDmRequest(BaseModel):
     product_name: str | None = None
     model_alias: str = "dm_draft"
     creator_snapshot: CreatorSnapshot | None = None
+    use_ai: bool = False
+    country: Country | None = None
 
 
 class ClaimsCheckRequest(BaseModel):
@@ -359,11 +362,25 @@ def generate_dm(
             },
         ) from exc
 
-    drafts = build_dm_drafts(
-        creator=creator,
-        product_category=payload.product_category,
-        product_name=payload.product_name,
-    )
+    dm_source = None
+    if payload.use_ai:
+        ai_result = build_ai_dm_drafts(
+            creator=creator,
+            product_category=payload.product_category,
+            product_name=payload.product_name,
+            country=payload.country or creator.get("country"),
+            dry_run=settings.ai_dry_run,
+            allow_live_provider_calls=settings.allow_live_provider_calls,
+            source_risk_level=str(creator.get("source_risk_level", "low")),
+        )
+        drafts = ai_result["drafts"]
+        dm_source = {"source": ai_result["source"], "status": ai_result["status"]}
+    else:
+        drafts = build_dm_drafts(
+            creator=creator,
+            product_category=payload.product_category,
+            product_name=payload.product_name,
+        )
     selected = next(
         (draft for draft in drafts if draft["variant"] == payload.dm_variant),
         drafts[0],
@@ -380,6 +397,7 @@ def generate_dm(
             "status": "persisted",
             "outreach": outreach,
             "drafts": drafts,
+            "dm_source": dm_source,
             "claims_check_job": {
                 "status": "queued",
                 "job_type": "claims_check",
@@ -401,6 +419,7 @@ def generate_dm(
             "claims_check_status": "needs_review",
         },
         "drafts": drafts,
+        "dm_source": dm_source,
         "claims_check_job": {
             "status": "validated_not_persisted",
             "job_type": "claims_check",

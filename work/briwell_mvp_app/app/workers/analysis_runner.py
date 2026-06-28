@@ -126,8 +126,14 @@ def build_invocation_log_payload(
     latency_ms: int,
     live_provider_call: bool = False,
 ) -> dict[str, Any]:
-    input_token_count = estimate_tokens(run_request.request.model_dump())
-    output_token_count = estimate_tokens(result.output)
+    # Prefer the provider's actual token counts (live calls); fall back to estimates so
+    # the daily cost guardrail stays accurate when real usage is reported.
+    if result.usage:
+        input_token_count = int(result.usage.get("input") or 0)
+        output_token_count = int(result.usage.get("output") or 0)
+    else:
+        input_token_count = estimate_tokens(run_request.request.model_dump())
+        output_token_count = estimate_tokens(result.output)
     return {
         "analysis_job_id": run_request.analysis_job_id,
         "model_config_id": None,

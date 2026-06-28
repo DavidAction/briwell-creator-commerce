@@ -25,3 +25,6 @@ class AnalysisResult(BaseModel):
     review_required: bool = False
     review_required_reason: str | None = None
     error_code: str | None = None
+    # Actual provider token usage when a live call returns usageMetadata; None for dry-run
+    # or providers that do not report it (callers then fall back to estimates).
+    usage: dict[str, int] | None = None

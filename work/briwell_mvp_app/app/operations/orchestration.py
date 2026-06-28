@@ -520,12 +520,24 @@ def _build_analysis_pipeline_section(
                     ],
                     "status": "executed" if executed else "pending",
                     "executed_tasks": analysis.get("executed_tasks", []),
-                    "pending_tasks": ["multimodal_analysis", "final_review"] if executed else [],
+                    "pending_tasks": [
+                        task
+                        for task in [
+                            "profile_analysis",
+                            "comment_analysis",
+                            "multimodal_analysis",
+                            "creator_score_handoff",
+                            "final_review",
+                        ]
+                        if task not in (analysis.get("executed_tasks") or [])
+                    ],
                     "final_score": analysis.get("final_score"),
                     "segment": analysis.get("segment"),
                     "risk_penalty": analysis.get("risk_penalty"),
                     "score_confidence": analysis.get("score_confidence"),
                     "review_required_reason": analysis.get("review_required_reason"),
+                    "brand_safety_score": analysis.get("brand_safety_score"),
+                    "final_review_recommendation": analysis.get("final_review_recommendation"),
                     "mode": analysis.get("mode", "dry_run_default_live_ready"),
                 }
             )
@@ -571,6 +583,7 @@ def _run_full_analysis_batch(
     comments_by_creator = payload.get("comments_by_creator") or {}
     max_creators = int(payload.get("max_full_analysis_creators") or 50)
     persist_scores = bool(payload.get("persist_scores", True))
+    run_extended = bool(payload.get("run_extended_analysis", True))
     results: dict[str, dict[str, Any]] = {}
 
     for creator in creators[:max_creators]:
@@ -646,6 +659,55 @@ def _run_full_analysis_batch(
             )
         )
 
+        # Extended chain: run multimodal and final review as executed ENRICHMENT steps.
+        # They do NOT change the deterministic 7-D score (final_review stays out of the
+        # handoff above); they add a brand-safety read and an approve/avoid recommendation.
+        multimodal_output: dict[str, Any] | None = None
+        final_review_output: dict[str, Any] | None = None
+        if run_extended and handoff.status == "scored" and handoff.score is not None:
+            posts = _posts_for_creator(creator, posts_by_creator, creator_id)
+            multimodal_run = run_analysis(
+                AnalysisRunRequest(
+                    target_entity_type="video",
+                    target_entity_id=creator_id,
+                    dry_run=dry_run,
+                    allow_live_provider_calls=allow_live,
+                    persist_log=persist_log,
+                    mark_job_status=False,
+                    request=AnalysisRequest(
+                        task_type="multimodal_analysis",
+                        model_alias="multimodal_default",
+                        source_risk_level=source_risk_level,
+                        prompt_version="multimodal_v0",
+                        payload=_multimodal_payload_from_posts(posts, payload),
+                    ),
+                )
+            )
+            if multimodal_run.status == "success":
+                multimodal_output = multimodal_run.result.output
+                executed_tasks.append("multimodal_analysis")
+
+            final_review_run = run_analysis(
+                AnalysisRunRequest(
+                    target_entity_type="creator",
+                    target_entity_id=creator_id,
+                    dry_run=dry_run,
+                    allow_live_provider_calls=allow_live,
+                    persist_log=persist_log,
+                    mark_job_status=False,
+                    request=AnalysisRequest(
+                        task_type="final_review",
+                        model_alias="final_review",
+                        source_risk_level=source_risk_level,
+                        prompt_version="final_review_v0",
+                        payload={"score": handoff.score.model_dump(), "creator": creator},
+                    ),
+                )
+            )
+            if final_review_run.status == "success":
+                final_review_output = final_review_run.result.output
+                executed_tasks.append("final_review")
+
         if handoff.status == "scored" and handoff.score is not None:
             executed_tasks.append("creator_score_handoff")
             results[creator_id] = {
@@ -657,6 +719,8 @@ def _run_full_analysis_batch(
                 "score_confidence": handoff.score.score_confidence,
                 "review_required_reason": handoff.score.review_required_reason,
                 "score_source": "system_analysis",
+                "brand_safety_score": (multimodal_output or {}).get("brand_safety_score"),
+                "final_review_recommendation": (final_review_output or {}).get("recommendation"),
                 "executed_tasks": executed_tasks,
                 "persisted_analysis_id": handoff.persisted_analysis_id,
                 "persistence_status": handoff.persistence_status,
@@ -717,6 +781,31 @@ def _video_metrics_from_posts(posts: list[dict[str, Any]]) -> dict[str, Any]:
     if engagement_rates:
         metrics["engagement_rate"] = round(sum(engagement_rates) / len(engagement_rates), 4)
     return metrics
+
+
+def _multimodal_payload_from_posts(
+    posts: list[dict[str, Any]],
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Build a multimodal-analysis payload from a creator's most recent post. Image frames
+    (base64) are passed through when present so live Gemini sees the actual content."""
+    first = posts[0] if posts else {}
+    frame_samples = list(first.get("frame_samples") or [])
+    return {
+        "video": {
+            "url": first.get("url"),
+            "caption": first.get("caption"),
+            "transcript": first.get("transcript"),
+            "view_count": first.get("view_count"),
+            "like_count": first.get("like_count"),
+            "comment_count": first.get("comment_count"),
+        },
+        "frame_samples": frame_samples,
+        "product_context": {
+            "product_category": payload.get("product_category"),
+            "product_name": payload.get("product_name"),
+        },
+    }
 
 
 def _build_settlement_section(outreach_items: list[dict[str, Any]]) -> dict[str, Any]:

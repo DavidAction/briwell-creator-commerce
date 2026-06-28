@@ -11,14 +11,14 @@ from app.schemas.analysis import ANALYSIS_OUTPUT_SCHEMAS
 
 
 # Model ids verified against the live Gemini ListModels API on 2026-06-27.
-# `gemini-3-flash` does NOT exist; the available gen-3 flash model is
-# `gemini-3-flash-preview`. `gemini-3.1-flash-lite` and `gemini-3.5-flash`
-# are valid non-preview models. Re-verify before enabling production live calls.
+# Tiering: cheapest lite model for high-volume first-pass screening; the higher-quality
+# 3.5-flash for the premium tasks (multimodal, DM generation, final review). Both ids are
+# real, non-preview models. Re-verify before enabling production live calls.
 MODEL_BY_ALIAS = {
     "low_cost_text": "gemini-3.1-flash-lite",
     "final_review": "gemini-3.5-flash",
-    "dm_generation": "gemini-3-flash-preview",
-    "multimodal_default": "gemini-3-flash-preview",
+    "dm_generation": "gemini-3.5-flash",
+    "multimodal_default": "gemini-3.5-flash",
     "recent_posts_screen": "gemini-3.1-flash-lite",
 }
 
@@ -85,8 +85,8 @@ class GeminiTextAdapter(AIAdapter):
             )
 
         try:
-            output = self._call_gemini(request)
-            return self._result_from_output(request=request, output=output)
+            output, usage = self._call_gemini(request)
+            return self._result_from_output(request=request, output=output, usage=usage)
         except (httpx.HTTPError, ValueError, KeyError, AnalysisSchemaError) as exc:
             return self._error_result(
                 request=request,
@@ -94,7 +94,7 @@ class GeminiTextAdapter(AIAdapter):
                 message=str(exc),
             )
 
-    def _call_gemini(self, request: AnalysisRequest) -> dict[str, Any]:
+    def _call_gemini(self, request: AnalysisRequest) -> tuple[dict[str, Any], dict[str, int] | None]:
         model_id = MODEL_BY_ALIAS.get(request.model_alias, request.model_alias)
         url = f"{self.base_url}/models/{model_id}:generateContent"
         payload = {
@@ -118,7 +118,7 @@ class GeminiTextAdapter(AIAdapter):
         parsed = json.loads(text)
         if not isinstance(parsed, dict):
             raise ValueError("Gemini response JSON must be an object.")
-        return parsed
+        return parsed, _normalize_usage(body.get("usageMetadata"))
 
     def _generation_config(self, request: AnalysisRequest) -> dict[str, Any]:
         schema_model = ANALYSIS_OUTPUT_SCHEMAS.get(request.task_type)
@@ -161,6 +161,8 @@ class GeminiTextAdapter(AIAdapter):
     def _build_prompt(self, request: AnalysisRequest) -> str:
         if request.task_type == "recent_posts_screen":
             return _build_recent_posts_screen_prompt(request)
+        if request.task_type == "dm_generation":
+            return _build_dm_generation_prompt(request)
         return json.dumps(
             {
                 "instruction": (
@@ -181,6 +183,7 @@ class GeminiTextAdapter(AIAdapter):
         self,
         request: AnalysisRequest,
         output: dict[str, Any],
+        usage: dict[str, int] | None = None,
     ) -> AnalysisResult:
         validated = validate_analysis_output(request.task_type, output)
         data = validated.model_dump()
@@ -194,6 +197,7 @@ class GeminiTextAdapter(AIAdapter):
             confidence=float(data.get("confidence", 0)),
             review_required=bool(data.get("review_required", False)),
             review_required_reason=data.get("review_required_reason"),
+            usage=usage,
         )
 
     def _error_result(
@@ -224,6 +228,8 @@ class GeminiTextAdapter(AIAdapter):
             return _dry_run_recent_posts_screen(request.payload)
         if request.task_type == "final_review":
             return _dry_run_final_review(request.payload)
+        if request.task_type == "dm_generation":
+            return _dry_run_dm_generation(request.payload)
         raise AnalysisSchemaError(f"unsupported_analysis_task:{request.task_type}")
 
 
@@ -272,6 +278,28 @@ def _build_recent_posts_screen_prompt(request: AnalysisRequest) -> str:
         ensure_ascii=True,
         default=str,
     )
+
+
+def _normalize_usage(meta: Any) -> dict[str, int] | None:
+    """Normalize Gemini ``usageMetadata`` into actual input/output/total token counts.
+
+    Returns None when the provider does not report usage (e.g. mocked responses), so
+    callers fall back to estimates instead of recording zero.
+    """
+    if not isinstance(meta, dict):
+        return None
+    prompt_tokens = meta.get("promptTokenCount")
+    output_tokens = meta.get("candidatesTokenCount")
+    if prompt_tokens is None and output_tokens is None:
+        return None
+    input_count = int(prompt_tokens or 0)
+    output_count = int(output_tokens or 0)
+    total = meta.get("totalTokenCount")
+    return {
+        "input": input_count,
+        "output": output_count,
+        "total": int(total) if total is not None else input_count + output_count,
+    }
 
 
 def _collect_inline_images(payload: dict[str, Any], limit: int = 8) -> list[dict[str, str]]:
@@ -598,4 +626,115 @@ def _dry_run_final_review(payload: dict[str, Any]) -> dict[str, Any]:
         "confidence": 0.7,
         "review_required": recommendation != "approve_for_outreach",
         "review_required_reason": "human_review_recommended" if recommendation != "approve_for_outreach" else None,
+    }
+
+
+_DM_PRODUCT_LABELS_ES = {
+    "sunscreen": "protector solar coreano",
+    "calming_serum": "serum calmante coreano",
+    "cleanser": "limpiador coreano",
+    "sheet_mask": "mascarilla coreana",
+    "cushion_foundation": "cushion foundation coreana",
+}
+
+_DM_COUNTRY_GREETING = {"MX": "que tal", "PE": "hola", "EC": "hola"}
+
+
+def _build_dm_generation_prompt(request: AnalysisRequest) -> str:
+    return json.dumps(
+        {
+            "instruction": (
+                "You are Briwell's LATAM K-beauty outreach copywriter. Generate THREE distinct, "
+                "personalized Spanish-language DM drafts inviting this creator to a paid collaboration. "
+                "Use ONLY the provided creator profile and product context. Reflect the local tone of "
+                "the target country (Mexico, Peru, or Ecuador). Keep each message warm, concise, and "
+                "honest. Do NOT include medical, treatment, guaranteed-result, or unverifiable claims. "
+                "These are drafts for human approval; never imply the message was already sent. "
+                "Return valid JSON only matching the provided schema."
+            ),
+            "calibration": CALIBRATION_GUIDANCE,
+            "variant_guide": {
+                "soft_intro": "Warm first-touch introduction, no hard ask.",
+                "product_review": "Invite an honest product review collaboration.",
+                "commerce_collaboration": "Propose a commerce collaboration (discount code / purchase link) with clear terms and prior approval.",
+                "ugc_collaboration": "Invite UGC content creation; the creator defines the format.",
+            },
+            "country_tone": {
+                "MX": "Mexican Spanish, friendly and direct.",
+                "PE": "Peruvian Spanish, warm and respectful.",
+                "EC": "Ecuadorian Spanish, warm and respectful.",
+            },
+            "requirements": {
+                "language": "es",
+                "variant_count": 3,
+                "allowed_variants": ["soft_intro", "product_review", "ugc_collaboration", "commerce_collaboration"],
+            },
+            "task_type": request.task_type,
+            "prompt_version": request.prompt_version,
+            "source_risk_level": request.source_risk_level,
+            "payload": request.payload,
+        },
+        ensure_ascii=True,
+        default=str,
+    )
+
+
+def _dry_run_dm_generation(payload: dict[str, Any]) -> dict[str, Any]:
+    creator = payload.get("creator", {})
+    name = creator.get("display_name") or creator.get("username") or "hola"
+    country = payload.get("country") or creator.get("country") or "MX"
+    greeting = _DM_COUNTRY_GREETING.get(country, "hola")
+    product = payload.get("product_name") or _DM_PRODUCT_LABELS_ES.get(
+        payload.get("product_category", ""), "producto K-beauty"
+    )
+    evidence: list[str] = []
+    if creator.get("country"):
+        evidence.append(f"creator_country:{creator['country']}")
+    if creator.get("bio"):
+        evidence.append("profile_bio_provided")
+    if creator.get("follower_count") is not None:
+        evidence.append("follower_count_provided")
+    evidence = evidence[:3] or ["minimal_profile_context"]
+
+    variants = [
+        {
+            "variant": "soft_intro",
+            "message": (
+                f"Hola {name}, {greeting}. Soy del equipo de Briwell. Nos gusto mucho tu contenido de "
+                f"belleza y estamos preparando una colaboracion de K-beauty con {product}. Si te interesa, "
+                "puedo compartirte los detalles."
+            ),
+            "product_angle": "presentacion suave",
+            "personalization_evidence": evidence,
+        },
+        {
+            "variant": "product_review",
+            "message": (
+                f"Hola {name}, en Briwell buscamos creadoras en LatAm para probar {product} y compartir "
+                "una resena honesta si encaja con tu estilo. La colaboracion seria clara y con aprobacion "
+                "previa de los detalles."
+            ),
+            "product_angle": "resena honesta",
+            "personalization_evidence": evidence,
+        },
+        {
+            "variant": "commerce_collaboration",
+            "message": (
+                f"Hola {name}, preparamos una colaboracion de comercio con {product}: codigo de descuento "
+                "y link de compra para tu comunidad, con condiciones claras y aprobacion previa. Si te "
+                "interesa, te comparto los detalles de la comision."
+            ),
+            "product_angle": "colaboracion de comercio con link",
+            "personalization_evidence": evidence,
+        },
+    ]
+    return {
+        "status": "ok",
+        "language": "es",
+        "country": country,
+        "variants": variants,
+        "evidence": ["Dry-run DM generation placeholder validated against schema."],
+        "confidence": 0.7,
+        "review_required": True,
+        "review_required_reason": "operator_approval_required",
     }

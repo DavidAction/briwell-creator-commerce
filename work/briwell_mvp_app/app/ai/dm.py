@@ -67,6 +67,78 @@ def build_dm_drafts(
     ]
 
 
+def build_ai_dm_drafts(
+    creator: dict[str, Any],
+    product_category: str,
+    product_name: str | None = None,
+    country: str | None = None,
+    dry_run: bool = True,
+    allow_live_provider_calls: bool = False,
+    source_risk_level: str = "low",
+) -> dict[str, Any]:
+    """Generate personalized 3-variant Spanish DM drafts via Gemini (model alias
+    ``dm_generation`` -> gemini-3.5-flash), reflecting the creator profile and target
+    country tone. Falls back to the deterministic ``build_dm_drafts`` templates when the
+    AI is unavailable, disabled, or returns nothing usable — so the workflow never breaks.
+    """
+    # Lazy import to avoid any import-time coupling with the workers/AI stack.
+    from app.ai.contracts import AnalysisRequest
+    from app.workers.analysis_runner import AnalysisRunRequest, run_analysis
+
+    fallback = build_dm_drafts(creator, product_category=product_category, product_name=product_name)
+    run = run_analysis(
+        AnalysisRunRequest(
+            target_entity_type="creator",
+            target_entity_id=str(creator.get("creator_id") or creator.get("username") or ""),
+            dry_run=dry_run,
+            allow_live_provider_calls=allow_live_provider_calls,
+            persist_log=False,
+            mark_job_status=False,
+            request=AnalysisRequest(
+                task_type="dm_generation",
+                model_alias="dm_generation",
+                source_risk_level=source_risk_level,
+                prompt_version="dm_generation_v0",
+                payload={
+                    "creator": creator,
+                    "product_category": product_category,
+                    "product_name": product_name,
+                    "country": country or creator.get("country"),
+                },
+            ),
+        )
+    )
+    if run.status != "success":
+        return {
+            "status": run.result.status,
+            "source": "template_fallback",
+            "error_code": run.result.error_code,
+            "drafts": fallback,
+        }
+
+    drafts = [
+        {
+            "variant": variant.get("variant", "soft_intro"),
+            "message": variant.get("message", ""),
+            "personalization_evidence": variant.get("personalization_evidence", []),
+            "product_angle": variant.get("product_angle", ""),
+            "claims_check_status": "needs_review",
+        }
+        for variant in (run.result.output.get("variants") or [])
+        if variant.get("message")
+    ]
+    if not drafts:
+        return {"status": "empty_ai_output", "source": "template_fallback", "drafts": fallback}
+
+    return {
+        "status": "generated",
+        "source": "ai_dry_run" if dry_run else "ai_live",
+        "language": run.result.output.get("language", "es"),
+        "country": run.result.output.get("country"),
+        "drafts": drafts,
+    }
+
+
 def _personalization_evidence(creator: dict[str, Any]) -> list[str]:
     evidence: list[str] = []
     if creator.get("country"):
