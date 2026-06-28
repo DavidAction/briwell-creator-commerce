@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 
 from app.core.auth import UserContext, require_roles
 from app.core.config import settings
@@ -13,8 +13,10 @@ router = APIRouter(prefix="/ops", tags=["ops"])
 
 @router.get("/readiness")
 def readiness(
+    request: Request,
     _user: UserContext = Depends(require_roles("admin")),
 ) -> dict[str, Any]:
+    app_state = request.app.state
     return evaluate_readiness(
         ReadinessSettings(
             app_env=settings.app_env,
@@ -32,6 +34,10 @@ def readiness(
             managed_secret_provider=settings.managed_secret_provider,
             backup_restore_tested_at=settings.backup_restore_tested_at,
             rate_limit_enabled=settings.rate_limit_enabled,
+            # Read the real installed state from the live app instead of hardcoding True.
+            request_id_middleware_enabled=getattr(app_state, "request_id_middleware_enabled", False),
+            security_headers_enabled=getattr(app_state, "security_headers_enabled", False),
+            global_exception_handler_enabled=getattr(app_state, "global_exception_handler_enabled", False),
         )
     )
 

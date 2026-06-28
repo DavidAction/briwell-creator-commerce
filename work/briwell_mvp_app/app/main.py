@@ -1,9 +1,14 @@
+import logging
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+
+
+logger = logging.getLogger("briwell")
 from app.routers import (
     analysis_jobs,
     ai,
@@ -57,6 +62,42 @@ async def add_request_context_headers(request: Request, call_next):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     return response
+
+
+# Flags read by the readiness endpoint so /ops/readiness reflects what is actually
+# installed instead of hardcoded True. Set next to the install so removing one removes both.
+app.state.request_id_middleware_enabled = True
+app.state.security_headers_enabled = True
+
+
+@app.exception_handler(Exception)
+async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+    """Return a clean JSON error for any unhandled exception so internal stack traces are
+    never leaked in responses. The full traceback is logged server-side with the request id.
+    HTTPException and validation errors keep FastAPI's own handlers (this only catches the
+    truly unexpected)."""
+    request_id = request.headers.get("X-Request-ID") or str(uuid4())
+    logger.exception(
+        "Unhandled error [request_id=%s] %s %s", request_id, request.method, request.url.path
+    )
+    response = JSONResponse(
+        status_code=500,
+        content={
+            "detail": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "An unexpected error occurred. Contact an operator with the request id.",
+                "request_id": request_id,
+            }
+        },
+    )
+    response.headers["X-Request-ID"] = request_id
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
+app.state.global_exception_handler_enabled = True
 
 
 app.include_router(health.router)

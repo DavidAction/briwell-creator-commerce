@@ -21,6 +21,12 @@ class ReadinessSettings:
     managed_secret_provider: str
     backup_restore_tested_at: str
     rate_limit_enabled: bool
+    # Actual middleware/handler state, read from the live app (app.state) by the readiness
+    # endpoint instead of being hardcoded. Default True because the app installs them at
+    # startup; the endpoint overrides with the real values.
+    request_id_middleware_enabled: bool = True
+    security_headers_enabled: bool = True
+    global_exception_handler_enabled: bool = True
 
 
 def evaluate_readiness(settings: ReadinessSettings) -> dict[str, object]:
@@ -54,8 +60,9 @@ def evaluate_readiness(settings: ReadinessSettings) -> dict[str, object]:
         "managed_secret_provider_configured": _is_configured(settings.managed_secret_provider),
         "backup_restore_tested": _is_configured(settings.backup_restore_tested_at),
         "rate_limit_enabled": settings.rate_limit_enabled,
-        "request_id_middleware_enabled": True,
-        "security_headers_enabled": True,
+        "request_id_middleware_enabled": settings.request_id_middleware_enabled,
+        "security_headers_enabled": settings.security_headers_enabled,
+        "global_exception_handler_enabled": settings.global_exception_handler_enabled,
     }
     blockers: list[str] = []
     warnings: list[str] = []
@@ -93,6 +100,12 @@ def evaluate_readiness(settings: ReadinessSettings) -> dict[str, object]:
             blockers.append("RATE_LIMIT_NOT_ENABLED")
         if not checks["gemini_api_key_configured"]:
             blockers.append("GEMINI_API_KEY_MISSING")
+        if not settings.security_headers_enabled:
+            warnings.append("SECURITY_HEADERS_DISABLED")
+        if not settings.global_exception_handler_enabled:
+            warnings.append("GLOBAL_EXCEPTION_HANDLER_DISABLED")
+        if not settings.request_id_middleware_enabled:
+            warnings.append("REQUEST_ID_MIDDLEWARE_DISABLED")
     else:
         if settings.auth_provider == "header":
             warnings.append("HEADER_RBAC_IS_DEVELOPMENT_ONLY")
