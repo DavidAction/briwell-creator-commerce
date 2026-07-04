@@ -1,3 +1,5 @@
+import asyncio
+from contextlib import asynccontextmanager
 import logging
 from uuid import uuid4
 
@@ -7,6 +9,8 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.rate_limit import SlidingWindowRateLimiter, client_identity
+from app.workers.job_handlers import JOB_HANDLERS
+from app.workers.job_queue import run_loop
 
 
 logger = logging.getLogger("briwell")
@@ -32,10 +36,25 @@ from app.routers import (
 )
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    outbox_worker_task = None
+    if settings.use_database and settings.outbox_worker_enabled:
+        outbox_worker_task = asyncio.create_task(
+            run_loop(JOB_HANDLERS, settings.outbox_worker_poll_interval_seconds)
+        )
+    try:
+        yield
+    finally:
+        if outbox_worker_task is not None:
+            outbox_worker_task.cancel()
+
+
 app = FastAPI(
     title="Briwell Influencer Intelligence API",
     version="0.1.0",
     description="MVP backend scaffold for Low/Medium Risk influencer discovery.",
+    lifespan=lifespan,
 )
 
 if settings.cors_allowed_origins:
@@ -104,6 +123,7 @@ async def enforce_rate_limit(request: Request, call_next):
 app.state.request_id_middleware_enabled = True
 app.state.security_headers_enabled = True
 app.state.rate_limit_middleware_enabled = True
+app.state.outbox_worker_enabled = settings.use_database and settings.outbox_worker_enabled
 
 
 @app.exception_handler(Exception)

@@ -110,6 +110,14 @@ class Settings:
         "LICENSED_VENDOR_CONTRACT_CONFIRMED",
         "false",
     ).strip().lower() in {"1", "true", "yes"}
+    outbox_worker_enabled: bool = os.getenv("OUTBOX_WORKER_ENABLED", "false").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    outbox_worker_poll_interval_seconds: float = float(
+        os.getenv("OUTBOX_WORKER_POLL_INTERVAL_SECONDS", "2.0")
+    )
 
 
 settings = Settings()
