@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
+from app.core.rate_limit import SlidingWindowRateLimiter, client_identity
 
 
 logger = logging.getLogger("briwell")
@@ -64,10 +65,45 @@ async def add_request_context_headers(request: Request, call_next):
     return response
 
 
+# Single-process, in-memory limiter -- intentional scope decision for this internal tool,
+# not backed by Redis/slowapi. See app/core/rate_limit.py.
+rate_limiter = SlidingWindowRateLimiter(
+    requests_per_minute=settings.rate_limit_requests_per_minute,
+    burst=settings.rate_limit_burst,
+)
+
+
+@app.middleware("http")
+async def enforce_rate_limit(request: Request, call_next):
+    if not settings.rate_limit_enabled or request.url.path == "/health":
+        return await call_next(request)
+
+    client_host = request.client.host if request.client else None
+    client_key = client_identity(request.headers.get("X-User-Email"), client_host)
+    result = await rate_limiter.check(client_key)
+    if not result.allowed:
+        request_id = request.headers.get("X-Request-ID") or str(uuid4())
+        response = JSONResponse(
+            status_code=429,
+            content={
+                "detail": {
+                    "code": "RATE_LIMIT_EXCEEDED",
+                    "message": "Too many requests. Slow down and retry later.",
+                    "request_id": request_id,
+                }
+            },
+        )
+        response.headers["Retry-After"] = str(result.retry_after_seconds)
+        response.headers["X-Request-ID"] = request_id
+        return response
+    return await call_next(request)
+
+
 # Flags read by the readiness endpoint so /ops/readiness reflects what is actually
 # installed instead of hardcoded True. Set next to the install so removing one removes both.
 app.state.request_id_middleware_enabled = True
 app.state.security_headers_enabled = True
+app.state.rate_limit_middleware_enabled = True
 
 
 @app.exception_handler(Exception)

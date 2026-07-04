@@ -68,6 +68,8 @@ class Settings:
         "true",
         "yes",
     }
+    rate_limit_requests_per_minute: int = int(os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "120"))
+    rate_limit_burst: int = int(os.getenv("RATE_LIMIT_BURST", "20"))
     ai_live_require_database: bool = os.getenv("AI_LIVE_REQUIRE_DATABASE", "true").strip().lower() in {
         "1",
         "true",
