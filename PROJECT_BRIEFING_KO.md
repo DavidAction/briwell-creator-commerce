@@ -56,6 +56,19 @@ C(보안: rate limit·전역 예외 핸들러·감사 로깅·OIDC).
 
 다음 최고화 후보: harness 골든셋 확장·라이브 정기 측정, 성과 피드백 실데이터 연결, 멀티프로바이더 라우팅(아래 §3.4).
 
+## 0.3 최신 상태 (2026-07-04) — 합법 provider 계층 + 재설계 결론
+
+- **테스트 267 통과 / 7 스킵** (이전 195 → +72). 대시보드 한국어화·smoke 통과.
+- **AI DM 개인화 생성**(gemini-3.5-flash 3-variant 스페인어, 템플릿 폴백), **실측 토큰 비용 관제**(usageMetadata→$2/일 캡),
+  멀티모달·최종리뷰 체인 실행, **전역 예외 핸들러**·readiness 실측화 추가.
+- **합법 데이터 인테이크 provider 계층**(`app/providers/`): `base.py`(ABC·정규화) + `registry.py` + 4개 provider —
+  apify(provider_scrape·기본OFF), **creator_provided**(즉시 사용 가능), **tiktok_official**(공식 API dry-run 스켈레톤; 키·앱 승인 필요),
+  **licensed_vendor**(Data365/BrightData·계약 게이트). 라우터 `/providers/status`·`/providers/{name}/discovery-runs`·`/providers/creator-provided/import`.
+  마이그레이션 005로 DB CHECK 정합화. **무단 스크래핑/IP우회 없음**(사용자 요청했으나 거부, 합법 경로만).
+- **재설계 패널(설계자3+심판2) 결론**: 경로 A(점진 격상, 재사용90%·10주·$80-140/월) **만장일치 승**. 다음 작업 = 로드맵 A
+  (관리형 Postgres·OIDC 인증·Postgres 잡큐·감사 영속·rate limit·배포·**creator_provided로 실데이터 파일럿**).
+- **모델 운용**: 계획/리뷰 Fable 5 · 구현 **Sonnet 5** · 기계작업 Haiku 4.5.
+
 ## 1. 현재 진행 상태 (정직한 평가)
 
 ### 1.1 동작 검증 결과 (로컬, 2026-06-27)
