@@ -1,5 +1,6 @@
 from typing import Any
 
+import psycopg
 from psycopg.types.json import Jsonb
 
 from app.core.db import fetch_one
@@ -170,6 +171,7 @@ def update_status(
     response_summary: str | None = None,
     proposed_terms: dict[str, Any] | None = None,
     operator_notes: str | None = None,
+    conn: psycopg.Connection | None = None,
 ) -> dict[str, Any]:
     query = """
         UPDATE outreach
@@ -210,16 +212,19 @@ def update_status(
           operator_notes,
           updated_at
     """
-    updated = fetch_one(
-        query,
-        {
-            "outreach_id": outreach_id,
-            "status": status,
-            "response_summary": response_summary,
-            "proposed_terms": Jsonb(proposed_terms) if proposed_terms is not None else None,
-            "operator_notes": operator_notes,
-        },
-    )
+    params = {
+        "outreach_id": outreach_id,
+        "status": status,
+        "response_summary": response_summary,
+        "proposed_terms": Jsonb(proposed_terms) if proposed_terms is not None else None,
+        "operator_notes": operator_notes,
+    }
+    if conn is not None:
+        with conn.cursor() as cur:
+            cur.execute(query, params)
+            updated = cur.fetchone()
+    else:
+        updated = fetch_one(query, params)
     if updated is None:
         raise RuntimeError("Outreach status update did not return a row.")
-    return updated
+    return dict(updated)

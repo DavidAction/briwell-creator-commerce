@@ -13,9 +13,10 @@ from app.compliance.outreach_review import OutreachStatus
 from app.compliance.outreach_review import ReviewDecision
 from app.compliance.outreach_review import evaluate_outreach_review
 from app.core.auth import UserContext, require_roles
-from app.core.db import database_enabled
+from app.core.db import connection, database_enabled
 from app.core.policy import PolicyError, require_dm_allowed
 from app.repositories import creators as creator_repository
+from app.repositories import jobs as jobs_repository
 from app.repositories import outreach as outreach_repository
 from app.workflows.outreach_status import ClaimsCheckStatus as TransitionClaimsStatus
 from app.workflows.outreach_status import OutreachStatus as TransitionOutreachStatus
@@ -165,7 +166,7 @@ def run_outreach_claims_check(
 @router.post("/status-transition")
 def record_outreach_status_transition(
     payload: OutreachStatusTransitionRequest,
-    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+    user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
 ) -> dict[str, Any]:
     outreach = None
     current_status = payload.current_status
@@ -231,13 +232,33 @@ def record_outreach_status_transition(
     updated_outreach = None
     persistence_status = "validated_not_persisted"
     if database_enabled() and payload.outreach_id and payload.persist_result:
-        updated_outreach = outreach_repository.update_status(
-            outreach_id=payload.outreach_id,
-            status=payload.next_status,
-            response_summary=payload.response_summary,
-            proposed_terms=payload.proposed_terms or None,
-            operator_notes=payload.operator_notes,
-        )
+        with connection() as conn:
+            updated_outreach = outreach_repository.update_status(
+                outreach_id=payload.outreach_id,
+                status=payload.next_status,
+                response_summary=payload.response_summary,
+                proposed_terms=payload.proposed_terms or None,
+                operator_notes=payload.operator_notes,
+                conn=conn,
+            )
+            jobs_repository.enqueue_job(
+                conn,
+                "audit_event.persist",
+                {
+                    "event_type": "outreach.status_changed",
+                    "aggregate_type": "outreach",
+                    "aggregate_id": payload.outreach_id,
+                    "actor_role": user.role,
+                    "actor_email": user.email,
+                    "payload": {
+                        "old_status": current_status,
+                        "new_status": payload.next_status,
+                        "claims_check_status": claims_check_status,
+                        "do_not_contact_checked": do_not_contact_checked,
+                        "manual_send_confirmed": payload.manual_send_confirmed,
+                    },
+                },
+            )
         persistence_status = "persisted"
 
     return {

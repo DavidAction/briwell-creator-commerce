@@ -4,8 +4,10 @@ from fastapi import APIRouter, Depends, Request
 
 from app.core.auth import UserContext, require_roles
 from app.core.config import settings
+from app.core.db import connection, database_enabled
 from app.core.readiness import ReadinessSettings
 from app.core.readiness import evaluate_readiness
+from app.repositories import audit_events as audit_events_repository
 
 
 router = APIRouter(prefix="/ops", tags=["ops"])
@@ -71,3 +73,25 @@ def security_policy(
             "GEMINI_API_KEY_MISSING",
         ],
     }
+
+
+@router.get("/audit-log")
+def audit_log(
+    aggregate_type: str | None = None,
+    aggregate_id: str | None = None,
+    event_type: str | None = None,
+    limit: int = 50,
+    _user: UserContext = Depends(require_roles("admin", "operator")),
+) -> dict[str, Any]:
+    if not database_enabled():
+        return {"items": []}
+
+    with connection() as conn:
+        items = audit_events_repository.list_events(
+            conn,
+            aggregate_type=aggregate_type,
+            aggregate_id=aggregate_id,
+            event_type=event_type,
+            limit=limit,
+        )
+    return {"items": items}
