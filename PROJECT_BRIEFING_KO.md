@@ -66,6 +66,17 @@ TikTok Shop Affiliate API·Shopify Collabs 등 **플랫폼이 공식 제공하�
 - **아웃리치 자동화 전제 취소**: TikTok Shop Affiliate Seller API의 Targeted Collaboration(일 1,000건 공식 허용)로 DM 인간승인 게이트를 대체하자던 이전 제안은 **TikTok Shop 계정이 없어 무효**. 대체할 공식 자동화 레일이 없으므로 **DM 발송 전 인간승인 게이트는 당분간 유지**. 자동화는 발송 이전 단계(발굴·평가·초안 작성)로 한정.
 - 위 6대 기능 표의 pillar 3·4 상태·우선순위는 이 변경을 반영해 재평가 필요.
 
+## 0.0.2 로드맵 A P0 완료 (2026-07-05, Claude Sonnet 5 워크플로우) — 테스트 267→289 통과/12 스킵
+
+내부 API 보안·감사 인프라 4개 항목 구현 + 코드 리뷰에서 나온 6개 확정 결함 수정(커밋 `6e7c680`~`a8145db`, 총 7커밋):
+1. **Rate limiting 실구현**(`app/core/rate_limit.py`) — sliding-window(60초) + burst bucket 이중 체크, 클라이언트 IP 키(자기신고 `X-User-Email` 헤더로 우회되던 최초 버전을 리뷰에서 발견·수정). `/health`는 예외.
+2. **OIDC 강화**(`app/core/auth.py`) — JWKS 클라이언트 `lru_cache`로 재사용(매 요청 재조회 제거), **미인식 role → 403 거부로 변경**(기존 "조용히 viewer 강등" 격차 C'' 해소).
+3. **Postgres 기반 잡큐 인프라**(`db/migrations/006_job_queue_and_audit_events.sql`, `app/repositories/jobs.py`, `app/workers/job_queue.py`) — `FOR UPDATE SKIP LOCKED` 클레임, 재시도/실패 처리. **현재 등록된 job_type은 `audit_event.persist` 1개뿐**(배관 증명용) — 오케스트레이션의 동기 분석 체인을 큐로 옮기는 작업은 의도적으로 후속 과제로 남김. `OUTBOX_WORKER_ENABLED`(기본 false) 명시적 옵트인.
+4. **감사 로그 배선**(`app/repositories/audit_events.py`, `GET /ops/audit-log`) — 아웃리치 상태 전환(`app/routers/outreach.py:234-262`)에서 승인·claims·do-not-contact 기록을 append-only `audit_events`에 큐 경유로 기록. admin/operator만 조회 가능.
+5. **리뷰에서 발견·수정된 추가 결함**: job queue 워커가 핸들러 예외 시 `conn.rollback()` 누락으로 poisoned transaction 발생 가능하던 버그, audit_events `list_events`의 limit 미검증(음수/0 가능), rate limiter `_clients` dict 무한 증가(lazy eviction 추가), 미사용 `audit_log`(마이그레이션 001) 테이블 제거(`007_drop_unused_audit_log.sql`).
+
+**알려진 한계**(의도적 범위 제한): 잡큐는 아직 단일 job_type의 배관 증명 단계. 오케스트레이션 동기 체인의 비동기 전환은 후속. Rate limit은 in-process(멀티 인스턴스 미공유).
+
 ## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
 
 "최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):
@@ -131,9 +142,9 @@ TikTok Shop Affiliate API·Shopify Collabs 등 **플랫폼이 공식 제공하�
 | B | 오케스트레이션이 profile/comment/score 분석을 실제 실행하도록 배선 완료 | `app/operations/orchestration.py` | ✅ 수정됨(2026-06-27) |
 | B' | 캠페인 매칭이 **시스템 산출 `final_score`** 우선 사용(operator 입력은 폴백). `score_source` 표기 | `app/operations/orchestration.py` | ✅ 수정됨(2026-06-27) |
 | B'' | DM 생성기는 여전히 템플릿(이제 4 variant 전부 생성). 진짜 AI 개인화 생성은 후속 | `app/ai/dm.py` | 🟡 부분 |
-| C | **rate limit·전역 예외 핸들러·CSP·HSTS·감사 로깅 전부 부재**인데 `/ops/security-policy`는 "감사 로깅 영속화"를 단언 | `app/main.py` | 🟡 보안 |
-| C' | readiness가 `security_headers_enabled`/`request_id_middleware_enabled`를 **하드코딩 True**로 보고(실측 안 함) | `app/core/readiness.py:57-58` | 🟡 |
-| C'' | OIDC 경로 미검증(테스트가 monkeypatch), 미인식 role을 거부 대신 **조용히 viewer로 강등** | `app/core/auth.py:189` | 🟡 |
+| C | rate limit·전역 예외 핸들러·감사 로깅 **실구현 완료**(2026-07-05, P0). CSP·HSTS 헤더는 여전히 미부재 | `app/main.py`, `app/core/rate_limit.py`, `app/repositories/audit_events.py` | 🟢 대부분 수정(CSP/HSTS 잔여) |
+| C' | readiness가 `security_headers_enabled`/`request_id_middleware_enabled`를 실측(app.state)으로 보고하도록 수정 | `app/core/readiness.py` | ✅ 수정됨(2026-06-27 이전) |
+| C'' | OIDC 미인식 role → **403 거부로 변경**(조용한 viewer 강등 제거) | `app/core/auth.py` | ✅ 수정됨(2026-07-05, P0) |
 | D | Gemini 모델 ID — `gemini-3-flash`→`gemini-3-flash-preview` 교정(ListModels 대조) | `app/ai/gemini.py` | ✅ 수정됨(2026-06-27) |
 | E | `DmVariant` 4값 전부 생성하도록 수정 | `app/ai/dm.py` | ✅ 수정됨(2026-06-27) |
 
