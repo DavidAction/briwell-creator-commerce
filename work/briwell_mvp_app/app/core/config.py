@@ -91,6 +91,23 @@ class Settings:
         "false",
     ).strip().lower() in {"1", "true", "yes"}
     tiktok_provider_daily_result_limit: int = int(os.getenv("TIKTOK_PROVIDER_DAILY_RESULT_LIMIT", "2000"))
+    tiktok_client_key: str = os.getenv("TIKTOK_CLIENT_KEY", "")
+    tiktok_client_secret: str = os.getenv("TIKTOK_CLIENT_SECRET", "")
+    tiktok_access_token: str = os.getenv("TIKTOK_ACCESS_TOKEN", "")
+    tiktok_official_dry_run: bool = os.getenv("TIKTOK_OFFICIAL_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    licensed_vendor_dry_run: bool = os.getenv("LICENSED_VENDOR_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    licensed_vendor_contract_confirmed: bool = os.getenv(
+        "LICENSED_VENDOR_CONTRACT_CONFIRMED",
+        "false",
+    ).strip().lower() in {"1", "true", "yes"}
 
 
 settings = Settings()
