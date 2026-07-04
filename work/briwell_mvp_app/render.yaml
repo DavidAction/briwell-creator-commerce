@@ -54,12 +54,15 @@ services:
         sync: false
       - key: TIKAPI_API_KEY
         sync: false
+      # TikTok scrape lane ships OFF by default (compliance decision 2026-06-27:
+      # provider_scrape is honestly labeled but live calls require an explicit,
+      # recorded legal/ToS sign-off before re-enabling in any deployment).
       - key: TIKTOK_PROVIDER_DRY_RUN
-        value: "false"
-      - key: ALLOW_LIVE_TIKTOK_PROVIDER_CALLS
         value: "true"
+      - key: ALLOW_LIVE_TIKTOK_PROVIDER_CALLS
+        value: "false"
       - key: TIKTOK_PROVIDER_DAILY_RESULT_LIMIT
-        value: "10000"
+        value: "2000"
       - key: RATE_LIMIT_ENABLED
         value: "true"
       - key: BACKUP_RESTORE_TESTED_AT
