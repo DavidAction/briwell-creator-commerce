@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from functools import lru_cache
 from typing import Any
 from dataclasses import dataclass
 
@@ -134,7 +135,7 @@ def _decode_oidc_token(token: str) -> dict[str, Any]:
             },
         )
 
-    jwks_client = PyJWKClient(_jwks_url())
+    jwks_client = _get_jwks_client(_jwks_url())
     try:
         signing_key = jwks_client.get_signing_key_from_jwt(token)
         decoded = jwt.decode(
@@ -167,6 +168,11 @@ def _decode_oidc_token(token: str) -> dict[str, Any]:
     return decoded
 
 
+@lru_cache(maxsize=8)
+def _get_jwks_client(jwks_url: str) -> "PyJWKClient":
+    return PyJWKClient(jwks_url, cache_keys=True, lifespan=300)
+
+
 def _jwks_url() -> str:
     if settings.oidc_jwks_url:
         return settings.oidc_jwks_url
@@ -186,7 +192,13 @@ def _role_from_claims(claims: dict[str, Any]) -> Role:
         role = _first_valid_role(value)
         if role is not None:
             return role
-    return "viewer"
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail={
+            "code": "ROLE_NOT_RECOGNIZED",
+            "message": "OIDC token does not carry a recognized Briwell role claim.",
+        },
+    )
 
 
 def _first_valid_role(value: Any) -> Role | None:

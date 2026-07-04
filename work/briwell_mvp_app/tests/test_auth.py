@@ -56,7 +56,7 @@ def test_oidc_mode_uses_role_claim_from_verified_token(monkeypatch) -> None:
     assert response.status_code == 200
 
 
-def test_oidc_mode_defaults_missing_role_to_viewer(monkeypatch) -> None:
+def test_oidc_mode_rejects_unrecognized_role_claim(monkeypatch) -> None:
     monkeypatch.setattr(auth_module, "settings", oidc_settings())
     monkeypatch.setattr(
         auth_module,
@@ -71,4 +71,79 @@ def test_oidc_mode_defaults_missing_role_to_viewer(monkeypatch) -> None:
     response = client.get("/ops/readiness", headers={"Authorization": "Bearer test-token"})
 
     assert response.status_code == 403
-    assert response.json()["detail"]["code"] == "PERMISSION_DENIED"
+    assert response.json()["detail"]["code"] == "ROLE_NOT_RECOGNIZED"
+
+
+def test_oidc_mode_rejects_unknown_role_claim_value(monkeypatch) -> None:
+    monkeypatch.setattr(auth_module, "settings", oidc_settings())
+    monkeypatch.setattr(
+        auth_module,
+        "_decode_oidc_token",
+        lambda _token: {
+            "sub": "user-1",
+            "email": "someone@briwell.test",
+            "app_metadata": {"briwell_role": "superadmin"},
+        },
+    )
+
+    response = client.get("/ops/readiness", headers={"Authorization": "Bearer test-token"})
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["code"] == "ROLE_NOT_RECOGNIZED"
+
+
+def test_oidc_mode_rejects_missing_role_claim_entirely(monkeypatch) -> None:
+    monkeypatch.setattr(auth_module, "settings", oidc_settings())
+    monkeypatch.setattr(
+        auth_module,
+        "_decode_oidc_token",
+        lambda _token: {
+            "sub": "user-1",
+            "email": "someone@briwell.test",
+        },
+    )
+
+    response = client.get("/ops/readiness", headers={"Authorization": "Bearer test-token"})
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["code"] == "ROLE_NOT_RECOGNIZED"
+
+
+def test_oidc_mode_valid_role_claim_still_works(monkeypatch) -> None:
+    monkeypatch.setattr(auth_module, "settings", oidc_settings())
+    monkeypatch.setattr(
+        auth_module,
+        "_decode_oidc_token",
+        lambda _token: {
+            "sub": "user-1",
+            "email": "admin@briwell.test",
+            "app_metadata": {"briwell_role": "admin"},
+        },
+    )
+
+    response = client.get("/ops/readiness", headers={"Authorization": "Bearer test-token"})
+
+    assert response.status_code == 200
+
+
+def test_jwks_client_is_cached_per_url(monkeypatch) -> None:
+    auth_module._get_jwks_client.cache_clear()
+
+    created_clients = []
+
+    class StubJWKClient:
+        def __init__(self, uri, **kwargs):
+            self.uri = uri
+            self.kwargs = kwargs
+            created_clients.append(self)
+
+    monkeypatch.setattr(auth_module, "PyJWKClient", StubJWKClient)
+
+    first = auth_module._get_jwks_client("https://project-id.supabase.co/auth/v1/.well-known/jwks.json")
+    second = auth_module._get_jwks_client("https://project-id.supabase.co/auth/v1/.well-known/jwks.json")
+
+    assert first is second
+    assert len(created_clients) == 1
+    assert created_clients[0].kwargs == {"cache_keys": True, "lifespan": 300}
+
+    auth_module._get_jwks_client.cache_clear()
