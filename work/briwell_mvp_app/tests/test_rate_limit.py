@@ -77,6 +77,18 @@ def test_rate_limiting_is_noop_when_disabled(monkeypatch) -> None:
 def test_distinct_clients_have_independent_limits(monkeypatch) -> None:
     enable_rate_limiting(monkeypatch, requests_per_minute=1, burst=1)
 
+    client_a = TestClient(app, client=("10.0.0.1", 50000))
+    client_b = TestClient(app, client=("10.0.0.2", 50000))
+
+    first = client_a.get("/ops/security-policy", headers={"X-User-Role": "admin"})
+    second = client_b.get("/ops/security-policy", headers={"X-User-Role": "admin"})
+    assert first.status_code == 200
+    assert second.status_code == 200
+
+
+def test_rotating_x_user_email_header_does_not_bypass_the_limit(monkeypatch) -> None:
+    enable_rate_limiting(monkeypatch, requests_per_minute=1, burst=1)
+
     first = client.get(
         "/ops/security-policy",
         headers={"X-User-Role": "admin", "X-User-Email": "a@briwell.test"},
@@ -86,4 +98,4 @@ def test_distinct_clients_have_independent_limits(monkeypatch) -> None:
         headers={"X-User-Role": "admin", "X-User-Email": "b@briwell.test"},
     )
     assert first.status_code == 200
-    assert second.status_code == 200
+    assert second.status_code == 429

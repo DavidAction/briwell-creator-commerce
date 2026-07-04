@@ -188,6 +188,14 @@ def test_process_one_dispatches_and_marks_done_on_success(monkeypatch) -> None:
     assert fake.failed_calls == []
 
 
+class FakeConnection:
+    def __init__(self) -> None:
+        self.rollback_calls = 0
+
+    def rollback(self) -> None:
+        self.rollback_calls += 1
+
+
 def test_process_one_marks_failed_when_handler_raises(monkeypatch) -> None:
     from app.workers import job_queue
 
@@ -200,11 +208,46 @@ def test_process_one_marks_failed_when_handler_raises(monkeypatch) -> None:
     def stub_handler(conn, payload):
         raise ValueError("kaboom")
 
-    processed = process_one(conn=object(), handlers={"stub.job": stub_handler})
+    conn = FakeConnection()
+    processed = process_one(conn=conn, handlers={"stub.job": stub_handler})
 
     assert processed is True
     assert fake.done_calls == []
     assert fake.failed_calls == [(2, "kaboom")]
+    assert conn.rollback_calls == 1
+
+
+def test_process_one_rolls_back_before_mark_job_failed_so_it_cannot_run_on_a_poisoned_transaction(
+    monkeypatch,
+) -> None:
+    from app.workers import job_queue
+
+    job = {"id": 4, "job_type": "stub.job", "payload": {}}
+    fake = FakeJobsRepository(job=job)
+    monkeypatch.setattr(job_queue, "claim_next_job", fake.claim_next_job)
+    monkeypatch.setattr(job_queue, "mark_job_done", fake.mark_job_done)
+
+    call_order: list[str] = []
+
+    def tracking_mark_job_failed(conn, job_id, error):
+        call_order.append("mark_job_failed")
+        fake.mark_job_failed(conn, job_id, error)
+
+    monkeypatch.setattr(job_queue, "mark_job_failed", tracking_mark_job_failed)
+
+    class TrackingConnection(FakeConnection):
+        def rollback(self) -> None:
+            call_order.append("rollback")
+            super().rollback()
+
+    def stub_handler(conn, payload):
+        raise ValueError("boom")
+
+    conn = TrackingConnection()
+    processed = process_one(conn=conn, handlers={"stub.job": stub_handler})
+
+    assert processed is True
+    assert call_order == ["rollback", "mark_job_failed"]
 
 
 def test_process_one_marks_failed_when_no_handler_registered(monkeypatch) -> None:

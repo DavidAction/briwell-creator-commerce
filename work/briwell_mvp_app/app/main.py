@@ -97,8 +97,11 @@ async def enforce_rate_limit(request: Request, call_next):
     if not settings.rate_limit_enabled or request.url.path == "/health":
         return await call_next(request)
 
+    # X-User-Email is a client-supplied header, not a server-verified identity (the auth
+    # dependency that verifies it, incl. OIDC, runs later at the route level) -- keying the
+    # limiter on it would let a caller bypass its own limit by rotating the header value.
     client_host = request.client.host if request.client else None
-    client_key = client_identity(request.headers.get("X-User-Email"), client_host)
+    client_key = client_identity(None, client_host)
     result = await rate_limiter.check(client_key)
     if not result.allowed:
         request_id = request.headers.get("X-Request-ID") or str(uuid4())

@@ -155,3 +155,40 @@ def test_audit_events_repository_list_events_caps_limit_at_200() -> None:
     audit_events_repository.list_events(fake_conn, limit=5000)  # type: ignore[arg-type]
 
     assert fake_conn.cursor_obj.executed_params["limit"] == 200
+
+
+def test_audit_events_repository_list_events_floors_non_positive_limit_at_1() -> None:
+    from app.repositories import audit_events as audit_events_repository
+
+    class FakeCursor:
+        def __init__(self) -> None:
+            self.executed_params: dict[str, object] | None = None
+
+        def __enter__(self) -> "FakeCursor":
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+        def execute(self, query: str, params: dict[str, object]) -> None:
+            self.executed_params = params
+
+        def fetchall(self) -> list[dict[str, object]]:
+            return []
+
+    class FakeConnection:
+        def __init__(self) -> None:
+            self.cursor_obj = FakeCursor()
+
+        def cursor(self) -> FakeCursor:
+            return self.cursor_obj
+
+        def commit(self) -> None:
+            return None
+
+    for requested_limit in (-1, 0):
+        fake_conn = FakeConnection()
+
+        audit_events_repository.list_events(fake_conn, limit=requested_limit)  # type: ignore[arg-type]
+
+        assert fake_conn.cursor_obj.executed_params["limit"] == 1

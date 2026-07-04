@@ -48,7 +48,7 @@ def list_events(
     limit: int = 50,
 ) -> list[dict[str, Any]]:
     filters = ["1 = 1"]
-    params: dict[str, Any] = {"limit": min(limit, MAX_LIST_LIMIT)}
+    params: dict[str, Any] = {"limit": max(min(limit, MAX_LIST_LIMIT), 1)}
     if aggregate_type:
         filters.append("aggregate_type = %(aggregate_type)s")
         params["aggregate_type"] = aggregate_type

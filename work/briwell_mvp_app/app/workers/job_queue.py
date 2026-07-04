@@ -25,6 +25,10 @@ def process_one(conn: psycopg.Connection, handlers: dict[str, JobHandler]) -> bo
     try:
         handler(conn, job["payload"])
     except Exception as exc:
+        # A handler failure may have aborted the transaction (e.g. a constraint
+        # violation); roll back before reusing conn or mark_job_failed's UPDATE
+        # would itself raise InFailedSqlTransaction and escape uncaught.
+        conn.rollback()
         mark_job_failed(conn, job["id"], str(exc))
         return True
 
