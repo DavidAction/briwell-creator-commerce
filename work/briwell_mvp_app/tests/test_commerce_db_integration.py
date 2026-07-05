@@ -487,6 +487,18 @@ def _resolve(client, attribution_id: str, headers: dict, **payload) -> dict:
     return response.json()
 
 
+def _d(value) -> Decimal:
+    """Normalize a FastAPI JSON response numeric field for Decimal comparison.
+
+    NUMERIC columns are serialized to JSON as strings (and commission_rate is
+    NUMERIC(5,4), so e.g. 0.20 round-trips as "0.2000"). Comparing that string
+    directly against a Decimal literal always fails -- go through str() so
+    both sides normalize via the same Decimal constructor before comparing
+    numeric value rather than representation.
+    """
+    return Decimal(str(value))
+
+
 def test_reassign_offsets_net_balance_not_gross_accrual(monkeypatch: pytest.MonkeyPatch) -> None:
     """A partially-refunded order, then reassigned, must not leave the
     original creator with a phantom negative balance, and the new creator
@@ -584,13 +596,13 @@ def test_reassign_offsets_net_balance_not_gross_accrual(monkeypatch: pytest.Monk
         creator_id=creator_b,
         notes="wrong creator",
     )
-    assert body["adjustment_entry"]["amount"] == Decimal("-75.00")
+    assert _d(body["adjustment_entry"]["amount"]) == Decimal("-75.00")
 
-    balances = {row["creator_id"]: row for row in commerce_repository.creator_balances()}
+    balances = {str(row["creator_id"]): row for row in commerce_repository.creator_balances()}
     assert balances[creator_a]["balance_amount"] == Decimal("0.00")
     # New creator is accrued on the UNREFUNDED remainder (500), at the
     # 10% manual default (creator_b has no discount code/UTM link on file).
-    assert body["ledger_entry"]["amount"] == Decimal("50.00")
+    assert _d(body["ledger_entry"]["amount"]) == Decimal("50.00")
     assert balances[creator_b]["balance_amount"] == Decimal("50.00")
 
 
@@ -655,8 +667,8 @@ def test_reassign_uses_target_creators_own_commission_rate(monkeypatch: pytest.M
         notes="give to B",
     )
     # 1000 base * B's own 20% code rate = 200.00, not the 10% manual default.
-    assert body["ledger_entry"]["commission_rate"] == Decimal("0.20")
-    assert body["ledger_entry"]["amount"] == Decimal("200.00")
+    assert _d(body["ledger_entry"]["commission_rate"]) == Decimal("0.20")
+    assert _d(body["ledger_entry"]["amount"]) == Decimal("200.00")
 
 
 def test_reject_liquidates_existing_accrual(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -713,9 +725,9 @@ def test_reject_liquidates_existing_accrual(monkeypatch: pytest.MonkeyPatch) -> 
 
     body = _resolve(client, str(attribution["id"]), headers, action="reject")
     assert body["attribution"]["status"] == "rejected"
-    assert body["adjustment_entry"]["amount"] == Decimal("-100.00")
+    assert _d(body["adjustment_entry"]["amount"]) == Decimal("-100.00")
 
-    balances = {row["creator_id"]: row for row in commerce_repository.creator_balances(creator_id=creator_id)}
+    balances = {str(row["creator_id"]): row for row in commerce_repository.creator_balances(creator_id=creator_id)}
     assert balances[creator_id]["balance_amount"] == Decimal("0.00")
 
 
@@ -732,20 +744,53 @@ def test_reject_without_prior_accrual_is_a_no_op_ledger_wise(monkeypatch: pytest
     headers = {"X-User-Role": "admin", "X-User-Email": "commerce-e2e@briwell.test"}
     suffix = str(int(time.time() * 1000))
     creator_id = _make_creator(suffix)
+    competing_creator_id = _make_creator(f"{suffix}-competing")
     order = _make_order(f"reject-noop-{suffix}", shopify_order_id=f"reject-noop-order-{suffix}")
     order_id = str(order["id"])
+
+    # Mirror decide_attribution's actual Rule 3 (code_vs_utm) shape: method is
+    # always "discount_code" with a real matched code, and the competing UTM
+    # link is also real -- decide_attribution never emits method="manual" for
+    # an unresolved needs_review row (that method value is reserved for the
+    # operator "reassign" action, which always sets resolved_by_email).
+    matched_code = commerce_repository.create_discount_code(
+        {
+            "creator_id": creator_id,
+            "campaign_id": None,
+            "code": f"NOOP{suffix}",
+            "commission_rate": Decimal("0.15"),
+            "shopify_price_rule_id": None,
+            "shopify_discount_code_id": None,
+            "valid_from": None,
+            "valid_until": None,
+            "status": "active",
+        }
+    )
+    competing_link = commerce_repository.create_utm_link(
+        {
+            "creator_id": competing_creator_id,
+            "campaign_id": None,
+            "ref_token": f"noop{suffix}",
+            "destination_url": "https://example.com/noop",
+            "utm_source": "tiktok",
+            "utm_medium": "creator_bio",
+            "utm_campaign": None,
+            "commission_rate": Decimal("0.10"),
+            "status": "active",
+        }
+    )
 
     attribution = commerce_repository.insert_attribution(
         {
             "order_id": order_id,
             "creator_id": creator_id,
-            "method": "manual",
+            "method": "discount_code",
             "confidence": "medium",
             "status": "needs_review",
             "conflict_kind": "code_vs_utm",
-            "matched_discount_code_id": None,
-            "matched_utm_link_id": None,
-            "competing_creator_id": None,
+            "matched_discount_code_id": str(matched_code["id"]),
+            "matched_utm_link_id": str(competing_link["id"]),
+            "competing_creator_id": competing_creator_id,
             "decision_notes": None,
             "decided_by": "rules_v1",
             "resolved_by_email": None,
@@ -782,6 +827,39 @@ def test_confirm_backfills_refunds_that_predate_the_accrual(monkeypatch: pytest.
     )
     order_id = str(order["id"])
 
+    # Mirror decide_attribution's actual Rule 3 (code_vs_utm) shape: method is
+    # always "discount_code" with a real matched code (never null) for an
+    # unresolved needs_review row. Rate is 0.10 so the accrual math below
+    # (1000 * 0.10 = 100) matches what this test originally described as the
+    # "default manual rate" -- it is really the matched code's own rate.
+    competing_creator_id = _make_creator(f"{suffix}-competing")
+    matched_code = commerce_repository.create_discount_code(
+        {
+            "creator_id": creator_id,
+            "campaign_id": None,
+            "code": f"BACKFILL{suffix}",
+            "commission_rate": Decimal("0.10"),
+            "shopify_price_rule_id": None,
+            "shopify_discount_code_id": None,
+            "valid_from": None,
+            "valid_until": None,
+            "status": "active",
+        }
+    )
+    competing_link = commerce_repository.create_utm_link(
+        {
+            "creator_id": competing_creator_id,
+            "campaign_id": None,
+            "ref_token": f"backfill{suffix}",
+            "destination_url": "https://example.com/backfill",
+            "utm_source": "tiktok",
+            "utm_medium": "creator_bio",
+            "utm_campaign": None,
+            "commission_rate": Decimal("0.10"),
+            "status": "active",
+        }
+    )
+
     attribution = commerce_repository.insert_attribution(
         {
             "order_id": order_id,
@@ -790,9 +868,9 @@ def test_confirm_backfills_refunds_that_predate_the_accrual(monkeypatch: pytest.
             "confidence": "medium",
             "status": "needs_review",
             "conflict_kind": "code_vs_utm",
-            "matched_discount_code_id": None,
-            "matched_utm_link_id": None,
-            "competing_creator_id": None,
+            "matched_discount_code_id": str(matched_code["id"]),
+            "matched_utm_link_id": str(competing_link["id"]),
+            "competing_creator_id": competing_creator_id,
             "decision_notes": None,
             "decided_by": "rules_v1",
             "resolved_by_email": None,
@@ -817,12 +895,12 @@ def test_confirm_backfills_refunds_that_predate_the_accrual(monkeypatch: pytest.
     )
 
     body = _resolve(client, str(attribution["id"]), headers, action="confirm")
-    assert body["ledger_entry"]["amount"] == Decimal("150.00")  # 1000 * 0.10 default manual rate
+    assert _d(body["ledger_entry"]["amount"]) == Decimal("100.00")  # 1000 * 0.10 matched code rate
     assert len(body["backfilled_reversal_entries"]) == 1
-    assert body["backfilled_reversal_entries"][0]["amount"] == Decimal("-75.00")  # 50% of the 150 accrual
+    assert _d(body["backfilled_reversal_entries"][0]["amount"]) == Decimal("-50.00")  # 50% of the 100 accrual
 
-    balances = {row["creator_id"]: row for row in commerce_repository.creator_balances(creator_id=creator_id)}
-    assert balances[creator_id]["balance_amount"] == Decimal("75.00")
+    balances = {str(row["creator_id"]): row for row in commerce_repository.creator_balances(creator_id=creator_id)}
+    assert balances[creator_id]["balance_amount"] == Decimal("50.00")
 
 
 def test_resolve_commission_rate_finds_code_beyond_default_list_limit(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -901,8 +979,8 @@ def test_resolve_commission_rate_finds_code_beyond_default_list_limit(monkeypatc
     body = _resolve(client, str(attribution["id"]), headers, action="confirm")
     # Must resolve the matched code's real 20% rate, not silently fall back
     # to the 10% manual default because the code fell outside a limited scan.
-    assert body["ledger_entry"]["commission_rate"] == Decimal("0.20")
-    assert body["ledger_entry"]["amount"] == Decimal("200.00")
+    assert _d(body["ledger_entry"]["commission_rate"]) == Decimal("0.20")
+    assert _d(body["ledger_entry"]["amount"]) == Decimal("200.00")
 
 
 def test_find_active_codes_is_deterministically_ordered(monkeypatch: pytest.MonkeyPatch) -> None:
