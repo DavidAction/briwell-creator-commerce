@@ -355,3 +355,37 @@ SET revenue_amount = revenue_usd,
     revenue_currency = 'USD',
     fx_rate_usd = 1
 WHERE revenue_usd IS NOT NULL AND revenue_amount IS NULL;
+
+-- revenue_usd cannot be made a GENERATED column without a breaking type/
+-- constraint migration (it predates this file, in 002_execution_tracking_
+-- schema.sql, and app/repositories/performance.py + app/operations/
+-- workflows.py both read/write it directly). Instead, derive it via trigger
+-- whenever the currency-explicit triple is present: this closes the gap
+-- where a caller populates revenue_amount/revenue_currency/fx_rate_usd but
+-- forgets revenue_usd (previously silently under-counted in SUM(revenue_usd)
+-- aggregates), and prevents a caller from hand-entering a revenue_usd that
+-- doesn't match the triple's own currency math (mixed-currency drift).
+-- Legacy rows/callers that only ever set revenue_usd directly (no triple)
+-- are left untouched -- this is additive, not a behavior change for them.
+CREATE OR REPLACE FUNCTION derive_snapshot_revenue_usd()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.revenue_amount IS NOT NULL AND NEW.fx_rate_usd IS NOT NULL THEN
+    NEW.revenue_usd := ROUND(NEW.revenue_amount * NEW.fx_rate_usd, 2);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS derive_snapshot_revenue_usd ON campaign_performance_snapshot;
+CREATE TRIGGER derive_snapshot_revenue_usd
+BEFORE INSERT OR UPDATE ON campaign_performance_snapshot
+FOR EACH ROW EXECUTE FUNCTION derive_snapshot_revenue_usd();
+
+-- Re-run the derivation over the just-backfilled rows (defensive; the
+-- UPDATE above ran before the trigger existed in a fresh apply, but on a
+-- re-run of this idempotent migration the trigger already exists and would
+-- have derived revenue_usd itself).
+UPDATE campaign_performance_snapshot
+SET revenue_usd = ROUND(revenue_amount * fx_rate_usd, 2)
+WHERE revenue_amount IS NOT NULL AND fx_rate_usd IS NOT NULL;

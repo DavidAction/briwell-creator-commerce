@@ -221,62 +221,72 @@ def ingest_shopify_order(
 
     order_payload = payload.model_dump(exclude={"line_items", "discount_codes"})
     order_payload["discount_codes"] = payload.discount_codes
-    order = commerce_repository.upsert_shop_order(order_payload)
-    order_id = str(order["id"])
-
-    line_items = commerce_repository.insert_line_items(
-        order_id,
-        [item.model_dump() for item in payload.line_items],
-    )
 
     attribution_record: dict[str, Any] | None = None
     ledger_entry: dict[str, Any] | None = None
-    existing_live = commerce_repository.get_live_attribution(order_id)
 
-    if decision.creator_id is not None and existing_live is None:
-        attribution_record = commerce_repository.insert_attribution(
-            {
-                "order_id": order_id,
-                "creator_id": decision.creator_id,
-                "method": decision.method,
-                "confidence": decision.confidence,
-                "status": decision.status,
-                "conflict_kind": decision.conflict_kind,
-                "matched_discount_code_id": decision.matched_discount_code_id,
-                "matched_utm_link_id": decision.matched_utm_link_id,
-                "competing_creator_id": decision.competing_creator_id,
-                "decision_notes": None,
-                "decided_by": "rules_v1",
-                "resolved_by_email": None,
-                "resolved_at": None,
-            }
+    # The order upsert, line items, attribution insert, and accrual ledger
+    # entry must land as a single all-or-nothing unit: if the ledger insert
+    # fails after the attribution has already been committed, a webhook
+    # redelivery would see `existing_live is not None` and permanently skip
+    # accrual creation, silently losing the creator's commission.
+    with connection() as conn:
+        order = commerce_repository.upsert_shop_order(order_payload, conn=conn)
+        order_id = str(order["id"])
+
+        line_items = commerce_repository.insert_line_items(
+            order_id,
+            [item.model_dump() for item in payload.line_items],
+            conn=conn,
         )
-        if decision.should_accrue:
-            commissionable_base = computed["commissionable_base"]
-            accrual = compute_accrual(
-                commissionable_base=commissionable_base,
-                commission_rate=Decimal(decision.commission_rate),
-                currency=payload.currency,
-                fx_rate_usd=payload.fx_rate_usd,
-            )
-            ledger_entry = commerce_repository.insert_ledger_entry(
+
+        existing_live = commerce_repository.get_live_attribution(order_id, conn=conn)
+
+        if decision.creator_id is not None and existing_live is None:
+            attribution_record = commerce_repository.insert_attribution(
                 {
-                    "creator_id": decision.creator_id,
-                    "campaign_id": None,
                     "order_id": order_id,
-                    "attribution_id": str(attribution_record["id"]),
-                    "refund_id": None,
-                    "entry_type": "accrual",
-                    "amount": accrual.amount,
-                    "currency": accrual.currency,
-                    "fx_rate_usd": accrual.fx_rate_usd,
-                    "reverses_entry_id": None,
-                    "commission_rate": accrual.commission_rate,
-                    "memo": None,
-                    "created_by_email": None,
-                }
+                    "creator_id": decision.creator_id,
+                    "method": decision.method,
+                    "confidence": decision.confidence,
+                    "status": decision.status,
+                    "conflict_kind": decision.conflict_kind,
+                    "matched_discount_code_id": decision.matched_discount_code_id,
+                    "matched_utm_link_id": decision.matched_utm_link_id,
+                    "competing_creator_id": decision.competing_creator_id,
+                    "decision_notes": None,
+                    "decided_by": "rules_v1",
+                    "resolved_by_email": None,
+                    "resolved_at": None,
+                },
+                conn=conn,
             )
-        with connection() as conn:
+            if decision.should_accrue:
+                commissionable_base = computed["commissionable_base"]
+                accrual = compute_accrual(
+                    commissionable_base=commissionable_base,
+                    commission_rate=Decimal(decision.commission_rate),
+                    currency=payload.currency,
+                    fx_rate_usd=payload.fx_rate_usd,
+                )
+                ledger_entry = commerce_repository.insert_ledger_entry(
+                    {
+                        "creator_id": decision.creator_id,
+                        "campaign_id": None,
+                        "order_id": order_id,
+                        "attribution_id": str(attribution_record["id"]),
+                        "refund_id": None,
+                        "entry_type": "accrual",
+                        "amount": accrual.amount,
+                        "currency": accrual.currency,
+                        "fx_rate_usd": accrual.fx_rate_usd,
+                        "reverses_entry_id": None,
+                        "commission_rate": accrual.commission_rate,
+                        "memo": None,
+                        "created_by_email": None,
+                    },
+                    conn=conn,
+                )
             audit_events_repository.record_event(
                 conn,
                 event_type="order_attribution.decided",
@@ -294,8 +304,9 @@ def ingest_shopify_order(
                     }
                 ),
             )
-    elif existing_live is not None:
-        attribution_record = existing_live
+        elif existing_live is not None:
+            attribution_record = existing_live
+        conn.commit()
 
     return {
         "status": "persisted",
@@ -566,42 +577,71 @@ def resolve_attribution(
     result: dict[str, Any] = {"status": "persisted"}
 
     if payload.action == "reject":
-        updated = commerce_repository.supersede_attribution(attribution_id, "rejected", user.email)
+        with connection() as conn:
+            updated = commerce_repository.supersede_attribution(
+                attribution_id, "rejected", user.email, conn=conn
+            )
+            reversal_entry = _liquidate_attribution_accrual(
+                attribution_id=attribution_id,
+                order_id=order_id,
+                reason=f"Attribution rejected by {user.email}: {payload.notes or 'no notes'}",
+                user=user,
+                conn=conn,
+            )
+            conn.commit()
         result["attribution"] = updated
+        result["adjustment_entry"] = reversal_entry
         _audit_resolution(order_id, attribution_id, payload, user)
         return result
 
     if payload.action == "confirm":
-        updated = commerce_repository.supersede_attribution(attribution_id, "active", user.email)
-        ledger_entry = None
-        existing_accrual = commerce_repository.get_accrual_for_attribution(attribution_id)
-        if existing_accrual is None:
-            order = commerce_repository.get_order_by_id(order_id)
-            commissionable_base = Decimal(str(order["subtotal_amount"])) - Decimal(str(order["discount_amount"]))
-            commission_rate = _resolve_commission_rate(updated)
-            accrual = compute_accrual(
-                commissionable_base=commissionable_base,
-                commission_rate=commission_rate,
-                currency=order["currency"],
-                fx_rate_usd=Decimal(str(order["fx_rate_usd"])),
+        with connection() as conn:
+            updated = commerce_repository.supersede_attribution(
+                attribution_id, "active", user.email, conn=conn
             )
-            ledger_entry = commerce_repository.insert_ledger_entry(
-                {
-                    "creator_id": updated["creator_id"],
-                    "campaign_id": None,
-                    "order_id": order_id,
-                    "attribution_id": attribution_id,
-                    "refund_id": None,
-                    "entry_type": "accrual",
-                    "amount": accrual.amount,
-                    "currency": accrual.currency,
-                    "fx_rate_usd": accrual.fx_rate_usd,
-                    "reverses_entry_id": None,
-                    "commission_rate": accrual.commission_rate,
-                    "memo": None,
-                    "created_by_email": None,
-                }
-            )
+            ledger_entry = None
+            existing_accrual = commerce_repository.get_accrual_for_attribution(attribution_id, conn=conn)
+            if existing_accrual is None:
+                order = commerce_repository.get_order_by_id(order_id, conn=conn)
+                commissionable_base = Decimal(str(order["subtotal_amount"])) - Decimal(str(order["discount_amount"]))
+                commission_rate = _resolve_commission_rate(updated)
+                accrual = compute_accrual(
+                    commissionable_base=commissionable_base,
+                    commission_rate=commission_rate,
+                    currency=order["currency"],
+                    fx_rate_usd=Decimal(str(order["fx_rate_usd"])),
+                )
+                ledger_entry = commerce_repository.insert_ledger_entry(
+                    {
+                        "creator_id": updated["creator_id"],
+                        "campaign_id": None,
+                        "order_id": order_id,
+                        "attribution_id": attribution_id,
+                        "refund_id": None,
+                        "entry_type": "accrual",
+                        "amount": accrual.amount,
+                        "currency": accrual.currency,
+                        "fx_rate_usd": accrual.fx_rate_usd,
+                        "reverses_entry_id": None,
+                        "commission_rate": accrual.commission_rate,
+                        "memo": None,
+                        "created_by_email": None,
+                    },
+                    conn=conn,
+                )
+                # This attribution may have sat in needs_review while refund
+                # webhooks arrived; ingest_shopify_refund only writes a
+                # reversal when the attribution is already 'active', so any
+                # refunds processed during the review window were never
+                # offset. Backfill them now against the accrual we just made.
+                backfilled = _backfill_refund_reversals(
+                    order_id=order_id,
+                    accrual=ledger_entry,
+                    conn=conn,
+                )
+                if backfilled:
+                    result["backfilled_reversal_entries"] = backfilled
+            conn.commit()
         result["attribution"] = updated
         result["ledger_entry"] = ledger_entry
         _audit_resolution(order_id, attribution_id, payload, user)
@@ -609,72 +649,91 @@ def resolve_attribution(
 
     # reassign
     assert payload.creator_id is not None
-    superseded = commerce_repository.supersede_attribution(attribution_id, "superseded", user.email)
-    adjustment_entry = None
-    existing_accrual = commerce_repository.get_accrual_for_attribution(attribution_id)
-    if existing_accrual is not None:
-        adjustment_entry = commerce_repository.insert_ledger_entry(
+    with connection() as conn:
+        superseded = commerce_repository.supersede_attribution(
+            attribution_id, "superseded", user.email, conn=conn
+        )
+        adjustment_entry = None
+        existing_accrual = commerce_repository.get_accrual_for_attribution(attribution_id, conn=conn)
+        if existing_accrual is not None:
+            # Offset the attribution's NET balance (accrual + any refund
+            # reversals already posted against it), never the gross accrual
+            # amount -- otherwise a partially-refunded order leaves the old
+            # creator with a phantom negative balance (money they never
+            # received clawed back twice).
+            net_balance = Decimal(str(commerce_repository.sum_ledger_for_attribution(attribution_id, conn=conn)))
+            if net_balance != 0:
+                adjustment_entry = commerce_repository.insert_ledger_entry(
+                    {
+                        "creator_id": existing_accrual["creator_id"],
+                        "campaign_id": existing_accrual["campaign_id"],
+                        "order_id": order_id,
+                        "attribution_id": attribution_id,
+                        "refund_id": None,
+                        "entry_type": "adjustment",
+                        "amount": -net_balance,
+                        "currency": existing_accrual["currency"],
+                        "fx_rate_usd": existing_accrual["fx_rate_usd"],
+                        "reverses_entry_id": None,
+                        "commission_rate": None,
+                        "memo": f"Reassigned by {user.email}: {payload.notes or 'no notes'}",
+                        "created_by_email": user.email,
+                    },
+                    conn=conn,
+                )
+
+        new_attribution = commerce_repository.insert_attribution(
             {
-                "creator_id": existing_accrual["creator_id"],
-                "campaign_id": existing_accrual["campaign_id"],
                 "order_id": order_id,
-                "attribution_id": attribution_id,
-                "refund_id": None,
-                "entry_type": "adjustment",
-                "amount": -Decimal(str(existing_accrual["amount"])),
-                "currency": existing_accrual["currency"],
-                "fx_rate_usd": existing_accrual["fx_rate_usd"],
-                "reverses_entry_id": None,
-                "commission_rate": None,
-                "memo": f"Reassigned by {user.email}: {payload.notes or 'no notes'}",
-                "created_by_email": user.email,
-            }
+                "creator_id": payload.creator_id,
+                "method": "manual",
+                "confidence": "high",
+                "status": "active",
+                "conflict_kind": "manual_override",
+                "matched_discount_code_id": None,
+                "matched_utm_link_id": None,
+                "competing_creator_id": None,
+                "decision_notes": payload.notes,
+                "decided_by": user.email,
+                "resolved_by_email": user.email,
+                "resolved_at": datetime.utcnow(),
+            },
+            conn=conn,
         )
 
-    new_attribution = commerce_repository.insert_attribution(
-        {
-            "order_id": order_id,
-            "creator_id": payload.creator_id,
-            "method": "manual",
-            "confidence": "high",
-            "status": "active",
-            "conflict_kind": "manual_override",
-            "matched_discount_code_id": None,
-            "matched_utm_link_id": None,
-            "competing_creator_id": None,
-            "decision_notes": payload.notes,
-            "decided_by": user.email,
-            "resolved_by_email": user.email,
-            "resolved_at": datetime.utcnow(),
-        }
-    )
-
-    order = commerce_repository.get_order_by_id(order_id)
-    commissionable_base = Decimal(str(order["subtotal_amount"])) - Decimal(str(order["discount_amount"]))
-    commission_rate = _default_manual_commission_rate()
-    new_accrual = compute_accrual(
-        commissionable_base=commissionable_base,
-        commission_rate=commission_rate,
-        currency=order["currency"],
-        fx_rate_usd=Decimal(str(order["fx_rate_usd"])),
-    )
-    new_ledger_entry = commerce_repository.insert_ledger_entry(
-        {
-            "creator_id": payload.creator_id,
-            "campaign_id": None,
-            "order_id": order_id,
-            "attribution_id": str(new_attribution["id"]),
-            "refund_id": None,
-            "entry_type": "accrual",
-            "amount": new_accrual.amount,
-            "currency": new_accrual.currency,
-            "fx_rate_usd": new_accrual.fx_rate_usd,
-            "reverses_entry_id": None,
-            "commission_rate": new_accrual.commission_rate,
-            "memo": None,
-            "created_by_email": None,
-        }
-    )
+        order = commerce_repository.get_order_by_id(order_id, conn=conn)
+        gross_commissionable_base = Decimal(str(order["subtotal_amount"])) - Decimal(str(order["discount_amount"]))
+        # Net out refunds already processed on this order so a reassign
+        # after a (partial) refund doesn't accrue commission on merchandise
+        # that was already returned.
+        already_refunded = _cumulative_refunded_for_order(order_id, conn=conn)
+        net_commissionable_base = max(gross_commissionable_base - already_refunded, Decimal("0"))
+        commission_rate = _resolve_commission_rate_for_creator(payload.creator_id, conn=conn)
+        new_accrual = compute_accrual(
+            commissionable_base=net_commissionable_base,
+            commission_rate=commission_rate,
+            currency=order["currency"],
+            fx_rate_usd=Decimal(str(order["fx_rate_usd"])),
+        )
+        new_ledger_entry = commerce_repository.insert_ledger_entry(
+            {
+                "creator_id": payload.creator_id,
+                "campaign_id": None,
+                "order_id": order_id,
+                "attribution_id": str(new_attribution["id"]),
+                "refund_id": None,
+                "entry_type": "accrual",
+                "amount": new_accrual.amount,
+                "currency": new_accrual.currency,
+                "fx_rate_usd": new_accrual.fx_rate_usd,
+                "reverses_entry_id": None,
+                "commission_rate": new_accrual.commission_rate,
+                "memo": None,
+                "created_by_email": None,
+            },
+            conn=conn,
+        )
+        conn.commit()
 
     result["superseded_attribution"] = superseded
     result["adjustment_entry"] = adjustment_entry
@@ -684,17 +743,136 @@ def resolve_attribution(
     return result
 
 
+def _liquidate_attribution_accrual(
+    attribution_id: str,
+    order_id: str,
+    reason: str,
+    user: UserContext,
+    conn: Any,
+) -> dict[str, Any] | None:
+    """Cancel out any ledger balance already posted for a rejected attribution.
+
+    `reject` can be called on an attribution that was previously `confirm`ed
+    (status stays 'active' until rejected), in which case an accrual (and
+    possibly refund reversals) already exist. Without this offset, rejecting
+    an attribution left the creator's derived balance carrying commission
+    for an order that is no longer attributed to them.
+    """
+    existing_accrual = commerce_repository.get_accrual_for_attribution(attribution_id, conn=conn)
+    if existing_accrual is None:
+        return None
+    net_balance = Decimal(str(commerce_repository.sum_ledger_for_attribution(attribution_id, conn=conn)))
+    if net_balance == 0:
+        return None
+    return commerce_repository.insert_ledger_entry(
+        {
+            "creator_id": existing_accrual["creator_id"],
+            "campaign_id": existing_accrual["campaign_id"],
+            "order_id": order_id,
+            "attribution_id": attribution_id,
+            "refund_id": None,
+            "entry_type": "adjustment",
+            "amount": -net_balance,
+            "currency": existing_accrual["currency"],
+            "fx_rate_usd": existing_accrual["fx_rate_usd"],
+            "reverses_entry_id": None,
+            "commission_rate": None,
+            "memo": reason,
+            "created_by_email": user.email,
+        },
+        conn=conn,
+    )
+
+
+def _backfill_refund_reversals(
+    order_id: str,
+    accrual: dict[str, Any],
+    conn: Any,
+) -> list[dict[str, Any]]:
+    """Write reversal entries for refunds that predate a just-created accrual.
+
+    ingest_shopify_refund only reverses an accrual when the order's live
+    attribution is already 'active' at the moment the refund webhook is
+    processed. An attribution that was needs_review during that window (or
+    that had no accrual at all) means refunds landed with no offsetting
+    ledger entry. Confirming the attribution creates the accrual after the
+    fact, so replay all refunds in processed_at order against it here.
+    """
+    order = commerce_repository.get_order_by_id(order_id, conn=conn)
+    commissionable_base = Decimal(str(order["subtotal_amount"])) - Decimal(str(order["discount_amount"]))
+    refunds = commerce_repository.list_refunds_for_order(order_id, conn=conn)
+    created: list[dict[str, Any]] = []
+    cumulative_before = Decimal("0")
+    for refund in refunds:
+        refund_id = str(refund["id"])
+        existing = commerce_repository.get_reversal_for_refund(str(accrual["id"]), refund_id, conn=conn)
+        refund_commissionable = Decimal(str(refund["commissionable_refund_amount"]))
+        if existing is None:
+            reversal_amount = compute_refund_reversal(
+                accrual_amount=Decimal(str(accrual["amount"])),
+                commissionable_base=commissionable_base,
+                cumulative_refunded_before=cumulative_before,
+                refund_commissionable_amount=refund_commissionable,
+            )
+            if reversal_amount != 0:
+                created.append(
+                    commerce_repository.insert_ledger_entry(
+                        {
+                            "creator_id": accrual["creator_id"],
+                            "campaign_id": accrual["campaign_id"],
+                            "order_id": order_id,
+                            "attribution_id": accrual["attribution_id"],
+                            "refund_id": refund_id,
+                            "entry_type": "reversal",
+                            "amount": reversal_amount,
+                            "currency": accrual["currency"],
+                            "fx_rate_usd": accrual["fx_rate_usd"],
+                            "reverses_entry_id": str(accrual["id"]),
+                            "commission_rate": None,
+                            "memo": "Backfilled on confirm: refund predates accrual.",
+                            "created_by_email": None,
+                        },
+                        conn=conn,
+                    )
+                )
+        cumulative_before += refund_commissionable
+    return created
+
+
+def _cumulative_refunded_for_order(order_id: str, conn: Any) -> Decimal:
+    refunds = commerce_repository.list_refunds_for_order(order_id, conn=conn)
+    total = Decimal("0")
+    for refund in refunds:
+        total += Decimal(str(refund["commissionable_refund_amount"]))
+    return total
+
+
 def _resolve_commission_rate(attribution: dict[str, Any]) -> Decimal:
     if attribution.get("matched_discount_code_id"):
-        code = commerce_repository.list_discount_codes()
-        for row in code:
-            if str(row["id"]) == str(attribution["matched_discount_code_id"]):
-                return Decimal(str(row["commission_rate"]))
+        row = commerce_repository.get_discount_code_by_id(str(attribution["matched_discount_code_id"]))
+        if row is not None:
+            return Decimal(str(row["commission_rate"]))
     if attribution.get("matched_utm_link_id"):
-        links = commerce_repository.list_utm_links()
-        for row in links:
-            if str(row["id"]) == str(attribution["matched_utm_link_id"]):
-                return Decimal(str(row["commission_rate"]))
+        row = commerce_repository.get_utm_link_by_id(str(attribution["matched_utm_link_id"]))
+        if row is not None:
+            return Decimal(str(row["commission_rate"]))
+    return _default_manual_commission_rate()
+
+
+def _resolve_commission_rate_for_creator(creator_id: str, conn: Any) -> Decimal:
+    """Best-effort commission rate for a manually (re)assigned creator.
+
+    Prefers the creator's own active discount code, then their active UTM
+    link, so a reassign doesn't silently discount an already-contracted
+    creator down to the generic manual default. Falls back to the manual
+    default only when the creator has no active code or link on file.
+    """
+    code = commerce_repository.get_active_discount_code_for_creator(creator_id, conn=conn)
+    if code is not None:
+        return Decimal(str(code["commission_rate"]))
+    link = commerce_repository.get_active_utm_link_for_creator(creator_id, conn=conn)
+    if link is not None:
+        return Decimal(str(link["commission_rate"]))
     return _default_manual_commission_rate()
 
 

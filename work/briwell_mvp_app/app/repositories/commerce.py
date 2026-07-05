@@ -9,6 +9,7 @@ persists their results.
 
 from typing import Any
 
+import psycopg
 from psycopg.types.json import Jsonb
 
 from app.core.db import connection, fetch_all, fetch_one
@@ -25,7 +26,7 @@ def _limit(value: int) -> int:
 # ---------------------------------------------------------------------------
 
 
-def upsert_shop_order(payload: dict[str, Any]) -> dict[str, Any]:
+def upsert_shop_order(payload: dict[str, Any], conn: psycopg.Connection | None = None) -> dict[str, Any]:
     query = """
         INSERT INTO shop_order (
           shopify_order_id,
@@ -94,13 +95,18 @@ def upsert_shop_order(payload: dict[str, Any]) -> dict[str, Any]:
             "utm_params": Jsonb(payload.get("utm_params", {})),
             "raw_payload": Jsonb(payload.get("raw_payload", {})),
         },
+        conn=conn,
     )
     if created is None:
         raise RuntimeError("shop_order upsert did not return a row.")
     return created
 
 
-def insert_line_items(order_id: str, items: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def insert_line_items(
+    order_id: str,
+    items: list[dict[str, Any]],
+    conn: psycopg.Connection | None = None,
+) -> list[dict[str, Any]]:
     if not items:
         return []
     query = """
@@ -132,15 +138,22 @@ def insert_line_items(order_id: str, items: list[dict[str, Any]]) -> list[dict[s
           total_discount = EXCLUDED.total_discount
         RETURNING *
     """
-    created: list[dict[str, Any]] = []
-    with connection() as conn:
-        with conn.cursor() as cur:
+
+    def _run(cursor_conn) -> list[dict[str, Any]]:
+        created: list[dict[str, Any]] = []
+        with cursor_conn.cursor() as cur:
             for item in items:
                 cur.execute(query, {"order_id": order_id, **item})
                 row = cur.fetchone()
                 if row is not None:
                     created.append(dict(row))
-        conn.commit()
+        return created
+
+    if conn is not None:
+        return _run(conn)
+    with connection() as owned_conn:
+        created = _run(owned_conn)
+        owned_conn.commit()
     return created
 
 
@@ -149,9 +162,9 @@ def get_order_by_shopify_id(shopify_order_id: str) -> dict[str, Any] | None:
     return fetch_one(query, {"shopify_order_id": shopify_order_id})
 
 
-def get_order_by_id(order_id: str) -> dict[str, Any] | None:
+def get_order_by_id(order_id: str, conn: psycopg.Connection | None = None) -> dict[str, Any] | None:
     query = "SELECT * FROM shop_order WHERE id = %(order_id)s"
-    return fetch_one(query, {"order_id": order_id})
+    return fetch_one(query, {"order_id": order_id}, conn=conn)
 
 
 def list_orders(limit: int = 50) -> list[dict[str, Any]]:
@@ -225,13 +238,13 @@ def get_refund_by_shopify_id(shopify_refund_id: str) -> dict[str, Any] | None:
     return fetch_one(query, {"shopify_refund_id": shopify_refund_id})
 
 
-def list_refunds_for_order(order_id: str) -> list[dict[str, Any]]:
+def list_refunds_for_order(order_id: str, conn: psycopg.Connection | None = None) -> list[dict[str, Any]]:
     query = """
         SELECT * FROM order_refund
         WHERE order_id = %(order_id)s
         ORDER BY processed_at ASC
     """
-    return fetch_all(query, {"order_id": order_id})
+    return fetch_all(query, {"order_id": order_id}, conn=conn)
 
 
 # ---------------------------------------------------------------------------
@@ -288,15 +301,44 @@ def list_discount_codes(creator_id: str | None = None, status: str | None = None
     return fetch_all(query, params)
 
 
+def get_discount_code_by_id(discount_code_id: str) -> dict[str, Any] | None:
+    query = "SELECT * FROM creator_discount_code WHERE id = %(discount_code_id)s"
+    return fetch_one(query, {"discount_code_id": discount_code_id})
+
+
+def get_active_discount_code_for_creator(
+    creator_id: str, conn: psycopg.Connection | None = None
+) -> dict[str, Any] | None:
+    """Most-recently-created active discount code for a creator, if any.
+
+    Used to resolve a commission rate for manual attribution actions
+    (reassign) without falling back to a hardcoded default when the target
+    creator has a real code on file.
+    """
+    query = """
+        SELECT * FROM creator_discount_code
+        WHERE creator_id = %(creator_id)s AND status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 1
+    """
+    return fetch_one(query, {"creator_id": creator_id}, conn=conn)
+
+
 def find_active_codes(codes: list[str]) -> list[dict[str, Any]]:
     if not codes:
         return []
     normalized = [code.strip().upper() for code in codes if code and code.strip()]
     if not normalized:
         return []
+    # Deterministic ordering matters: decide_attribution() picks
+    # code_matches[0] when multiple active codes for the SAME creator match
+    # the same order (e.g. a creator has both a legacy and a current code).
+    # Oldest-code-wins keeps repeated webhook redeliveries and re-lookups
+    # from a different connection reproducing the same accrual amount.
     query = """
         SELECT * FROM creator_discount_code
         WHERE status = 'active' AND code = ANY(%(codes)s)
+        ORDER BY created_at ASC, id ASC
     """
     return fetch_all(query, {"codes": normalized})
 
@@ -350,6 +392,24 @@ def list_utm_links(creator_id: str | None = None, status: str | None = None, lim
     return fetch_all(query, params)
 
 
+def get_utm_link_by_id(utm_link_id: str) -> dict[str, Any] | None:
+    query = "SELECT * FROM creator_utm_link WHERE id = %(utm_link_id)s"
+    return fetch_one(query, {"utm_link_id": utm_link_id})
+
+
+def get_active_utm_link_for_creator(
+    creator_id: str, conn: psycopg.Connection | None = None
+) -> dict[str, Any] | None:
+    """Most-recently-created active UTM link for a creator, if any."""
+    query = """
+        SELECT * FROM creator_utm_link
+        WHERE creator_id = %(creator_id)s AND status = 'active'
+        ORDER BY created_at DESC
+        LIMIT 1
+    """
+    return fetch_one(query, {"creator_id": creator_id}, conn=conn)
+
+
 def find_active_utm_link(ref_token: str | None) -> dict[str, Any] | None:
     if not ref_token or not ref_token.strip():
         return None
@@ -365,7 +425,7 @@ def find_active_utm_link(ref_token: str | None) -> dict[str, Any] | None:
 # ---------------------------------------------------------------------------
 
 
-def insert_attribution(payload: dict[str, Any]) -> dict[str, Any]:
+def insert_attribution(payload: dict[str, Any], conn: psycopg.Connection | None = None) -> dict[str, Any]:
     query = """
         INSERT INTO order_attribution (
           order_id,
@@ -398,19 +458,19 @@ def insert_attribution(payload: dict[str, Any]) -> dict[str, Any]:
         )
         RETURNING *
     """
-    created = fetch_one(query, payload)
+    created = fetch_one(query, payload, conn=conn)
     if created is None:
         raise RuntimeError("order_attribution insert did not return a row.")
     return created
 
 
-def get_live_attribution(order_id: str) -> dict[str, Any] | None:
+def get_live_attribution(order_id: str, conn: psycopg.Connection | None = None) -> dict[str, Any] | None:
     query = """
         SELECT * FROM order_attribution
         WHERE order_id = %(order_id)s AND status IN ('active', 'needs_review')
         LIMIT 1
     """
-    return fetch_one(query, {"order_id": order_id})
+    return fetch_one(query, {"order_id": order_id}, conn=conn)
 
 
 def get_attribution(attribution_id: str) -> dict[str, Any] | None:
@@ -418,7 +478,12 @@ def get_attribution(attribution_id: str) -> dict[str, Any] | None:
     return fetch_one(query, {"attribution_id": attribution_id})
 
 
-def supersede_attribution(attribution_id: str, next_status: str, resolved_by_email: str | None = None) -> dict[str, Any]:
+def supersede_attribution(
+    attribution_id: str,
+    next_status: str,
+    resolved_by_email: str | None = None,
+    conn: psycopg.Connection | None = None,
+) -> dict[str, Any]:
     query = """
         UPDATE order_attribution
         SET status = %(next_status)s,
@@ -434,6 +499,7 @@ def supersede_attribution(attribution_id: str, next_status: str, resolved_by_ema
             "next_status": next_status,
             "resolved_by_email": resolved_by_email,
         },
+        conn=conn,
     )
     if updated is None:
         raise RuntimeError(f"order_attribution {attribution_id} not found for status update.")
@@ -460,7 +526,7 @@ def list_attributions(status: str | None = None, limit: int = 50) -> list[dict[s
 # ---------------------------------------------------------------------------
 
 
-def insert_ledger_entry(payload: dict[str, Any]) -> dict[str, Any]:
+def insert_ledger_entry(payload: dict[str, Any], conn: psycopg.Connection | None = None) -> dict[str, Any]:
     query = """
         INSERT INTO commission_ledger (
           creator_id,
@@ -493,7 +559,7 @@ def insert_ledger_entry(payload: dict[str, Any]) -> dict[str, Any]:
         )
         RETURNING *
     """
-    created = fetch_one(query, payload)
+    created = fetch_one(query, payload, conn=conn)
     if created is None:
         raise RuntimeError("commission_ledger insert did not return a row.")
     return created
@@ -517,28 +583,49 @@ def list_ledger(creator_id: str | None = None, order_id: str | None = None, limi
     return fetch_all(query, params)
 
 
-def get_accrual_for_attribution(attribution_id: str) -> dict[str, Any] | None:
+def get_accrual_for_attribution(
+    attribution_id: str, conn: psycopg.Connection | None = None
+) -> dict[str, Any] | None:
     query = """
         SELECT * FROM commission_ledger
         WHERE attribution_id = %(attribution_id)s AND entry_type = 'accrual'
         LIMIT 1
     """
-    return fetch_one(query, {"attribution_id": attribution_id})
+    return fetch_one(query, {"attribution_id": attribution_id}, conn=conn)
 
 
-def sum_reversals_for_accrual(accrual_id: str) -> dict[str, Any]:
+def sum_reversals_for_accrual(accrual_id: str, conn: psycopg.Connection | None = None) -> dict[str, Any]:
     query = """
         SELECT COALESCE(SUM(amount), 0) AS total_reversed, COUNT(*) AS reversal_count
         FROM commission_ledger
         WHERE reverses_entry_id = %(accrual_id)s AND entry_type = 'reversal'
     """
-    return fetch_one(query, {"accrual_id": accrual_id}) or {
+    return fetch_one(query, {"accrual_id": accrual_id}, conn=conn) or {
         "total_reversed": 0,
         "reversal_count": 0,
     }
 
 
-def get_reversal_for_refund(accrual_id: str, refund_id: str) -> dict[str, Any] | None:
+def sum_ledger_for_attribution(attribution_id: str, conn: psycopg.Connection | None = None) -> Any:
+    """Net balance (accrual + reversals + adjustments) for one attribution.
+
+    Used before writing a reassign/reject adjustment so the offset always
+    zeroes out the attribution's TRUE current balance rather than the gross
+    original accrual (which would double-claw-back money already reversed
+    by a refund).
+    """
+    query = """
+        SELECT COALESCE(SUM(amount), 0) AS net_amount
+        FROM commission_ledger
+        WHERE attribution_id = %(attribution_id)s
+    """
+    row = fetch_one(query, {"attribution_id": attribution_id}, conn=conn)
+    return row["net_amount"] if row is not None else 0
+
+
+def get_reversal_for_refund(
+    accrual_id: str, refund_id: str, conn: psycopg.Connection | None = None
+) -> dict[str, Any] | None:
     query = """
         SELECT * FROM commission_ledger
         WHERE reverses_entry_id = %(accrual_id)s
@@ -546,7 +633,7 @@ def get_reversal_for_refund(accrual_id: str, refund_id: str) -> dict[str, Any] |
           AND entry_type = 'reversal'
         LIMIT 1
     """
-    return fetch_one(query, {"accrual_id": accrual_id, "refund_id": refund_id})
+    return fetch_one(query, {"accrual_id": accrual_id, "refund_id": refund_id}, conn=conn)
 
 
 def creator_balances(creator_id: str | None = None) -> list[dict[str, Any]]:

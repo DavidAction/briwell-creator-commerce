@@ -30,16 +30,44 @@ def connection():
         yield conn
 
 
-def fetch_all(query: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-    with connection() as conn:
+def fetch_all(
+    query: str,
+    params: dict[str, Any] | None = None,
+    conn: psycopg.Connection | None = None,
+) -> list[dict[str, Any]]:
+    """Run a SELECT and return all rows.
+
+    If `conn` is provided, it is reused (and left uncommitted -- the caller
+    owns the transaction). Otherwise a short-lived connection is opened and
+    committed automatically on exit, matching the historical single-call
+    behavior of this function.
+    """
+    if conn is not None:
         with conn.cursor() as cur:
+            cur.execute(query, params or {})
+            return list(cur.fetchall())
+    with connection() as owned_conn:
+        with owned_conn.cursor() as cur:
             cur.execute(query, params or {})
             return list(cur.fetchall())
 
 
-def fetch_one(query: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
-    with connection() as conn:
+def fetch_one(
+    query: str,
+    params: dict[str, Any] | None = None,
+    conn: psycopg.Connection | None = None,
+) -> dict[str, Any] | None:
+    """Run a query and return the first row (or None).
+
+    See `fetch_all` for the `conn` reuse contract.
+    """
+    if conn is not None:
         with conn.cursor() as cur:
+            cur.execute(query, params or {})
+            row = cur.fetchone()
+            return dict(row) if row is not None else None
+    with connection() as owned_conn:
+        with owned_conn.cursor() as cur:
             cur.execute(query, params or {})
             row = cur.fetchone()
             return dict(row) if row is not None else None
