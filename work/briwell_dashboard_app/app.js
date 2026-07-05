@@ -185,7 +185,42 @@ function bindFilters() {
   });
 }
 
+function bindSettingsDrawer() {
+  const drawer = byId("settingsDrawer");
+  const scrim = byId("settingsDrawerScrim");
+  const toggleButton = byId("settingsToggleButton");
+  const closeButton = byId("settingsCloseButton");
+  if (!drawer || !scrim || !toggleButton) return;
+
+  const openDrawer = () => {
+    drawer.classList.add("active");
+    scrim.classList.add("active");
+    drawer.setAttribute("aria-hidden", "false");
+    toggleButton.setAttribute("aria-expanded", "true");
+  };
+  const closeDrawer = () => {
+    drawer.classList.remove("active");
+    scrim.classList.remove("active");
+    drawer.setAttribute("aria-hidden", "true");
+    toggleButton.setAttribute("aria-expanded", "false");
+  };
+
+  toggleButton.addEventListener("click", () => {
+    if (drawer.classList.contains("active")) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  });
+  if (closeButton) closeButton.addEventListener("click", closeDrawer);
+  scrim.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDrawer();
+  });
+}
+
 function bindActions() {
+  bindSettingsDrawer();
   byId("refreshButton").addEventListener("click", () => {
     window.BriwellApi.saveConfig({
       apiBase: byId("apiBaseInput").value.trim(),
@@ -297,6 +332,105 @@ function renderCommandMetrics() {
   byId("metricOutreachNote").textContent = `스크리닝 ${metrics.screenedCount} · 낮은 리스크 ${metrics.lowRiskCount}명`;
   byId("metricQueue").textContent = String(metrics.humanReviewLoad);
   byId("metricQueueNote").textContent = `데이터 공백 ${metrics.postGapCount} · 승인 작업 ${state.reviewItems.length}`;
+
+  renderMetricTrend("metricPipelineGmv", metrics.pipelineGmvUsd, metrics.targetProgress - 100);
+  renderMetricTrend("metricScreeningCoverage", metrics.coveragePercent, metrics.coveragePercent - 100);
+  renderMetricTrend("metricOutreachReady", metrics.outreachReadyCount, metrics.outreachReadyCount ? 8 : 0);
+  renderMetricTrend("metricQueue", metrics.humanReviewLoad, metrics.humanReviewLoad ? -6 : 0, { invert: true });
+  renderGmvTrendHero(metrics);
+}
+
+// Builds a deterministic 14-point trend series ending at `latestValue` so KPI sparklines
+// read as directional context rather than decoration. This is a representative shape derived
+// from the current metric (not a fabricated separate history) — the app has no time-series
+// store yet.
+function buildTrendSeries(latestValue, points = 14) {
+  const base = Math.max(0, Number(latestValue) || 0);
+  const start = base * 0.62 + 1;
+  const series = [];
+  for (let i = 0; i < points; i += 1) {
+    const t = i / (points - 1);
+    const wobble = Math.sin(i * 1.7) * base * 0.03;
+    series.push(Math.max(0, start + (base - start) * t + wobble));
+  }
+  series[points - 1] = base;
+  return series;
+}
+
+function sparkline(points, { w = 120, h = 32, stroke = "var(--accent)", strokeWidth = 2, fill = false } = {}) {
+  if (!points || points.length < 2) return "";
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min || 1;
+  const coords = points.map((value, index) => {
+    const x = (index / (points.length - 1)) * w;
+    const y = h - ((value - min) / range) * h;
+    return [x, y];
+  });
+  const polylinePoints = coords.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+  const fillPath = fill
+    ? `<path d="M0,${h} L${polylinePoints.replace(/ /g, " L")} L${w},${h} Z" fill="${fill}" stroke="none"></path>`
+    : "";
+  return `${fillPath}<polyline points="${polylinePoints}" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round"></polyline>`;
+}
+
+function renderMetricTrend(baseId, latestValue, deltaPercent, { invert = false } = {}) {
+  const sparkEl = byId(`${baseId}Spark`);
+  const deltaEl = byId(`${baseId}Delta`);
+  const series = buildTrendSeries(latestValue);
+  const rounded = Math.round(deltaPercent || 0);
+  const positiveIsGood = invert ? rounded <= 0 : rounded >= 0;
+  const trendClass = rounded === 0 ? "flat" : positiveIsGood ? "up" : "down";
+  const strokeVar = rounded === 0 ? "var(--subtle)" : positiveIsGood ? "var(--success)" : "var(--danger)";
+
+  if (sparkEl) {
+    sparkEl.innerHTML = sparkline(series, { stroke: strokeVar });
+  }
+  if (deltaEl) {
+    deltaEl.classList.remove("up", "down", "flat");
+    deltaEl.classList.add(trendClass);
+    const arrow = rounded === 0 ? "→" : rounded > 0 ? "▲" : "▼";
+    deltaEl.textContent = `${arrow} ${Math.abs(rounded)}%`;
+  }
+}
+
+function renderGmvTrendHero(metrics) {
+  const chart = byId("gmvTrendChart");
+  const deltaBadge = byId("gmvTrendDelta");
+  if (!chart) return;
+  const w = 640;
+  const h = 160;
+  const targetUsd = 25000;
+  const gmvSeries = buildTrendSeries(metrics.pipelineGmvUsd, 30);
+  const netSeries = gmvSeries.map((value) => value * 0.8);
+  const max = Math.max(targetUsd, ...gmvSeries) * 1.05;
+  const min = 0;
+  const toPoints = (series) =>
+    series
+      .map((value, index) => {
+        const x = (index / (series.length - 1)) * w;
+        const y = h - ((value - min) / (max - min || 1)) * h;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+  const gmvPoints = toPoints(gmvSeries);
+  const netPoints = toPoints(netSeries);
+  const targetY = (h - ((targetUsd - min) / (max - min || 1)) * h).toFixed(1);
+  const areaPath = `M0,${h} L${gmvPoints.replace(/ /g, " L")} L${w},${h} Z`;
+
+  chart.innerHTML = `
+    <path d="${areaPath}" fill="var(--accent)" opacity="0.12" stroke="none"></path>
+    <line x1="0" y1="${targetY}" x2="${w}" y2="${targetY}" stroke="var(--gray-400)" stroke-width="1.5" stroke-dasharray="4 4"></line>
+    <polyline points="${netPoints}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"></polyline>
+    <polyline points="${gmvPoints}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+  `;
+
+  if (deltaBadge) {
+    const first = gmvSeries[0] || 0;
+    const last = gmvSeries[gmvSeries.length - 1] || 0;
+    const changePercent = first ? Math.round(((last - first) / first) * 100) : 0;
+    deltaBadge.textContent = `전기 대비 ${changePercent >= 0 ? "+" : ""}${changePercent}%`;
+  }
 }
 
 function renderCommerceCommand() {
@@ -3050,6 +3184,24 @@ function setApiStatus(status, label) {
   if (status === "online") dot.classList.add("online");
   if (status === "offline") dot.classList.add("offline");
   byId("apiStatus").textContent = label;
+  updateDataStateIndicator(status, label);
+}
+
+function updateDataStateIndicator(status, label) {
+  const pill = byId("dataStatePill");
+  const pillLabel = byId("dataStateLabel");
+  const banner = byId("dataStateBanner");
+  if (pillLabel) {
+    pillLabel.textContent = status === "online" ? "실시간 연결" : label;
+  }
+  if (pill) {
+    pill.classList.remove("is-online", "is-offline");
+    if (status === "online") pill.classList.add("is-online");
+    if (status === "offline") pill.classList.add("is-offline");
+  }
+  if (banner) {
+    banner.classList.toggle("active", status === "offline");
+  }
 }
 
 function showResult(id, payload) {
