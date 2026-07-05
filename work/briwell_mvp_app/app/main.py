@@ -20,6 +20,7 @@ from app.routers import (
     ai_invocation_logs,
     campaigns,
     comments,
+    commerce,
     compliance,
     creators,
     discovery,
@@ -175,5 +176,6 @@ app.include_router(performance.router)
 app.include_router(products.router)
 app.include_router(providers.router)
 app.include_router(settlements.router)
+app.include_router(commerce.router)
 app.include_router(ops.router)
 app.include_router(operations.router)
