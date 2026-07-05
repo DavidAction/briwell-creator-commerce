@@ -89,6 +89,16 @@ TikTok Shop Affiliate API·Shopify Collabs 등 **플랫폼이 공식 제공하�
 - 기타: #8 Shopify order 엔티티 없음, #9 실데이터 파일럿 너무 늦음+PII삭제/백업/관측성 누락, #15 스모크가 문자열 grep뿐.
 defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 켜기 전 잡큐 이전), #2 psycopg 풀 없음(라우트가 sync def라 **이벤트루프 블록은 아님**·churn만), #14 vanilla app.js 확장성.
 
+## 0.0.4 커머스 정합성 스키마 선반영 완료 (2026-07-06) — 테스트 323 통과/26 스킵
+
+감사 fix_now #5/#6/#7/#8 해소. 마이그레이션 008 + `app/commerce/`(순수 로직) + `app/repositories/commerce.py` + `app/routers/commerce.py`, 커밋 `7e25731`~`e80b709`(5커밋):
+1. **Shopify 주문/환불 미러(#8)** — `shop_order`·`order_refund`. 웹훅-형상 페이로드 수용(실 Shopify API 연동은 후속), `shopify_order_id`/`shopify_refund_id` UNIQUE + upsert로 중복 배달 멱등.
+2. **통화-명시 돈 표현(#6)** — 금액 NUMERIC(14,2) + ISO 4217 통화(MXN/PEN/USD) + 기록시점 `fx_rate_usd`. USD는 GENERATED STORED 파생 컬럼(수기 입력 경로 제거). `campaign_performance_snapshot`에도 `revenue_amount`/`revenue_currency`/`fx_rate_usd` 보강 + 트리거로 `revenue_usd` 자동 파생(후방호환).
+3. **append-only commission_ledger(#5)** — DB 트리거로 UPDATE/DELETE 차단, accrual/reversal/adjustment 3종, 부분환불 비례배분(누적식·라운딩 드리프트 방지), reversal의 원 accrual 초과 차단, 잔액은 SUM 도출(`creator_commission_balance` 뷰, mutable balance 컬럼 없음).
+4. **이중 어트리뷰션(#7)** — 할인코드 1차 + UTM 링크 2차. 코드-UTM 충돌 시 `needs_review` + 운영자 resolve API(confirm=확정 전 환불 소급 상계 / reassign=순잔액 기준 상계+대상 크리에이터 실요율 / reject=기존 accrual 청산).
+5. **품질 과정**: 적대 리뷰(Opus 4.8×2+Sonnet 5)가 11건(critical 5) 발견 — reassign 과다회수, 확정 전 환불 영구누락, reject 미청산, limit-50 선형탐색 요율 폴백, 비원자적 accrual 등 — 전부 수정. 이후 라이브 포터블 PG로 DB 통합테스트 14개 검증(초기 6건 실패는 테스트 단정문/픽스처 결함으로 판명·교정, 제약·제품코드는 옳았음).
+⚠️ 사전 존재 버그 발견: `audit_events.record_event`/`jobs.enqueue_job`이 dict payload를 psycopg `Jsonb`로 미래핑(라이브 DB에서만 발현). commerce 라우터는 호출부에서 래핑으로 우회, 근본 수정은 별도 태스크.
+
 ## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
 
 "최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):
