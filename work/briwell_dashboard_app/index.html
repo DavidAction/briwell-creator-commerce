@@ -238,7 +238,7 @@
                 <h2>성장 운영 엔진</h2>
                 <p class="panel-subtitle">Import 로그, 프로필 enrichment, 최근 20개 반영, 캠페인 매칭, DM 플랜, CRM 보드, 성과 rollup을 순차 실행</p>
               </div>
-              <button class="button primary" id="runOperationsPipelineButton">운영 파이프라인 실행</button>
+              <button class="button primary" id="runOperationsPipelineButton" data-write-action>운영 파이프라인 실행</button>
             </div>
             <div class="operations-pipeline" id="operationsPipelineSummary"></div>
             <div id="operationsEngineResult" class="result-box"></div>
@@ -327,7 +327,7 @@
               <h2>크리에이터 발굴 브리프</h2>
               <p class="panel-subtitle">시장, 제품군, 플랫폼 기준으로 합법적 후보 발굴 계획 생성</p>
             </div>
-            <button class="button primary" id="runDiscoveryButton">브리프 생성</button>
+            <button class="button primary" id="runDiscoveryButton" data-write-action>브리프 생성</button>
           </div>
           <div class="form-grid">
             <label>
@@ -412,7 +412,7 @@
           </div>
           <div class="button-row">
             <button class="button" id="loadKeywordPlaybookButton">K-Beauty 키워드 불러오기</button>
-            <button class="button primary" id="runTiktokProviderButton">Provider 발굴 실행</button>
+            <button class="button primary" id="runTiktokProviderButton" data-write-action>Provider 발굴 실행</button>
           </div>
           <div class="provider-grid" id="keywordPlaybookSummary"></div>
           <div id="tiktokProviderResult" class="result-box"></div>
@@ -449,7 +449,7 @@
               <div class="button-row">
                 <a class="button" id="downloadCreatorTemplateButton" href="./templates/creator_candidates_template.csv" download>템플릿 다운로드</a>
                 <button class="button" id="loadCreatorCsvButton">CSV 미리보기</button>
-                <button class="button primary" id="importCreatorsButton">크리에이터 등록</button>
+                <button class="button primary" id="importCreatorsButton" data-write-action>크리에이터 등록</button>
               </div>
               <div class="column-hints">
                 <span>username</span><span>country</span><span>profile_url</span><span>follower_count</span><span>profile_image_url</span>
@@ -504,8 +504,8 @@
                 <a class="button" id="downloadPostTemplateButton" href="./templates/recent_posts_20_template.csv" download>템플릿 다운로드</a>
                 <button class="button" id="loadPostCsvButton">CSV 미리보기</button>
                 <button class="button" id="loadManualPostsButton">수동 입력 불러오기</button>
-                <button class="button primary" id="importVideosButton">영상 등록</button>
-                <button class="button success" id="runRecentScreenButton">최근 20개 스크리닝 실행</button>
+                <button class="button primary" id="importVideosButton" data-write-action>영상 등록</button>
+                <button class="button success" id="runRecentScreenButton" data-write-action>최근 20개 스크리닝 실행</button>
               </div>
             </div>
             <div class="table-wrap intake-preview">
@@ -607,7 +607,7 @@
               <label><span>커머스 채널</span><select id="campaignChannel"><option value="tiktok_shop">TikTok Shop</option><option value="shopify">Shopify</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
               <label><span>예산 USD</span><input id="campaignBudget" type="number" min="0" value="1200"></label>
               <label><span>전략 목표</span><textarea id="campaignGoal">스페인어권 LATAM 크리에이터의 루틴 리뷰와 커머스 링크 기반 K-Beauty 선스크린 시장 검증</textarea></label>
-              <button class="button primary" id="saveCampaignButton">캠페인 저장</button>
+              <button class="button primary" id="saveCampaignButton" data-write-action>캠페인 저장</button>
             </div>
             <div id="campaignSaveResult" class="result-box"></div>
           </section>
@@ -618,7 +618,7 @@
                 <h2>실행 퍼널</h2>
                 <p class="panel-subtitle">선정, 검수, 승인, 응답 단계별 전환 흐름</p>
               </div>
-              <button class="button" id="prepareDraftsButton">아웃리치 준비</button>
+              <button class="button" id="prepareDraftsButton" data-write-action>아웃리치 준비</button>
             </div>
             <div class="funnel-row">
               <div style="--stage:100%"><strong>24</strong><span>숏리스트</span><em>100%</em></div>
@@ -645,7 +645,7 @@
             <label class="full-label"><span>제품군</span><select id="claimProduct"><option value="sunscreen">선스크린</option><option value="calming_serum">카밍 세럼</option><option value="cleanser">클렌저</option></select></label>
             <label class="full-label"><span>아웃리치 메시지</span><textarea id="dmMessage">Hola Luz, equipo Creator Partnerships de Briwell. Tu contenido de skincare destaca por claridad y confianza; propuesta de colaboración para review de K-Beauty sunscreen.</textarea></label>
             <div class="action-row">
-              <button class="button primary" id="claimsCheckButton">브랜드 세이프티 검사</button>
+              <button class="button primary" id="claimsCheckButton" data-write-action>브랜드 세이프티 검사</button>
               <button class="button success" id="approveDmButton">승인</button>
               <button class="button danger" id="rejectDmButton">반려</button>
             </div>
@@ -667,7 +667,7 @@
               <div class="step">응답</div>
               <div class="step">수락</div>
             </div>
-            <button class="button" id="manualSendButton">수동 발송 기록</button>
+            <button class="button" id="manualSendButton" data-write-action>수동 발송 기록</button>
             <div id="manualSendResult" class="result-box"></div>
           </section>
         </div>
@@ -680,7 +680,7 @@
               <h2>성과 분석</h2>
               <p class="panel-subtitle">게시물, 쿠폰, 조회수, 매출 데이터의 캠페인 단위 추적</p>
             </div>
-            <button class="button primary" id="saveSnapshotButton">스냅샷 저장</button>
+            <button class="button primary" id="saveSnapshotButton" data-write-action>스냅샷 저장</button>
           </div>
           <div class="form-grid">
             <label><span>캠페인 ID</span><input id="snapshotCampaign" value="campaign-1"></label>
@@ -709,7 +709,7 @@
               <label><span>캠페인 ID</span><input id="contractCampaign" value="campaign-1"></label>
               <label><span>비용 USD</span><input id="contractFee" type="number" min="0" value="150"></label>
               <label><span>영상 납품 수</span><input id="contractVideos" type="number" min="1" value="1"></label>
-              <button class="button primary" id="saveContractButton">계약 저장</button>
+              <button class="button primary" id="saveContractButton" data-write-action>계약 저장</button>
             </div>
             <div id="contractResult" class="result-box"></div>
           </section>

@@ -3358,10 +3358,45 @@ function bindWriteConfirmModal() {
   updateWriteActionChips(false);
 }
 
+const RESULT_CHIP_RULES = [
+  { test: (status) => status === "persisted", tone: "success", text: "✓ 실제 서버 DB에 기록됨" },
+  {
+    test: (status) => status === "validated_not_persisted",
+    tone: "warn",
+    text: "⚠ 검증만 됨 · DB 비활성이라 저장 안 됨",
+  },
+  { test: (status) => status === "cancelled_by_user", tone: "neutral", text: "취소됨 · 아무것도 기록되지 않음" },
+  {
+    test: (status) => /preview/i.test(status || ""),
+    tone: "neutral",
+    text: "미리보기 · 서버에 반영 안 됨",
+  },
+];
+
+function resolveResultChip(payload) {
+  const status = payload && typeof payload === "object" ? payload.status : undefined;
+  if (!status) return null;
+  const rule = RESULT_CHIP_RULES.find((candidate) => candidate.test(status));
+  return rule ? { tone: rule.tone, text: rule.text } : null;
+}
+
 function showResult(id, payload) {
   const box = byId(id);
   box.classList.add("active");
-  box.textContent = JSON.stringify(payload, null, 2);
+  box.innerHTML = "";
+
+  const chip = resolveResultChip(payload);
+  if (chip) {
+    const chipEl = document.createElement("span");
+    chipEl.className = `result-chip result-chip-${chip.tone}`;
+    chipEl.textContent = chip.text;
+    box.appendChild(chipEl);
+  }
+
+  const body = document.createElement("pre");
+  body.className = "result-body";
+  body.textContent = JSON.stringify(payload, null, 2);
+  box.appendChild(body);
 }
 
 function showToast(message) {

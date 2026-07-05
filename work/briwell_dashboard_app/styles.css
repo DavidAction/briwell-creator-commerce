@@ -1725,6 +1725,39 @@ tbody tr.row-selected {
   display: block;
 }
 
+.result-box .result-body {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.result-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-cap);
+  font-weight: var(--w-semi);
+}
+
+.result-chip-success {
+  color: var(--success);
+  background: var(--success-tint);
+}
+
+.result-chip-warn {
+  color: var(--warn);
+  background: var(--warn-tint);
+}
+
+.result-chip-neutral {
+  color: var(--subtle);
+  background: var(--surface-soft);
+}
+
 .upload-zone {
   display: grid;
   gap: 10px;
