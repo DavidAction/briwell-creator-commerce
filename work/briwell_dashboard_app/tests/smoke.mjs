@@ -160,6 +160,47 @@ assert(!files.app.includes("briwell.example"), "dashboard should avoid generic e
 assert(files.css.includes("@media (max-width: 680px)"), "mobile media query missing");
 JSON.parse(files.vercel);
 
+// --- Live-write safety gate (audit #11: distinguish real writes from local preview fallbacks) ---
+assert(files.client.includes("setWriteGate"), "api-client write gate registration missing");
+assert(files.client.includes("writeGate"), "api-client write gate variable missing");
+assert(files.client.includes("error.cancelled = true"), "api-client cancelled error flag missing");
+assert(files.client.includes("cancelled_by_user"), "api-client cancelled payload status missing");
+assert(files.app.includes("window.BriwellApi.setWriteGate(writeGate)"), "app.js must register the write gate on load");
+assert(files.app.includes("async function writeGate("), "app.js writeGate implementation missing");
+assert(files.app.includes("WRITE_CONFIRM_ALLOWLIST"), "write confirm allowlist missing");
+assert(files.app.includes("/outreach/claims-check") && files.app.includes("/operations/outreach-crm/board"), "write confirm allowlist must include pure-compute endpoints");
+assert(files.app.includes("WRITE_CONFIRM_SUPPRESS_MS"), "10-minute write confirm suppression missing");
+assert(files.app.includes("isWriteConfirmSuppressed"), "write confirm suppression check missing");
+assert(files.app.includes("error.cancelled"), "app.js handlers must branch on error.cancelled to avoid local-preview fallback on cancel");
+
+// Live write confirmation modal markup + accessibility pattern
+assert(files.html.includes('id="writeConfirmModal"'), "write confirm modal mount missing");
+assert(files.html.includes('role="dialog"') , "write confirm modal must use role=dialog");
+assert(files.html.includes('aria-modal="true"'), "write confirm modal must use aria-modal");
+assert(files.html.includes("실제 서버에 기록됩니다"), "write confirm modal title copy missing");
+assert(files.html.includes('id="writeConfirmProceedButton"'), "write confirm proceed action missing");
+assert(files.html.includes('id="writeConfirmCancelButton"'), "write confirm cancel action missing");
+assert(files.html.includes("10분간 다시 묻지 않기"), "10-minute suppress checkbox copy missing");
+assert(files.app.includes("Escape") && files.app.includes("onCancel"), "write confirm modal must cancel on Escape");
+assert(files.app.includes("trapFocus"), "write confirm modal must trap focus");
+
+// Data-state banner/pill dynamic 3-state model (live / preview, reflecting persisted vs validated_not_persisted at result level)
+assert(files.app.includes("라이브 모드 · 쓰기 작업이 실제 서버에 기록됩니다"), "live mode banner copy missing");
+assert(files.app.includes("미리보기 모드 · 목업 데이터 (정산 반영 안 됨)"), "preview mode banner copy missing");
+assert(files.css.includes("is-live"), "live data-state styling missing");
+assert(files.app.includes("updateWriteActionChips"), "write-action chip updater missing");
+assert(files.css.includes("[data-write-action]"), "write-action chip styling missing");
+const writeActionButtonCount = (files.html.match(/data-write-action/g) || []).length;
+assert(writeActionButtonCount >= 10, `expected at least 10 data-write-action buttons, found ${writeActionButtonCount}`);
+
+// Result chip states (showResult enhancement)
+assert(files.app.includes("resolveResultChip"), "result chip resolver missing");
+assert(files.app.includes("실제 서버 DB에 기록됨"), "persisted result chip copy missing");
+assert(files.app.includes("검증만 됨") && files.app.includes("DB 비활성"), "validated_not_persisted result chip copy missing");
+assert(files.app.includes("미리보기 · 서버에 반영 안 됨"), "preview result chip copy missing");
+assert(files.app.includes("취소됨 · 아무것도 기록되지 않음"), "cancelled result chip copy missing");
+assert(files.css.includes(".result-chip"), "result chip styling missing");
+
 console.log("dashboard smoke passed");
 
 function assert(condition, message) {
