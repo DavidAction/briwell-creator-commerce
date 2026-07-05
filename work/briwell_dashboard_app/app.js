@@ -113,6 +113,10 @@ const state = {
   ],
 };
 
+const WRITE_CONFIRM_ALLOWLIST = ["/outreach/claims-check", "/operations/outreach-crm/board"];
+const WRITE_CONFIRM_SUPPRESS_KEY = "briwell.writeConfirmSuppressUntil";
+const WRITE_CONFIRM_SUPPRESS_MS = 10 * 60 * 1000;
+
 const ALLOWED_IMPORT_SOURCE_TYPES = ["manual", "official_api", "approved_provider", "creator_provided"];
 const REQUIRED_CREATOR_COLUMNS = ["username", "country", "profile_url", "source_type", "source_risk_level"];
 const RECOMMENDED_CREATOR_COLUMNS = [
@@ -144,6 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
   bindNavigation();
   bindFilters();
   bindActions();
+  bindWriteConfirmModal();
+  window.BriwellApi.setWriteGate(writeGate);
   renderAll();
   refreshFromApi();
 });
@@ -1380,7 +1386,11 @@ async function runDiscoveryPlan() {
     state.coverageAudit = payload.coverage_audit || buildPreviewCoverageAudit(countries, product, limit);
     state.recallSafeguards = payload.recall_safeguards || buildPreviewRecallSafeguards();
     renderCoverageAudit();
-  } catch (_error) {
+  } catch (error) {
+    if (error.cancelled) {
+      showToast("취소됨 · 아무것도 기록되지 않음");
+      return;
+    }
     renderDiscoveryRows(previewRows);
     state.coverageAudit = buildPreviewCoverageAudit(countries, product, limit);
     state.recallSafeguards = buildPreviewRecallSafeguards();
@@ -1521,8 +1531,15 @@ async function importCreators() {
     state.creators = mergeCreators(state.creators, imported);
     showResult("creatorImportResult", response);
   } catch (error) {
-    state.creators = mergeCreators(state.creators, state.intakeCreators);
+    if (!error.cancelled) {
+      state.creators = mergeCreators(state.creators, state.intakeCreators);
+    }
     showResult("creatorImportResult", error.payload || { status: "local_preview_imported", accepted: state.intakeCreators.length });
+    if (error.cancelled) {
+      renderAll();
+      showToast("취소됨 · 아무것도 기록되지 않음");
+      return;
+    }
   }
   renderAll();
   showToast("크리에이터 등록 완료");
@@ -1591,6 +1608,10 @@ async function importVideos() {
     showResult("postImportResult", await window.BriwellApi.importVideos(payload));
   } catch (error) {
     showResult("postImportResult", error.payload || { status: "local_preview_imported", creator_id: creatorId, accepted: posts.length });
+    if (error.cancelled) {
+      showToast("취소됨 · 아무것도 기록되지 않음");
+      return;
+    }
   }
   showToast(`최근 게시물 ${posts.length}개 연결됨`);
 }
@@ -1656,10 +1677,17 @@ async function runRecentScreenForCreator(creatorId) {
       screen_persistence_error: response.screen_persistence_error,
     });
   } catch (error) {
-    const output = extractRecentScreenOutput(error.payload) || previewRecentPostsScreen(creator, posts);
-    state.recentScreenResults[creatorId] = output;
-    applyScreenResultToCreator(creatorId, output);
-    showResult("postImportResult", error.payload || { status: "local_preview_screened", creator_id: creatorId, output });
+    if (!error.cancelled) {
+      const output = extractRecentScreenOutput(error.payload) || previewRecentPostsScreen(creator, posts);
+      state.recentScreenResults[creatorId] = output;
+      applyScreenResultToCreator(creatorId, output);
+    }
+    showResult("postImportResult", error.payload || { status: "local_preview_screened", creator_id: creatorId, output: state.recentScreenResults[creatorId] });
+    if (error.cancelled) {
+      renderAll();
+      showToast("취소됨 · 아무것도 기록되지 않음");
+      return;
+    }
   }
   renderAll();
   document.querySelector('[data-view="intake"]').click();
@@ -2387,6 +2415,13 @@ async function callOperationStep(remoteCall, fallback) {
       api_status: "live",
     };
   } catch (error) {
+    if (error.cancelled) {
+      return {
+        status: "cancelled_by_user",
+        api_status: "cancelled_by_user",
+        api_error: summarizeApiError(error),
+      };
+    }
     return {
       ...fallback,
       api_status: "local_preview",
@@ -3191,17 +3226,136 @@ function updateDataStateIndicator(status, label) {
   const pill = byId("dataStatePill");
   const pillLabel = byId("dataStateLabel");
   const banner = byId("dataStateBanner");
+  const isLive = status === "online";
   if (pillLabel) {
-    pillLabel.textContent = status === "online" ? "실시간 연결" : label;
+    pillLabel.textContent = isLive ? "라이브 모드" : label;
   }
   if (pill) {
-    pill.classList.remove("is-online", "is-offline");
-    if (status === "online") pill.classList.add("is-online");
+    pill.classList.remove("is-online", "is-offline", "is-live");
+    if (isLive) pill.classList.add("is-live");
     if (status === "offline") pill.classList.add("is-offline");
   }
   if (banner) {
-    banner.classList.toggle("active", status === "offline");
+    banner.classList.toggle("active", true);
+    banner.classList.toggle("is-live", isLive);
+    banner.textContent = isLive
+      ? "라이브 모드 · 쓰기 작업이 실제 서버에 기록됩니다"
+      : "미리보기 모드 · 목업 데이터 (정산 반영 안 됨)";
   }
+  updateWriteActionChips(isLive);
+}
+
+function updateWriteActionChips(isLive) {
+  document.querySelectorAll("[data-write-action]").forEach((button) => {
+    button.setAttribute("data-write-mode", isLive ? "live" : "preview");
+    button.setAttribute("data-write-mode-label", isLive ? "LIVE" : "PREVIEW");
+  });
+}
+
+function isWriteConfirmSuppressed() {
+  const until = Number(sessionStorage.getItem(WRITE_CONFIRM_SUPPRESS_KEY) || 0);
+  return until > Date.now();
+}
+
+function suppressWriteConfirmFor(ms) {
+  sessionStorage.setItem(WRITE_CONFIRM_SUPPRESS_KEY, String(Date.now() + ms));
+}
+
+function isAllowlistedWriteEndpoint(path) {
+  return WRITE_CONFIRM_ALLOWLIST.some((endpoint) => path.startsWith(endpoint));
+}
+
+async function writeGate({ path, method, apiBase }) {
+  if (!state.apiOnline) return true;
+  if (isAllowlistedWriteEndpoint(path)) return true;
+  if (isWriteConfirmSuppressed()) return true;
+  return openWriteConfirmModal({ path, method, apiBase });
+}
+
+function openWriteConfirmModal({ path, method, apiBase }) {
+  return new Promise((resolve) => {
+    const modal = byId("writeConfirmModal");
+    const scrim = byId("writeConfirmScrim");
+    if (!modal || !scrim) {
+      resolve(true);
+      return;
+    }
+    byId("writeConfirmMethod").textContent = method;
+    byId("writeConfirmEndpoint").textContent = path;
+    byId("writeConfirmApiBase").textContent = apiBase;
+    const suppressCheckbox = byId("writeConfirmSuppressCheckbox");
+    if (suppressCheckbox) suppressCheckbox.checked = false;
+
+    const previouslyFocused = document.activeElement;
+
+    const cleanup = (result) => {
+      modal.classList.remove("active");
+      scrim.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      document.removeEventListener("keydown", onKeydown, true);
+      byId("writeConfirmProceedButton").removeEventListener("click", onProceed);
+      byId("writeConfirmCancelButton").removeEventListener("click", onCancel);
+      scrim.removeEventListener("click", onCancel);
+      if (previouslyFocused && typeof previouslyFocused.focus === "function") {
+        previouslyFocused.focus();
+      }
+      resolve(result);
+    };
+
+    const onProceed = () => {
+      if (suppressCheckbox && suppressCheckbox.checked) {
+        suppressWriteConfirmFor(WRITE_CONFIRM_SUPPRESS_MS);
+      }
+      cleanup(true);
+    };
+    const onCancel = () => cleanup(false);
+    const onKeydown = (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCancel();
+        return;
+      }
+      if (event.key === "Tab") {
+        trapFocus(event, modal);
+      }
+    };
+
+    byId("writeConfirmProceedButton").addEventListener("click", onProceed);
+    byId("writeConfirmCancelButton").addEventListener("click", onCancel);
+    scrim.addEventListener("click", onCancel);
+    document.addEventListener("keydown", onKeydown, true);
+
+    modal.classList.add("active");
+    scrim.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    window.requestAnimationFrame(() => modal.focus());
+  });
+}
+
+function trapFocus(event, container) {
+  const focusable = container.querySelectorAll(
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+  );
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function bindWriteConfirmModal() {
+  const modal = byId("writeConfirmModal");
+  if (!modal) return;
+  // Initialize write-action chips to the preview state before the first
+  // health check resolves; refreshFromApi/setApiStatus will update this
+  // once connectivity is known. Per-open dialog wiring lives in
+  // openWriteConfirmModal, which attaches and tears down its own listeners.
+  updateWriteActionChips(false);
 }
 
 function showResult(id, payload) {

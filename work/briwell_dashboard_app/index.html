@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Briwell Creator Commerce Intelligence</title>
-  <link rel="stylesheet" href="./styles.css?v=20260705">
+  <link rel="stylesheet" href="./styles.css?v=20260706">
 </head>
 <body>
   <div class="app-shell">
@@ -103,6 +103,32 @@
         <p class="field-hint">API 주소와 권한을 저장하면 동기화 버튼으로 즉시 재연결합니다.</p>
       </div>
       <div class="settings-drawer-scrim" id="settingsDrawerScrim"></div>
+
+      <div class="write-confirm-scrim" id="writeConfirmScrim"></div>
+      <div
+        class="write-confirm-modal"
+        id="writeConfirmModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="writeConfirmTitle"
+        aria-hidden="true"
+        tabindex="-1"
+      >
+        <h2 id="writeConfirmTitle">실제 서버에 기록됩니다</h2>
+        <p class="write-confirm-body">
+          <span id="writeConfirmMethod" class="write-confirm-method"></span>
+          <span id="writeConfirmEndpoint" class="write-confirm-endpoint"></span>
+        </p>
+        <p class="write-confirm-base">API 서버: <span id="writeConfirmApiBase"></span></p>
+        <label class="write-confirm-suppress">
+          <input type="checkbox" id="writeConfirmSuppressCheckbox">
+          <span>10분간 다시 묻지 않기</span>
+        </label>
+        <div class="write-confirm-actions">
+          <button class="button" id="writeConfirmCancelButton">취소</button>
+          <button class="button primary" id="writeConfirmProceedButton">실행</button>
+        </div>
+      </div>
 
       <section class="ops-strip" aria-label="커머스 운영 요약">
         <article>
@@ -708,7 +734,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./api-client.js?v=20260705"></script>
-  <script src="./app.js?v=20260705"></script>
+  <script src="./api-client.js?v=20260706"></script>
+  <script src="./app.js?v=20260706"></script>
 </body>
 </html>

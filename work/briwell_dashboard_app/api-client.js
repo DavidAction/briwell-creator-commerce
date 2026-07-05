@@ -1,6 +1,12 @@
 (function attachBriwellApiClient(global) {
   const DEFAULT_BASE = "http://127.0.0.1:8030";
 
+  let writeGate = null;
+
+  function setWriteGate(gateFn) {
+    writeGate = typeof gateFn === "function" ? gateFn : null;
+  }
+
   function readConfig() {
     return {
       apiBase: localStorage.getItem("briwell.apiBase") || DEFAULT_BASE,
@@ -36,6 +42,15 @@
   async function request(path, options) {
     const config = readConfig();
     const method = options?.method || "GET";
+    if (method !== "GET" && writeGate) {
+      const allowed = await writeGate({ path, method, apiBase: config.apiBase });
+      if (!allowed) {
+        const error = new Error(`API ${method} ${path} cancelled by user`);
+        error.cancelled = true;
+        error.payload = { status: "cancelled_by_user" };
+        throw error;
+      }
+    }
     const body = options?.body === undefined ? undefined : JSON.stringify(options.body);
     const response = await fetch(`${config.apiBase}${path}`, {
       method,
@@ -64,6 +79,7 @@
     readConfig,
     saveConfig,
     request,
+    setWriteGate,
     getHealth: () => request("/health"),
     getReadiness: () => request("/ops/readiness"),
     getSourcePolicy: () => request("/discovery/source-policy"),
