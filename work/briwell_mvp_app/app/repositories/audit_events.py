@@ -1,6 +1,7 @@
 from typing import Any
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 MAX_LIST_LIMIT = 200
 
@@ -30,7 +31,7 @@ def record_event(
                 "aggregate_id": aggregate_id,
                 "actor_role": actor_role,
                 "actor_email": actor_email,
-                "payload": payload,
+                "payload": Jsonb(payload),
             },
         )
         row = cur.fetchone()
