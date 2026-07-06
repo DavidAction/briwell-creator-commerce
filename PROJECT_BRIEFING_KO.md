@@ -99,6 +99,15 @@ defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 
 5. **품질 과정**: 적대 리뷰(Opus 4.8×2+Sonnet 5)가 11건(critical 5) 발견 — reassign 과다회수, 확정 전 환불 영구누락, reject 미청산, limit-50 선형탐색 요율 폴백, 비원자적 accrual 등 — 전부 수정. 이후 라이브 포터블 PG로 DB 통합테스트 14개 검증(초기 6건 실패는 테스트 단정문/픽스처 결함으로 판명·교정, 제약·제품코드는 옳았음).
 ⚠️ 사전 존재 버그 발견: `audit_events.record_event`/`jobs.enqueue_job`이 dict payload를 psycopg `Jsonb`로 미래핑(라이브 DB에서만 발현). commerce 라우터는 호출부에서 래핑으로 우회, 근본 수정은 별도 태스크.
 
+## 0.0.5 미리보기/실쓰기 구분 안전장치 완료 (2026-07-06, 감사 #11) — 커밋 72e38f6~f7d5560
+
+대시보드의 "쓰기 실패 시 조용히 로컬 미리보기 폴백" 패턴이 만들던 실쓰기/시뮬레이션 혼동 제거. 브라우저 3-상태 실검증 완료:
+1. **중앙 쓰기 게이트** — api-client.js `request()`(모든 API의 유일 관문)에 비-GET 게이트. `BriwellApi.setWriteGate()`로 app.js가 등록. 취소 시 `error.cancelled=true` + `cancelled_by_user` payload로 로컬 폴백 오염 차단(각 핸들러의 상태 변형 사이드이펙트도 cancelled 분기).
+2. **3-상태 표기** — 전역 배너/필: "라이브 모드 · 쓰기 작업이 실제 서버에 기록됩니다"(is-live) vs "미리보기 모드". 쓰기 버튼 11개에 LIVE/PREVIEW 배지, 순수-계산 버튼(claims-check)은 COMPUTE 배지. 결과 칩: persisted="✓ 실제 서버 DB에 기록됨" / validated_not_persisted="⚠ 검증만 됨 · DB 비활성이라 저장 안 됨" / local_preview="미리보기 · 서버에 반영 안 됨" / cancelled="취소됨 · 아무것도 기록되지 않음".
+3. **라이브 쓰기 확인 모달** — METHOD+endpoint+apiBase 표시, ESC/포커스트랩/ARIA, "10분간 다시 묻지 않기"(sessionStorage, try/catch 가드). **fail-closed**: 첫 헬스체크 완료 전엔 무조건 모달. 운영 파이프라인(8스텝)은 시작 시 1회 확인 + 실행 한정 승인 토큰(finally 해제), 중간 취소 시 잔여 스텝 중단.
+4. **적대 리뷰 4건 전부 수정** — 초기 로드 레이스(무확인 라이브 쓰기 창), 파이프라인 모달 7연발+취소 무시, sessionStorage 예외 시 가짜 미리보기 표기, COMPUTE/LIVE 배지 혼동. 스모크에 게이트 회귀 체크 추가.
+→ Phase3(7개 화면 격상)는 이 패턴 위에서 진행. 신규 쓰기 UI는 data-write-action 태깅 필수.
+
 ## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
 
 "최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):
