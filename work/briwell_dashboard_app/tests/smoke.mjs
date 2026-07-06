@@ -201,6 +201,58 @@ assert(files.app.includes("미리보기 · 서버에 반영 안 됨"), "preview 
 assert(files.app.includes("취소됨 · 아무것도 기록되지 않음"), "cancelled result chip copy missing");
 assert(files.css.includes(".result-chip"), "result chip styling missing");
 
+// Initial-load connectivity race (adversarial review finding #1): writeGate must
+// fail-closed (force the confirm modal) until the first health check resolves,
+// instead of trusting the apiOnline=false default and silently allowing writes.
+assert(files.app.includes("apiConnectivityChecked"), "apiConnectivityChecked state flag missing");
+assert(
+  /if\s*\(!state\.apiConnectivityChecked\)\s*return openWriteConfirmModal/.test(files.app),
+  "writeGate must force the confirm modal while connectivity is still unknown"
+);
+assert(
+  /apiOnline = true;\s*\n\s*state\.apiConnectivityChecked = true;/.test(files.app) &&
+    /apiOnline = false;\s*\n\s*state\.apiConnectivityChecked = true;/.test(files.app),
+  "refreshFromApi must mark connectivity checked on both success and failure paths"
+);
+
+// Operations pipeline single-confirmation + cancel-stops-pipeline (finding #2):
+// a multi-step write pipeline must ask once up front (not once per step) and
+// must stop dead the moment any step reports cancelled_by_user.
+assert(files.app.includes("confirmOperationsPipelineWrite"), "single up-front pipeline confirmation missing");
+assert(files.app.includes("pipelineWriteApprovalActive"), "pipeline write approval token missing");
+assert(
+  /if\s*\(pipelineWriteApprovalActive\)\s*return true;/.test(files.app),
+  "writeGate must honor the pipeline approval token so per-step writes are not re-prompted"
+);
+assert(files.app.includes("function stopOperationsPipelineOnCancel"), "pipeline cancel-stop helper missing");
+const pipelineCancelCheckCount = (files.app.match(/stopOperationsPipelineOnCancel\(/g) || []).length;
+assert(
+  pipelineCancelCheckCount >= 7,
+  `expected operations pipeline to check stopOperationsPipelineOnCancel after every step (>=7 call sites), found ${pipelineCancelCheckCount}`
+);
+assert(
+  /pipelineWriteApprovalActive = true;[\s\S]*?finally[\s\S]*?pipelineWriteApprovalActive = false;/.test(files.app),
+  "pipeline approval token must be released in a finally block after the run"
+);
+
+// sessionStorage access must not throw in private/blocked-storage contexts
+// (finding #3), or the write gate throws before ever reaching the modal and
+// live writes get silently mislabeled as local preview.
+assert(
+  /function isWriteConfirmSuppressed\(\)\s*{\s*try\s*{[\s\S]*?catch/.test(files.app),
+  "isWriteConfirmSuppressed must guard sessionStorage access with try/catch"
+);
+assert(
+  /function suppressWriteConfirmFor\([^)]*\)\s*{\s*try\s*{[\s\S]*?catch/.test(files.app),
+  "suppressWriteConfirmFor must guard sessionStorage access with try/catch"
+);
+
+// Allowlisted (pure-compute) write buttons must not carry the LIVE/PREVIEW
+// write-action badge, which implies a gated real write (finding #4).
+assert(!files.html.includes('id="claimsCheckButton" data-write-action'), "claims-check button must not use the write-action (LIVE/PREVIEW) badge");
+assert(files.html.includes('id="claimsCheckButton" data-compute-action'), "claims-check button must use the compute-action badge instead");
+assert(files.css.includes("[data-compute-action]"), "compute-action badge styling missing");
+
 console.log("dashboard smoke passed");
 
 function assert(condition, message) {

@@ -775,7 +775,38 @@ textarea:focus-visible {
   background: var(--gray-600);
 }
 
-.table-wrap [data-write-action] {
+/* Endpoints on the write-confirm allowlist are pure-computation calls that
+   never trigger the live-write confirm modal. Tag their buttons distinctly
+   (COMPUTE, neutral info color) instead of LIVE/PREVIEW so operators don't
+   mistake them for gated writes. */
+[data-compute-action] {
+  position: relative;
+  padding-right: 46px;
+}
+
+[data-compute-action]::after {
+  content: "COMPUTE";
+  position: absolute;
+  top: -7px;
+  right: -6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 16px;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 9px;
+  font-weight: var(--w-bold);
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  color: #ffffff;
+  background: var(--info);
+  box-shadow: 0 0 0 2px var(--surface);
+  pointer-events: none;
+}
+
+.table-wrap [data-write-action],
+.table-wrap [data-compute-action] {
   padding-right: 40px;
 }
 

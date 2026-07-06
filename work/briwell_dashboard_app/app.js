@@ -1,5 +1,6 @@
 const state = {
   apiOnline: false,
+  apiConnectivityChecked: false,
   systemReadiness: {
     api: "미리보기",
     readiness: "로컬",
@@ -283,6 +284,7 @@ async function refreshFromApi() {
     ]);
 
     state.apiOnline = true;
+    state.apiConnectivityChecked = true;
     setApiStatus("online", "API 연결됨");
     state.systemReadiness = {
       api: health?.status === "ok" ? "연결됨" : health?.status || "연결됨",
@@ -297,6 +299,7 @@ async function refreshFromApi() {
     }
   } catch (_error) {
     state.apiOnline = false;
+    state.apiConnectivityChecked = true;
     setApiStatus("offline", "미리보기 모드");
     state.systemReadiness = {
       api: "미리보기",
@@ -1694,7 +1697,74 @@ async function runRecentScreenForCreator(creatorId) {
   showToast(`@${creator.username} 최근 20개 스크리닝 완료`);
 }
 
+const OPERATIONS_PIPELINE_STEP_COUNT = 8;
+
+// The pipeline fires up to OPERATIONS_PIPELINE_STEP_COUNT sequential writes.
+// Gating each one individually would show the live-write confirm modal
+// repeatedly (modal fatigue) and, worse, a "cancel" on any single step used
+// to have no effect on the rest of the run. Instead we ask for confirmation
+// once up front for the whole pipeline, grant a short-lived approval token
+// that writeGate honors only for calls made during this run, and stop the
+// run immediately if the operator declines or any step still comes back
+// cancelled.
+let pipelineWriteApprovalActive = false;
+
+async function confirmOperationsPipelineWrite() {
+  // Same fail-closed rule as writeGate: while connectivity is still unknown,
+  // never assume preview. Once it's known, skip the modal only if we're
+  // actually offline (nothing will be written) or the operator has already
+  // suppressed confirmations this session.
+  if (state.apiConnectivityChecked && !state.apiOnline) return true;
+  if (state.apiConnectivityChecked && isWriteConfirmSuppressed()) return true;
+  return openWriteConfirmModal({
+    path: `운영 파이프라인 (최대 ${OPERATIONS_PIPELINE_STEP_COUNT}단계 실행)`,
+    method: "POST",
+    apiBase: window.BriwellApi.readConfig().apiBase,
+  });
+}
+
 async function runOperationsPipeline() {
+  const approved = await confirmOperationsPipelineWrite();
+  if (!approved) {
+    state.operationsPipeline = {
+      status: "cancelled_by_user",
+      api_status: "cancelled_by_user",
+    };
+    renderOperationsPipelineSummary();
+    showResult("operationsEngineResult", state.operationsPipeline);
+    showToast("운영 파이프라인 취소됨");
+    return;
+  }
+
+  pipelineWriteApprovalActive = true;
+  try {
+    await executeOperationsPipelineSteps();
+  } finally {
+    pipelineWriteApprovalActive = false;
+  }
+}
+
+// Returns true (and renders the partial results collected so far) if any of
+// the given step results came back cancelled_by_user, so the caller can bail
+// out of the pipeline immediately instead of continuing to prompt/execute
+// subsequent steps.
+function stopOperationsPipelineOnCancel(stepsSoFar) {
+  const cancelledStep = Object.values(stepsSoFar).find(
+    (step) => step && step.api_status === "cancelled_by_user"
+  );
+  if (!cancelledStep) return false;
+  state.operationsPipeline = {
+    ...stepsSoFar,
+    status: "cancelled_by_user",
+    api_status: "cancelled_by_user",
+  };
+  renderOperationsPipelineSummary();
+  showResult("operationsEngineResult", state.operationsPipeline);
+  showToast("운영 파이프라인 취소됨");
+  return true;
+}
+
+async function executeOperationsPipelineSteps() {
   const creators = state.creators.map(toOperationCreator);
   const recentPostsByCreator = operationRecentPostsByCreator();
   const screenResults = ensureOperationScreenResults();
@@ -1735,6 +1805,7 @@ async function runOperationsPipeline() {
       next_actions: ["API offline; local pipeline steps continue below."],
     }
   );
+  if (stopOperationsPipelineOnCancel({ acquisition })) return;
 
   const importQuality = await callOperationStep(
     () =>
@@ -1754,6 +1825,7 @@ async function runOperationsPipeline() {
       next_action: qualityGate.overall_status === "ready" ? "run_creator_enrichment" : "operator_review",
     }
   );
+  if (stopOperationsPipelineOnCancel({ acquisition, importQuality })) return;
 
   const enrichment = await callOperationStep(
     () =>
@@ -1773,6 +1845,7 @@ async function runOperationsPipeline() {
       },
     }
   );
+  if (stopOperationsPipelineOnCancel({ acquisition, importQuality, enrichment })) return;
 
   const recentApply = await callOperationStep(
     () =>
@@ -1787,6 +1860,7 @@ async function runOperationsPipeline() {
       }),
     localRecentApply(creators, screenResults)
   );
+  if (stopOperationsPipelineOnCancel({ acquisition, importQuality, enrichment, recentApply })) return;
 
   const match = await callOperationStep(
     () =>
@@ -1803,6 +1877,7 @@ async function runOperationsPipeline() {
       }),
     localCampaignMatch(creators, screenResults, campaignProduct, campaignCountry)
   );
+  if (stopOperationsPipelineOnCancel({ acquisition, importQuality, enrichment, recentApply, match })) return;
 
   const matchedItems = match.items || [];
   const outreachPlan = await callOperationStep(
@@ -1817,6 +1892,17 @@ async function runOperationsPipeline() {
       }),
     localOutreachPlan(matchedItems, campaignProduct)
   );
+  if (
+    stopOperationsPipelineOnCancel({
+      acquisition,
+      importQuality,
+      enrichment,
+      recentApply,
+      match,
+      outreachPlan,
+    })
+  )
+    return;
 
   const crm = await callOperationStep(
     () =>
@@ -1827,6 +1913,18 @@ async function runOperationsPipeline() {
       }),
     localCrmBoard(outreachPlan.items || [])
   );
+  if (
+    stopOperationsPipelineOnCancel({
+      acquisition,
+      importQuality,
+      enrichment,
+      recentApply,
+      match,
+      outreachPlan,
+      crm,
+    })
+  )
+    return;
 
   const performance = await callOperationStep(
     () =>
@@ -1837,6 +1935,19 @@ async function runOperationsPipeline() {
       }),
     localPerformanceRollup(matchedItems)
   );
+  if (
+    stopOperationsPipelineOnCancel({
+      acquisition,
+      importQuality,
+      enrichment,
+      recentApply,
+      match,
+      outreachPlan,
+      crm,
+      performance,
+    })
+  )
+    return;
 
   state.operationsPipeline = {
     acquisition,
@@ -3253,12 +3364,24 @@ function updateWriteActionChips(isLive) {
 }
 
 function isWriteConfirmSuppressed() {
-  const until = Number(sessionStorage.getItem(WRITE_CONFIRM_SUPPRESS_KEY) || 0);
-  return until > Date.now();
+  try {
+    const until = Number(sessionStorage.getItem(WRITE_CONFIRM_SUPPRESS_KEY) || 0);
+    return until > Date.now();
+  } catch (_error) {
+    // Storage access can throw in strict-private/blocked-storage contexts.
+    // Fail to "not suppressed" so the write still goes through the confirm
+    // modal instead of silently downgrading to a fake local preview.
+    return false;
+  }
 }
 
 function suppressWriteConfirmFor(ms) {
-  sessionStorage.setItem(WRITE_CONFIRM_SUPPRESS_KEY, String(Date.now() + ms));
+  try {
+    sessionStorage.setItem(WRITE_CONFIRM_SUPPRESS_KEY, String(Date.now() + ms));
+  } catch (_error) {
+    // Best-effort only; if storage is unavailable the "don't ask again"
+    // checkbox simply won't persist across writes, which is safe.
+  }
 }
 
 function isAllowlistedWriteEndpoint(path) {
@@ -3266,8 +3389,18 @@ function isAllowlistedWriteEndpoint(path) {
 }
 
 async function writeGate({ path, method, apiBase }) {
+  // Fail-closed: until the first health check resolves, connectivity is
+  // unknown. Treat unknown the same as live (require confirmation) instead
+  // of assuming preview, so an already-live backend can never receive an
+  // unconfirmed write during the initial load race.
+  if (!state.apiConnectivityChecked) return openWriteConfirmModal({ path, method, apiBase });
   if (!state.apiOnline) return true;
   if (isAllowlistedWriteEndpoint(path)) return true;
+  // The operations pipeline asks for a single up-front confirmation covering
+  // all of its sequential writes (see confirmOperationsPipelineWrite) instead
+  // of prompting once per step. Only honor the token for calls made while a
+  // pipeline run is actually in flight and already approved.
+  if (pipelineWriteApprovalActive) return true;
   if (isWriteConfirmSuppressed()) return true;
   return openWriteConfirmModal({ path, method, apiBase });
 }
