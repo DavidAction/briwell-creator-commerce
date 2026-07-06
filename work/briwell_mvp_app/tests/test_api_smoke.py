@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -794,6 +796,78 @@ def test_performance_snapshot_blocks_unapproved_source_type() -> None:
     assert response.status_code == 400
     assert response.json()["detail"]["code"] == "PERFORMANCE_SOURCE_NOT_ALLOWED"
     assert response.json()["detail"]["details"]["reason"] == "collection_source_type_not_approved"
+
+
+def test_performance_snapshot_without_currency_triple_keeps_revenue_usd() -> None:
+    response = client.post(
+        "/performance/snapshots",
+        headers={"X-User-Role": "campaign_manager"},
+        json={
+            "campaign_id": "campaign-1",
+            "revenue_usd": 320.5,
+            "source_type": "manual",
+            "source_risk_level": "low",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "validated_not_persisted"
+    assert body["snapshot"]["revenue_usd"] == 320.5
+    assert body["snapshot"]["revenue_amount"] is None
+    assert body["snapshot"]["revenue_currency"] is None
+    assert body["snapshot"]["fx_rate_usd"] is None
+
+
+def test_performance_snapshot_derives_revenue_usd_from_currency_triple() -> None:
+    response = client.post(
+        "/performance/snapshots",
+        headers={"X-User-Role": "campaign_manager"},
+        json={
+            "campaign_id": "campaign-1",
+            # Caller-sent revenue_usd is overridden by the derived value,
+            # matching the derive_snapshot_revenue_usd DB trigger.
+            "revenue_usd": 999.99,
+            "revenue_amount": 6500.00,
+            "revenue_currency": "MXN",
+            "fx_rate_usd": 0.0585,
+            "source_type": "manual",
+            "source_risk_level": "low",
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "validated_not_persisted"
+    assert body["snapshot"]["revenue_currency"] == "MXN"
+    assert Decimal(str(body["snapshot"]["revenue_amount"])) == Decimal("6500")
+    assert Decimal(str(body["snapshot"]["revenue_usd"])) == Decimal("380.25")
+
+
+def test_performance_snapshot_rejects_usd_triple_with_non_unit_fx() -> None:
+    response = client.post(
+        "/performance/snapshots",
+        headers={"X-User-Role": "campaign_manager"},
+        json={
+            "revenue_amount": 100.00,
+            "revenue_currency": "USD",
+            "fx_rate_usd": 0.9,
+            "source_type": "manual",
+            "source_risk_level": "low",
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_performance_snapshot_rejects_partial_currency_triple() -> None:
+    response = client.post(
+        "/performance/snapshots",
+        headers={"X-User-Role": "campaign_manager"},
+        json={
+            "revenue_amount": 6500.00,
+            "source_type": "manual",
+            "source_risk_level": "low",
+        },
+    )
+    assert response.status_code == 422
 
 
 def test_compliance_country_claims_check_needs_review() -> None:

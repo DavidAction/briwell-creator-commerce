@@ -1,6 +1,6 @@
 from typing import Any
 
-from app.core.db import fetch_one
+from app.core.db import fetch_all, fetch_one
 
 
 def create_performance_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
@@ -20,6 +20,9 @@ def create_performance_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
           click_count,
           conversion_count,
           revenue_usd,
+          revenue_amount,
+          revenue_currency,
+          fx_rate_usd,
           source_type,
           source_risk_level,
           measured_at
@@ -38,6 +41,9 @@ def create_performance_snapshot(payload: dict[str, Any]) -> dict[str, Any]:
           %(click_count)s,
           %(conversion_count)s,
           %(revenue_usd)s,
+          %(revenue_amount)s,
+          %(revenue_currency)s,
+          %(fx_rate_usd)s,
           %(source_type)s,
           %(source_risk_level)s,
           COALESCE(%(measured_at)s, now())
@@ -65,7 +71,7 @@ def campaign_summary(campaign_id: str) -> dict[str, Any]:
         WHERE campaign_id = %(campaign_id)s
         GROUP BY campaign_id
     """
-    return fetch_one(query, {"campaign_id": campaign_id}) or {
+    summary = fetch_one(query, {"campaign_id": campaign_id}) or {
         "campaign_id": campaign_id,
         "snapshot_count": 0,
         "view_count": 0,
@@ -75,3 +81,27 @@ def campaign_summary(campaign_id: str) -> dict[str, Any]:
         "conversion_count": 0,
         "revenue_usd": 0,
     }
+    summary["revenue_by_currency"] = campaign_revenue_by_currency(campaign_id)
+    return summary
+
+
+def campaign_revenue_by_currency(campaign_id: str) -> list[dict[str, Any]]:
+    """Native-currency revenue rollup for snapshots carrying the currency triple.
+
+    Groups by revenue_currency (same pattern as the creator_commission_balance
+    view's (creator_id, currency) grouping) so LATAM (MXN/PEN) revenue stays
+    visible in its own currency instead of only as a USD conversion. Legacy
+    rows without the triple are excluded -- they have no native amount.
+    """
+    query = """
+        SELECT
+          revenue_currency,
+          COUNT(*) AS snapshot_count,
+          COALESCE(SUM(revenue_amount), 0) AS revenue_amount,
+          COALESCE(SUM(revenue_usd), 0) AS revenue_usd
+        FROM campaign_performance_snapshot
+        WHERE campaign_id = %(campaign_id)s AND revenue_currency IS NOT NULL
+        GROUP BY revenue_currency
+        ORDER BY revenue_currency
+    """
+    return fetch_all(query, {"campaign_id": campaign_id})
