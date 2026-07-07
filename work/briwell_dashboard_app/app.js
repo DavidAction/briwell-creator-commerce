@@ -318,6 +318,7 @@ async function refreshFromApi() {
 function renderAll() {
   renderCommandMetrics();
   renderCommerceCommand();
+  renderCampaignFunnel();
   renderOperatorActions();
   renderOperationsPipelineSummary();
   renderTalentRadar();
@@ -443,6 +444,49 @@ function renderGmvTrendHero(metrics) {
     const changePercent = first ? Math.round(((last - first) / first) * 100) : 0;
     deltaBadge.textContent = `전기 대비 ${changePercent >= 0 ? "+" : ""}${changePercent}%`;
   }
+}
+
+// Derives the campaign execution funnel from live pipeline state instead of the
+// former hardcoded 24/14/9/6/2. Stage 1 (숏리스트) and stage 2 (초안) are anchored to
+// real counts; the brand-safe/approval/response stages use documented conversion
+// ratios because the dashboard has no persisted outreach-status store in preview
+// mode. All stages are clamped monotonic-decreasing so the funnel never widens.
+function buildCampaignFunnel() {
+  const metrics = buildCommandMetrics();
+  const shortlist = state.creators.length + state.intakeCreators.length;
+  const screened = Math.min(shortlist, metrics.screenedCount || metrics.outreachReadyCount);
+  const brandSafe = Object.values(state.recentScreenResults).filter((result) =>
+    ["fit", "monitor"].includes(result.suitability_decision)
+  ).length;
+  const stages = [
+    { label: "숏리스트", count: shortlist },
+    { label: "초안 작성", count: screened },
+    { label: "브랜드 세이프", count: brandSafe || Math.round(screened * 0.65) },
+    { label: "승인", count: Math.round((brandSafe || screened * 0.65) * 0.7) },
+    { label: "응답", count: Math.round((brandSafe || screened * 0.65) * 0.7 * 0.35) },
+  ];
+  // Enforce monotonic non-increasing counts (each stage <= previous).
+  for (let i = 1; i < stages.length; i += 1) {
+    stages[i].count = Math.min(stages[i].count, stages[i - 1].count);
+  }
+  const top = stages[0].count || 1;
+  return stages.map((stage) => ({
+    ...stage,
+    percent: Math.round((stage.count / top) * 100),
+  }));
+}
+
+function renderCampaignFunnel() {
+  const container = byId("campaignFunnel");
+  if (!container) return;
+  const stages = buildCampaignFunnel();
+  container.innerHTML = stages
+    .map(
+      (stage) =>
+        `<div style="--stage:${stage.percent}%"><strong>${stage.count}</strong>` +
+        `<span>${stage.label}</span><em>${stage.percent}%</em></div>`
+    )
+    .join("");
 }
 
 function renderCommerceCommand() {
