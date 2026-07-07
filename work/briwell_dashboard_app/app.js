@@ -250,7 +250,10 @@ function bindActions() {
   );
   byId("manualSendButton").addEventListener("click", recordManualSend);
   byId("saveSnapshotButton").addEventListener("click", saveSnapshot);
+  byId("snapshotCurrency").addEventListener("change", updateSnapshotFxAvailability);
+  updateSnapshotFxAvailability();
   byId("saveContractButton").addEventListener("click", saveContract);
+  byId("issueDiscountCodeButton").addEventListener("click", issueDiscountCode);
   byId("runOperationsPipelineButton").addEventListener("click", runOperationsPipeline);
 
   byId("loadCreatorCsvButton").addEventListener("click", loadCreatorCsv);
@@ -2024,21 +2027,77 @@ async function recordManualSend() {
   }
 }
 
+function readSnapshotRevenueTriple() {
+  const currency = byId("snapshotCurrency")?.value || "USD";
+  const amount = Number(byId("snapshotRevenue").value || 0);
+  const fxRate = currency === "USD" ? 1 : Number(byId("snapshotFxRate")?.value || 0);
+  return { currency, amount, fxRate };
+}
+
+function updateSnapshotFxAvailability() {
+  const currencySelect = byId("snapshotCurrency");
+  const fxInput = byId("snapshotFxRate");
+  if (!currencySelect || !fxInput) return;
+  const isUsd = currencySelect.value === "USD";
+  fxInput.disabled = isUsd;
+  if (isUsd) fxInput.value = "1";
+}
+
 async function saveSnapshot() {
+  const revenue = readSnapshotRevenueTriple();
+  if (revenue.currency !== "USD" && !(revenue.fxRate > 0)) {
+    showToast("MXN/PEN 매출은 기록시점 USD 환율이 필요합니다");
+    return;
+  }
   const payload = {
     campaign_id: byId("snapshotCampaign").value.trim(),
     creator_id: byId("snapshotCreator").value.trim(),
     post_url: byId("snapshotPostUrl").value.trim(),
     coupon_code: byId("snapshotCoupon").value.trim(),
     view_count: Number(byId("snapshotViews").value || 0),
-    revenue_usd: Number(byId("snapshotRevenue").value || 0),
+    revenue_amount: revenue.amount,
+    revenue_currency: revenue.currency,
+    fx_rate_usd: revenue.fxRate,
     source_type: "manual",
     source_risk_level: "low",
   };
   try {
     showResult("snapshotResult", await window.BriwellApi.savePerformanceSnapshot(payload));
   } catch (error) {
+    if (error.cancelled) {
+      showResult("snapshotResult", error.payload);
+      return;
+    }
     showResult("snapshotResult", error.payload || { status: "local_preview_saved", snapshot: payload });
+  }
+}
+
+async function issueDiscountCode() {
+  const payload = {
+    creator_id: byId("issueCreatorId").value.trim(),
+    campaign_id: byId("issueCampaignId").value.trim() || null,
+    code: byId("issueCode").value.trim(),
+    commission_rate: Number(byId("issueCommissionRate").value || 0),
+    customer_discount_percent: Number(byId("issueDiscountPercent").value || 0),
+  };
+  if (!payload.creator_id || payload.code.length < 3) {
+    showToast("크리에이터 ID와 3자 이상 할인코드가 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.issueDiscountCode(payload);
+    showResult("issueDiscountResult", response);
+    if (response.status === "dry_run") {
+      showToast("드라이런 · Shopify에 실제 생성되지 않음");
+    } else {
+      showToast(`할인코드 ${response.discount_code?.code || payload.code} 발급 완료`);
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("issueDiscountResult", error.payload);
+      return;
+    }
+    showResult("issueDiscountResult", error.payload || { status: "local_preview_saved", discount_code: payload });
   }
 }
 
@@ -2754,7 +2813,12 @@ function localCrmBoard(outreachItems) {
 
 function buildOperationPerformanceSnapshots(matchedItems) {
   const fallbackViews = Number(byId("snapshotViews")?.value || 0);
-  const fallbackRevenue = Number(byId("snapshotRevenue")?.value || 0);
+  // snapshotRevenue is entered in the selected recording currency; convert to
+  // USD with the recorded FX rate so rollup previews stay in one unit.
+  const revenueTriple = readSnapshotRevenueTriple();
+  const fallbackRevenue = revenueTriple.fxRate > 0
+    ? Math.round(revenueTriple.amount * revenueTriple.fxRate * 100) / 100
+    : 0;
   return (matchedItems.length ? matchedItems : state.creators.slice(0, 1)).map((item, index) => ({
     campaign_id: "campaign-1",
     creator_id: item.creator_id,

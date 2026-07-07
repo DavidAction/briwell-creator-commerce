@@ -121,6 +121,28 @@ defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 
 
 이로써 잡큐·감사이벤트의 JSONB 경로는 전부 리포지토리 계층에서 단일 래핑으로 정리됨.
 
+## 0.0.7 실 Shopify 연동 + 대시보드 Phase 3 1차 (2026-07-07) — 테스트 352 통과/26 스킵
+
+**A. 실 Shopify 연동 (커밋 d5b387b)** — 0.0.4의 웹훅-형상 mock을 실제 연결 가능 상태로 격상:
+1. **웹훅 수신기** `/commerce/webhooks/shopify/{orders,refunds}` — HMAC-SHA256 서명이 인증
+   (`SHOPIFY_WEBHOOK_SECRET`). fail-closed: 시크릿 미설정 시 503으로 전체 거부.
+   실 Shopify 주문/환불 JSON → 기존 ingest 모델로 변환 후 **동일한 어트리뷰션/원장 경로** 재사용.
+   미지원 통화·FX 미설정(`SHOPIFY_FX_RATES`)·미인식 status는 422 거부(가짜 값 저장 금지).
+2. **Admin API 클라이언트**(`app/providers/shopify_admin.py`) — PriceRule+DiscountCode 발급.
+   dry-run 기본(`SHOPIFY_DRY_RUN`+`ALLOW_LIVE_SHOPIFY_CALLS` 이중 게이트, AI 게이트와 동일 패턴).
+   `POST /commerce/discount-codes/issue` — 라이브 발급은 DB 필수(Shopify에만 존재하는 미추적 코드 방지).
+3. ⚠️ 운영 잔여: 실제 Shopify 커스텀 앱 생성·웹훅 등록·시크릿 `.env` 설정은 스토어 개설 후 수동 절차.
+
+**B. 대시보드 Phase 3 1차 (스모크+브라우저 검증)**:
+1. discovery/candidates/tracking 화면을 content-grid/span 격상 레이아웃으로 정규화.
+2. **성과 분석: 통화-명시 매출 입력**(MXN/PEN/USD + 기록시점 FX, USD는 1 고정) — 0.0.4 백엔드
+   트리플과 정합. 운영 rollup 프리뷰도 FX 환산 USD 사용(이전: 로컬 통화값을 USD로 오기록).
+3. **정산 화면: Shopify 할인코드 발급 패널** 신설 — `/commerce/discount-codes/issue` 연동,
+   data-write-action 게이트 준수, dry-run 결과(계획된 요청+차단 사유) 표시.
+4. 캠페인 채널 셀렉트를 Shopify 주력/TikTok Shop 보류로 재배열(0.0.1 전략 정합).
+5. 스모크에 Phase 3 회귀 단정 추가(통화 트리플·발급 패널·grid 레이아웃).
+⚠️ 잔여: 화면별 KPI 메트릭 스트립(JS 배선 필요), 캠페인 퍼널 하드코딩 수치의 실데이터화.
+
 ## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
 
 "최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):

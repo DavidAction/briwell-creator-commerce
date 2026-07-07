@@ -321,7 +321,8 @@
       </section>
 
       <section class="view" id="view-discovery">
-        <section class="panel">
+        <div class="content-grid">
+        <section class="panel span-6">
           <div class="panel-heading">
             <div>
               <h2>크리에이터 발굴 브리프</h2>
@@ -376,7 +377,7 @@
           </div>
         </section>
 
-        <section class="panel">
+        <section class="panel span-6">
           <div class="panel-heading">
             <div>
               <h2>TikTok Provider 수집</h2>
@@ -418,7 +419,7 @@
           <div id="tiktokProviderResult" class="result-box"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel span-12">
           <div class="panel-heading">
             <div>
               <h2>커버리지 감사</h2>
@@ -429,6 +430,7 @@
           <div class="audit-grid" id="coverageAudit"></div>
           <div class="safeguard-list" id="recallSafeguards"></div>
         </section>
+        </div>
       </section>
 
       <section class="view" id="view-intake">
@@ -549,7 +551,8 @@
       </section>
 
       <section class="view" id="view-candidates">
-        <section class="panel">
+        <div class="content-grid">
+        <section class="panel span-12">
           <div class="panel-heading">
             <div>
               <h2>후보 인텔리전스</h2>
@@ -588,6 +591,7 @@
             <aside class="detail-panel" id="candidateDetail"></aside>
           </div>
         </section>
+        </div>
       </section>
 
       <section class="view" id="view-campaign">
@@ -604,7 +608,7 @@
               <label><span>캠페인명</span><input id="campaignName" value="MX 선스크린 크리에이터 런칭"></label>
               <label><span>시장</span><select id="campaignCountry"><option value="MX">멕시코</option><option value="PE">페루</option><option value="EC">에콰도르</option></select></label>
               <label><span>제품군</span><select id="campaignProduct"><option value="sunscreen">선스크린</option><option value="calming_serum">카밍 세럼</option><option value="cleanser">클렌저</option></select></label>
-              <label><span>커머스 채널</span><select id="campaignChannel"><option value="tiktok_shop">TikTok Shop</option><option value="shopify">Shopify</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
+              <label><span>커머스 채널</span><select id="campaignChannel"><option value="shopify" selected>Shopify 자사몰 (주력)</option><option value="tiktok_shop">TikTok Shop (보류)</option><option value="mercado_libre">Mercado Libre</option><option value="instagram_dm">Instagram DM</option></select></label>
               <label><span>예산 USD</span><input id="campaignBudget" type="number" min="0" value="1200"></label>
               <label><span>전략 목표</span><textarea id="campaignGoal">스페인어권 LATAM 크리에이터의 루틴 리뷰와 커머스 링크 기반 K-Beauty 선스크린 시장 검증</textarea></label>
               <button class="button primary" id="saveCampaignButton" data-write-action>캠페인 저장</button>
@@ -674,11 +678,12 @@
       </section>
 
       <section class="view" id="view-tracking">
-        <section class="panel">
+        <div class="content-grid">
+        <section class="panel span-12">
           <div class="panel-heading">
             <div>
               <h2>성과 분석</h2>
-              <p class="panel-subtitle">게시물, 쿠폰, 조회수, 매출 데이터의 캠페인 단위 추적</p>
+              <p class="panel-subtitle">게시물, 쿠폰, 조회수, 통화-명시 매출 데이터의 캠페인 단위 추적</p>
             </div>
             <button class="button primary" id="saveSnapshotButton" data-write-action>스냅샷 저장</button>
           </div>
@@ -688,10 +693,24 @@
             <label><span>게시물 URL</span><input id="snapshotPostUrl" value="https://www.tiktok.com/@luzskincare/video/0000000000000000001"></label>
             <label><span>쿠폰 코드</span><input id="snapshotCoupon" value="BRI-MX-10"></label>
             <label><span>조회수</span><input id="snapshotViews" type="number" min="0" value="12000"></label>
-            <label><span>매출 USD</span><input id="snapshotRevenue" type="number" min="0" value="320"></label>
+            <label>
+              <span>매출 통화</span>
+              <select id="snapshotCurrency">
+                <option value="MXN" selected>MXN (멕시코 페소)</option>
+                <option value="PEN">PEN (페루 솔)</option>
+                <option value="USD">USD</option>
+              </select>
+            </label>
+            <label><span>매출 금액 (기록 통화)</span><input id="snapshotRevenue" type="number" min="0" value="5900"></label>
+            <label>
+              <span>기록시점 USD 환율</span>
+              <input id="snapshotFxRate" type="number" min="0" step="0.0001" value="0.054">
+              <small class="field-hint" id="snapshotFxHint">USD 선택 시 1로 고정됩니다. MXN/PEN은 기록시점 환율 필수.</small>
+            </label>
           </div>
           <div id="snapshotResult" class="result-box"></div>
         </section>
+        </div>
       </section>
 
       <section class="view" id="view-settlement">
@@ -728,13 +747,38 @@
               </table>
             </div>
           </section>
+
+          <section class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <h2>Shopify 할인코드 발급</h2>
+                <p class="panel-subtitle">크리에이터별 어트리뷰션 할인코드를 Shopify PriceRule로 발급 · 드라이런은 실제 생성 전 요청 내용을 미리 확인</p>
+              </div>
+              <span class="badge green">커머스 어트리뷰션</span>
+            </div>
+            <div class="form-grid">
+              <label><span>크리에이터 ID</span><input id="issueCreatorId" value="creator-1"></label>
+              <label><span>캠페인 ID (선택)</span><input id="issueCampaignId" placeholder="campaign-1"></label>
+              <label><span>할인코드</span><input id="issueCode" value="MARI10" maxlength="64"></label>
+              <label><span>크리에이터 커미션율</span><input id="issueCommissionRate" type="number" min="0" max="0.5" step="0.01" value="0.10"></label>
+              <label>
+                <span>고객 할인율 %</span>
+                <input id="issueDiscountPercent" type="number" min="1" max="50" value="15">
+                <small class="field-hint">Shopify PriceRule 퍼센트 할인으로 생성됩니다.</small>
+              </label>
+            </div>
+            <div class="button-row">
+              <button class="button primary" id="issueDiscountCodeButton" data-write-action>할인코드 발급</button>
+            </div>
+            <div id="issueDiscountResult" class="result-box"></div>
+          </section>
         </div>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./api-client.js?v=20260706"></script>
-  <script src="./app.js?v=20260706b"></script>
+  <script src="./api-client.js?v=20260707"></script>
+  <script src="./app.js?v=20260707"></script>
 </body>
 </html>

@@ -49,7 +49,24 @@ const requiredEndpoints = [
   "/outreach/status-transition",
   "/performance/snapshots",
   "/settlements/contracts",
+  "/commerce/discount-codes/issue",
 ];
+
+// --- Phase 3 elevation: currency-explicit revenue + Shopify discount issuance ---
+assert(files.html.includes("snapshotCurrency"), "snapshot currency selector missing");
+assert(files.html.includes("snapshotFxRate"), "snapshot FX rate input missing");
+assert(files.app.includes("revenue_amount") && files.app.includes("revenue_currency") && files.app.includes("fx_rate_usd"), "snapshot must send the currency-explicit revenue triple");
+assert(files.app.includes("updateSnapshotFxAvailability"), "USD FX lock control missing");
+assert(files.html.includes("Shopify 할인코드 발급"), "Shopify discount issuance panel missing");
+assert(files.html.includes('id="issueDiscountCodeButton" data-write-action'), "discount issuance button must carry the write-action badge");
+assert(files.app.includes("issueDiscountCode"), "discount issuance handler missing");
+assert(files.client.includes("issueDiscountCode"), "discount issuance API client method missing");
+assert(files.html.includes("Shopify 자사몰 (주력)"), "campaign channel must lead with Shopify per 0.0.1 strategy");
+["view-discovery", "view-candidates", "view-tracking"].forEach((view) => {
+  const viewIndex = files.html.indexOf(`id="${view}"`);
+  const nextChunk = files.html.slice(viewIndex, viewIndex + 200);
+  assert(nextChunk.includes("content-grid"), `${view} must use the elevated content-grid layout`);
+});
 
 assert(files.html.includes("Briwell Creator Commerce Intelligence"), "missing global dashboard title");
 assert(files.html.includes("글로벌 MCN 운영 콘솔"), "missing Korean executive positioning copy");
