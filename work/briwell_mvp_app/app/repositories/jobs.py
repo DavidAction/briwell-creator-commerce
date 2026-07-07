@@ -1,6 +1,7 @@
 from typing import Any
 
 import psycopg
+from psycopg.types.json import Jsonb
 
 
 def enqueue_job(conn: psycopg.Connection, job_type: str, payload: dict[str, Any]) -> int:
@@ -11,7 +12,7 @@ def enqueue_job(conn: psycopg.Connection, job_type: str, payload: dict[str, Any]
             VALUES (%(job_type)s, %(payload)s)
             RETURNING id
             """,
-            {"job_type": job_type, "payload": payload},
+            {"job_type": job_type, "payload": Jsonb(payload)},
         )
         row = cur.fetchone()
     conn.commit()

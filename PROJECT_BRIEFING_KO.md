@@ -108,6 +108,19 @@ defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 
 4. **적대 리뷰 4건 전부 수정** — 초기 로드 레이스(무확인 라이브 쓰기 창), 파이프라인 모달 7연발+취소 무시, sessionStorage 예외 시 가짜 미리보기 표기, COMPUTE/LIVE 배지 혼동. 스모크에 게이트 회귀 체크 추가.
 → Phase3(7개 화면 격상)는 이 패턴 위에서 진행. 신규 쓰기 UI는 data-write-action 태깅 필수.
 
+## 0.0.6 잡큐 JSONB 근본 수정 (2026-07-07) — 테스트 328 통과/26 스킵
+
+0.0.4에서 "근본 수정은 별도 태스크"로 미뤄둔 dict→JSONB 어댑테이션 버그 해소:
+1. **`jobs.enqueue_job` Jsonb 래핑** — raw dict가 라이브 psycopg에서 "cannot adapt type 'dict'"로
+   실패하던 근본 원인 수정(`app/repositories/jobs.py`). 라이브 DB에서 아웃리치 상태전환의 감사이벤트
+   enqueue가 실패하던 경로 해소. 비-DB 회귀 테스트 추가(`tests/test_job_queue.py`).
+2. **commerce 라우터 이중 래핑 회귀 수정** — f982966이 `record_event` 내부에 Jsonb 래핑을 넣을 때
+   commerce 호출부 2곳(attribution decided/resolved)의 기존 우회 래핑을 제거하지 않아
+   `Jsonb(Jsonb(...))` → 라이브 DB에서 `TypeError: not JSON serializable`로 터질 상태였음(재현 확인).
+   호출부를 plain dict로 통일, 미사용 Jsonb import 제거.
+
+이로써 잡큐·감사이벤트의 JSONB 경로는 전부 리포지토리 계층에서 단일 래핑으로 정리됨.
+
 ## 0.2 최고화 작업 — AI 품질·데이터 파이프라인 (2026-06-27)
 
 "최고 결과"를 막는 병목을 겨냥해 5개 항목 구현(테스트 189통과/7스킵):

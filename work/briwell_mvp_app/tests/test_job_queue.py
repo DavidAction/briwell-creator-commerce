@@ -134,6 +134,42 @@ def test_process_one_dispatches_to_registered_handler_and_marks_done() -> None:
         assert row["status"] == "done"
 
 
+def test_enqueue_job_wraps_payload_as_jsonb_for_live_postgres() -> None:
+    # Raw dict params fail on live psycopg with "cannot adapt type 'dict'";
+    # the payload must be wrapped in psycopg's Jsonb (same fix as audit_events).
+    from psycopg.types.json import Jsonb
+
+    from app.repositories import jobs
+
+    captured: dict = {}
+
+    class FakeCursor:
+        def execute(self, query, params):
+            captured.update(params)
+
+        def fetchone(self):
+            return {"id": 42}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+    class FakeConn:
+        def cursor(self):
+            return FakeCursor()
+
+        def commit(self):
+            pass
+
+    job_id = jobs.enqueue_job(FakeConn(), "audit_event.persist", {"foo": "bar"})
+
+    assert job_id == 42
+    assert isinstance(captured["payload"], Jsonb)
+    assert captured["payload"].obj == {"foo": "bar"}
+
+
 class FakeJobsRepository:
     def __init__(self, job: dict | None) -> None:
         self._job = job

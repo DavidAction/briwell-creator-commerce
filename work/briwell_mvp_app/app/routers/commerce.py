@@ -3,7 +3,6 @@ from decimal import Decimal
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field, model_validator
 
 from app.commerce.allocation import compute_accrual, compute_refund_reversal
@@ -294,15 +293,13 @@ def ingest_shopify_order(
                 aggregate_id=order_id,
                 actor_role=user.role,
                 actor_email=user.email,
-                payload=Jsonb(
-                    {
-                        "attribution_id": str(attribution_record["id"]),
-                        "method": decision.method,
-                        "confidence": decision.confidence,
-                        "status": decision.status,
-                        "should_accrue": decision.should_accrue,
-                    }
-                ),
+                payload={
+                    "attribution_id": str(attribution_record["id"]),
+                    "method": decision.method,
+                    "confidence": decision.confidence,
+                    "status": decision.status,
+                    "should_accrue": decision.should_accrue,
+                },
             )
         elif existing_live is not None:
             attribution_record = existing_live
@@ -894,14 +891,12 @@ def _audit_resolution(
             aggregate_id=attribution_id,
             actor_role=user.role,
             actor_email=user.email,
-            payload=Jsonb(
-                {
-                    "order_id": order_id,
-                    "action": payload.action,
-                    "creator_id": payload.creator_id,
-                    "notes": payload.notes,
-                }
-            ),
+            payload={
+                "order_id": order_id,
+                "action": payload.action,
+                "creator_id": payload.creator_id,
+                "notes": payload.notes,
+            },
         )
 
 
