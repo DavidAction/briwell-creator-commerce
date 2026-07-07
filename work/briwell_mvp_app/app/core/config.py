@@ -118,6 +118,23 @@ class Settings:
     outbox_worker_poll_interval_seconds: float = float(
         os.getenv("OUTBOX_WORKER_POLL_INTERVAL_SECONDS", "2.0")
     )
+    shopify_shop_domain: str = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip()
+    shopify_admin_api_token: str = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    shopify_api_version: str = os.getenv("SHOPIFY_API_VERSION", "2026-01").strip()
+    shopify_webhook_secret: str = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
+    shopify_dry_run: bool = os.getenv("SHOPIFY_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    allow_live_shopify_calls: bool = os.getenv(
+        "ALLOW_LIVE_SHOPIFY_CALLS",
+        "false",
+    ).strip().lower() in {"1", "true", "yes"}
+    # Recorded-at-ingest FX rates for webhook orders, e.g. "MXN:0.058,PEN:0.27".
+    # USD is always 1. Webhook orders in a currency missing here are rejected
+    # (fail-closed) rather than persisted with a guessed rate.
+    shopify_fx_rates_raw: str = os.getenv("SHOPIFY_FX_RATES", "")
 
 
 settings = Settings()

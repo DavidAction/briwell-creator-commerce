@@ -10,6 +10,7 @@ from app.commerce.attribution import CodeMatch, UtmMatch, decide_attribution
 from app.commerce.money import to_usd
 from app.core.auth import UserContext, require_roles
 from app.core.db import connection, database_enabled
+from app.providers import shopify_admin
 from app.repositories import audit_events as audit_events_repository
 from app.repositories import commerce as commerce_repository
 
@@ -94,6 +95,21 @@ class DiscountCodeCreateRequest(BaseModel):
 
     @model_validator(mode="after")
     def normalize_code(self) -> "DiscountCodeCreateRequest":
+        object.__setattr__(self, "code", self.code.strip().upper())
+        return self
+
+
+class DiscountCodeIssueRequest(BaseModel):
+    creator_id: str = Field(min_length=1)
+    campaign_id: str | None = None
+    code: str = Field(min_length=3, max_length=64)
+    commission_rate: Decimal = Field(ge=0, le=Decimal("0.5"))
+    customer_discount_percent: Decimal = Field(gt=0, le=Decimal("50"))
+    valid_from: datetime | None = None
+    valid_until: datetime | None = None
+
+    @model_validator(mode="after")
+    def normalize_code(self) -> "DiscountCodeIssueRequest":
         object.__setattr__(self, "code", self.code.strip().upper())
         return self
 
@@ -430,6 +446,80 @@ def create_discount_code(
         created = commerce_repository.create_discount_code(normalized)
         return {"status": "persisted", "discount_code": created}
     return {"status": "validated_not_persisted", "discount_code": normalized}
+
+
+@router.post("/discount-codes/issue")
+def issue_discount_code(
+    payload: DiscountCodeIssueRequest,
+    user: UserContext = Depends(require_roles("admin", "campaign_manager")),
+) -> dict[str, Any]:
+    """Issue a creator discount code in Shopify (PriceRule + DiscountCode).
+
+    Dry-run (default env) returns the planned Shopify requests without any
+    network call or persistence. Live issuance requires the Shopify live
+    gates AND the database, so a code can never exist in Shopify without a
+    matching local attribution record.
+    """
+    blockers = shopify_admin.live_blockers()
+    if not blockers and not database_enabled():
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "code": "SHOPIFY_LIVE_REQUIRES_DATABASE",
+                "message": "Live Shopify issuance requires USE_DATABASE=true so the issued code "
+                "is persisted for attribution. Refusing to create an untracked code.",
+            },
+        )
+
+    title = f"Briwell creator {payload.creator_id} / {payload.code}"
+    result = shopify_admin.issue_discount_code(
+        code=payload.code,
+        customer_discount_percent=payload.customer_discount_percent,
+        title=title,
+        starts_at=payload.valid_from,
+        ends_at=payload.valid_until,
+    )
+
+    if result.mode == "dry_run":
+        return {
+            "status": "dry_run",
+            "code": result.code,
+            "planned_requests": result.planned_requests,
+            "live_blockers": result.live_blockers,
+            "persisted": False,
+        }
+
+    record = commerce_repository.create_discount_code(
+        {
+            "creator_id": payload.creator_id,
+            "campaign_id": payload.campaign_id,
+            "code": result.code,
+            "commission_rate": payload.commission_rate,
+            "shopify_price_rule_id": result.shopify_price_rule_id,
+            "shopify_discount_code_id": result.shopify_discount_code_id,
+            "valid_from": payload.valid_from,
+            "valid_until": payload.valid_until,
+            "status": "active",
+        }
+    )
+    with connection() as conn:
+        audit_events_repository.record_event(
+            conn,
+            event_type="discount_code.issued",
+            aggregate_type="creator_discount_code",
+            aggregate_id=str(record["id"]),
+            actor_role=user.role,
+            actor_email=user.email,
+            payload={
+                "code": result.code,
+                "creator_id": payload.creator_id,
+                "shopify_price_rule_id": result.shopify_price_rule_id,
+                "shopify_discount_code_id": result.shopify_discount_code_id,
+                "customer_discount_percent": str(payload.customer_discount_percent),
+                "commission_rate": str(payload.commission_rate),
+            },
+        )
+    return {"status": "persisted", "mode": "live", "discount_code": record, "persisted": True}
 
 
 @router.get("/discount-codes")

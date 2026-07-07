@@ -33,6 +33,7 @@ from app.routers import (
     products,
     providers,
     settlements,
+    shopify_webhooks,
     videos,
 )
 
@@ -177,5 +178,6 @@ app.include_router(products.router)
 app.include_router(providers.router)
 app.include_router(settlements.router)
 app.include_router(commerce.router)
+app.include_router(shopify_webhooks.router)
 app.include_router(ops.router)
 app.include_router(operations.router)
