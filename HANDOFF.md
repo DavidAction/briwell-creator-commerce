@@ -11,13 +11,14 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state:** backend `352 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
-1. `5cf7a7d` Dashboard Phase 3 pass 1 — currency-explicit revenue input (MXN/PEN/USD triple), Shopify discount-code issuance panel, discovery/candidates/tracking moved to grid layout.
-2. `d5b387b` Real Shopify integration — HMAC-verified webhook receivers (`/commerce/webhooks/shopify/{orders,refunds}`), Admin API discount-code issuance (`app/providers/shopify_admin.py`, `POST /commerce/discount-codes/issue`), dry-run by default behind `SHOPIFY_DRY_RUN` + `ALLOW_LIVE_SHOPIFY_CALLS`.
-3. `7aec185` Job-queue JSONB adaptation fix + commerce double-wrap regression fix.
+1. `48b863f` Campaign execution funnel wired to live state (`buildCampaignFunnel()`), replacing hardcoded 24/14/9/6/2.
+2. `5cf7a7d` Dashboard Phase 3 pass 1 — currency-explicit revenue input (MXN/PEN/USD triple), Shopify discount-code issuance panel, discovery/candidates/tracking moved to grid layout.
+3. `d5b387b` Real Shopify integration — HMAC-verified webhook receivers (`/commerce/webhooks/shopify/{orders,refunds}`), Admin API discount-code issuance (`app/providers/shopify_admin.py`, `POST /commerce/discount-codes/issue`), dry-run by default behind `SHOPIFY_DRY_RUN` + `ALLOW_LIVE_SHOPIFY_CALLS`.
+4. Shopify go-live prep: `scripts/register_shopify_webhooks.py` (idempotent webhook registration, dry-run default) + `docs/SHOPIFY_GOLIVE.md` runbook.
 
 **Next candidates (no code written yet, pick one):**
-- **A. Dashboard Phase 3 remaining** — per-screen KPI metric strips (JS wiring) and replace hardcoded campaign-funnel numbers with real data. The layout normalization is done; this is the data-binding remainder.
-- **B. Shopify go-live (ops, not code)** — create the Shopify custom app, register the order/refund webhooks, set `SHOPIFY_*` secrets in `.env`. Code is ready and gated; only the manual store/app setup remains.
+- **A. Dashboard Phase 3 remaining** — the campaign funnel is now real (done). Remaining polish: per-screen KPI metric strips on candidates/tracking/settlement screens (the command screen already has one via `buildCommandMetrics()`). Lower priority now.
+- **B. Shopify go-live (ops, not code)** — CODE + TOOLING READY. Follow `docs/SHOPIFY_GOLIVE.md`: create the Shopify custom app, set `SHOPIFY_*` secrets in `.env`, run `scripts/register_shopify_webhooks.py`, verify with a test order. This is the manual store/app setup only.
 - **C. Trend-signal tab for Creator Search** — DESIGNED + MOCKUP APPROVED-FOR-REVIEW, not built. A "트렌드" sub-tab under Creator Search surfacing rising creators/formats. Tier-1 sources = `creator_provided` intake + public Google-News RSS (both legal, buildable today); tier-2 = official TikTok/IG APIs (skeleton exists) and licensed vendors (Data365/BrightData), which light up the same UI later. Building tier-1 doubles as real-data inflow (roadmap priority 2). See briefing 0.0.8.
 
 **Compliance decision on record (do NOT re-litigate):** the user asked twice to port the local `trend-viewer` tool's TikTok collection, which relies on `tikwm` — a third-party proxy that bypasses TikTok's X-Bogus/msToken signing and TLS-fingerprint anti-bot controls. This was declined: it violates the non-negotiable constraints below (unauthorized scraping / anti-bot bypass), which are enforced in `app/core/policy.py`, and it is a real business risk (platform bans, third-party dependency). The trend feature is being delivered via legal source lanes instead. A prior session (briefing §0.3) already made the same call.
