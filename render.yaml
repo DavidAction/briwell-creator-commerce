@@ -106,6 +106,13 @@ services:
         value: "true"
       - key: ALLOW_LIVE_SHOPIFY_CALLS
         value: "false"
+      # Public Google News RSS market signals (discovery screen). Legal public
+      # feed; live ON in production so the panel shows real headlines. Flip
+      # NEWS_RSS_DRY_RUN back to true to fall back to labeled sample rows.
+      - key: NEWS_RSS_DRY_RUN
+        value: "false"
+      - key: ALLOW_LIVE_NEWS_RSS_CALLS
+        value: "true"
 
 databases:
   # Managed Postgres for the pilot. basic-256mb (not free) because Render's

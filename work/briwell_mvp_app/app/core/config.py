@@ -135,6 +135,17 @@ class Settings:
     # USD is always 1. Webhook orders in a currency missing here are rejected
     # (fail-closed) rather than persisted with a guessed rate.
     shopify_fx_rates_raw: str = os.getenv("SHOPIFY_FX_RATES", "")
+    # Public Google News RSS market-signal fetcher (app/trends/news_rss.py).
+    # Same dual live-gate shape as the AI/TikTok/Shopify lanes.
+    news_rss_dry_run: bool = os.getenv("NEWS_RSS_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    allow_live_news_rss_calls: bool = os.getenv(
+        "ALLOW_LIVE_NEWS_RSS_CALLS",
+        "false",
+    ).strip().lower() in {"1", "true", "yes"}
 
 
 settings = Settings()

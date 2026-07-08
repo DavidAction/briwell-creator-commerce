@@ -30,6 +30,7 @@ const state = {
   keywordPlaybook: null,
   tiktokProviderRun: null,
   creatorProvidedRun: null,
+  newsSignals: null,
   creators: [
     {
       creator_id: "creator-1",
@@ -258,6 +259,7 @@ function bindActions() {
   byId("copyCreatorRequestButton").addEventListener("click", copyCreatorRequestText);
   byId("previewCreatorProvidedButton").addEventListener("click", previewCreatorProvided);
   byId("runCreatorProvidedButton").addEventListener("click", runCreatorProvidedImport);
+  byId("loadNewsSignalsButton").addEventListener("click", loadNewsSignals);
   byId("saveCampaignButton").addEventListener("click", saveCampaign);
   byId("prepareDraftsButton").addEventListener("click", prepareDrafts);
   byId("claimsCheckButton").addEventListener("click", runClaimsCheck);
@@ -2071,6 +2073,130 @@ function applyCreatorProvidedToIntake(response) {
       state.recentPostHeadersByCreator[creator.creator_id] = Object.keys(posts[0]);
     }
   });
+}
+
+// --- Market news signals (slimmed-C step (b): public Google News RSS panel) ---
+// Market signals only — these rows never become creator workflow inputs.
+
+function selectedDiscoveryCountries() {
+  const select = byId("discoveryCountries");
+  const chosen = select
+    ? Array.from(select.selectedOptions).map((option) => option.value)
+    : [];
+  return chosen.length ? chosen : ["MX", "PE", "EC"];
+}
+
+async function loadNewsSignals() {
+  const countries = selectedDiscoveryCountries();
+  const productCategories = [byId("discoveryProduct")?.value || "sunscreen"];
+  try {
+    const response = await window.BriwellApi.fetchNewsSignals({
+      countries,
+      productCategories,
+      maxItemsPerQuery: 5,
+    });
+    state.newsSignals = response;
+    renderNewsSignals();
+    showToast(
+      response.mode === "live"
+        ? `뉴스 신호 ${response.item_count || 0}건 (라이브)`
+        : `뉴스 신호 샘플 ${response.item_count || 0}건 (드라이런)`
+    );
+  } catch (error) {
+    if (error.payload) {
+      state.newsSignals = error.payload;
+      renderNewsSignals();
+      return;
+    }
+    state.newsSignals = buildLocalNewsSignals(countries, productCategories);
+    renderNewsSignals();
+    showToast("뉴스 신호 미리보기 · API 오프라인");
+  }
+}
+
+// Mirrors the server dry-run shape so the offline panel is clearly labeled
+// sample data rather than pretending headlines were fetched.
+function buildLocalNewsSignals(countries, productCategories) {
+  const marketNames = { MX: "Mexico", PE: "Peru", EC: "Ecuador" };
+  const items = countries.flatMap((country) => [
+    {
+      title: `[샘플] Tendencias K-beauty en ${marketNames[country] || country}: rutinas coreanas en alza`,
+      url: "https://news.google.com/",
+      source: "로컬 미리보기 샘플",
+      published_at: null,
+      country,
+      product_category: productCategories[0] || "sunscreen",
+      query: `k-beauty ${marketNames[country] || country}`,
+    },
+  ]);
+  return {
+    status: "local_preview",
+    mode: "preview",
+    source_type: "public_news_rss",
+    item_count: items.length,
+    query_count: countries.length,
+    items,
+    live_blockers: ["API offline"],
+    errors: [],
+  };
+}
+
+function renderNewsSignals() {
+  const meta = byId("newsSignalsMeta");
+  const list = byId("newsSignalsList");
+  if (!meta || !list) return;
+  const signals = state.newsSignals;
+  if (!signals) {
+    meta.innerHTML = "";
+    list.innerHTML = `<p class="muted">뉴스 신호를 불러오면 시장 헤드라인이 표시됩니다.</p>`;
+    return;
+  }
+
+  const modeBadge =
+    signals.mode === "live"
+      ? '<span class="badge green">라이브 RSS</span>'
+      : signals.mode === "dry_run"
+        ? '<span class="badge amber">드라이런 샘플</span>'
+        : '<span class="badge amber">라이브 아님 · 미리보기/오류</span>';
+  const blockerNote = (signals.live_blockers || []).length
+    ? `<span class="muted">라이브 게이트: ${escapeHtml((signals.live_blockers || []).join(" · "))}</span>`
+    : "";
+  meta.innerHTML = `
+    <div class="news-signal-summary">
+      ${modeBadge}
+      <span>쿼리 ${escapeHtml(String(signals.query_count ?? 0))}개 · 헤드라인 ${escapeHtml(String(signals.item_count ?? 0))}건</span>
+      ${blockerNote}
+    </div>
+  `;
+
+  const items = signals.items || [];
+  if (!items.length) {
+    list.innerHTML = `<p class="muted">표시할 헤드라인이 없습니다${
+      (signals.errors || []).length ? ` · 오류 ${signals.errors.length}건` : ""
+    }.</p>`;
+    return;
+  }
+  list.innerHTML = items
+    .map(
+      (item) => `
+      <article class="news-signal-item">
+        <a href="${escapeHtml(safeExternalUrl(item.url))}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a>
+        <small>
+          <span class="badge blue">${escapeHtml(formatMarket(item.country))}</span>
+          ${escapeHtml(item.source || "출처 미상")}${item.published_at ? ` · ${escapeHtml(item.published_at)}` : ""}
+          · ${escapeHtml(item.query || "")}
+        </small>
+      </article>
+    `
+    )
+    .join("");
+}
+
+// Feed URLs are external input: only allow http(s) link targets so a hostile
+// RSS entry can never smuggle a javascript:/data: href into the panel.
+function safeExternalUrl(url) {
+  const text = String(url || "").trim();
+  return /^https?:\/\//i.test(text) ? text : "#";
 }
 
 async function runRecentScreenForCreator(creatorId) {

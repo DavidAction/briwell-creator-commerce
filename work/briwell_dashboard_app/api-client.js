@@ -99,6 +99,12 @@
     importCreators: (body) => request("/creators/import", { method: "POST", body }),
     importVideos: (body) => request("/videos/import", { method: "POST", body }),
     importCreatorProvided: (body) => request("/providers/creator-provided/import", { method: "POST", body }),
+    fetchNewsSignals: ({ countries, productCategories, maxItemsPerQuery }) =>
+      request(
+        `/trends/news?countries=${encodeURIComponent(countries.join(","))}` +
+          `&product_categories=${encodeURIComponent(productCategories.join(","))}` +
+          `&max_items_per_query=${encodeURIComponent(maxItemsPerQuery || 5)}`
+      ),
     listCampaigns: (params) => request(`/campaigns${toQuery(params)}`),
     createCampaign: (body) => request("/campaigns", { method: "POST", body }),
     createDiscoveryPlan: (body) => request("/discovery/plans", { method: "POST", body }),

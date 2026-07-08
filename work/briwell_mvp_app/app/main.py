@@ -34,6 +34,7 @@ from app.routers import (
     providers,
     settlements,
     shopify_webhooks,
+    trends,
     videos,
 )
 
@@ -179,5 +180,6 @@ app.include_router(providers.router)
 app.include_router(settlements.router)
 app.include_router(commerce.router)
 app.include_router(shopify_webhooks.router)
+app.include_router(trends.router)
 app.include_router(ops.router)
 app.include_router(operations.router)

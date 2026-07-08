@@ -135,6 +135,23 @@ assert(/WRITE_CONFIRM_ALLOWLIST = \[[\s\S]*?"\/providers\/creator-provided\/impo
 assert(files.cpProfileTemplate.includes("consent_ref") && files.cpProfileTemplate.includes("provided_at"), "profile template missing consent columns");
 assert(files.cpPostsTemplate.includes("consent_ref") && files.cpPostsTemplate.includes("provided_at"), "posts template missing consent columns");
 
+// --- Market news signals panel (slimmed-C step (b): public Google News RSS) ---
+assert(files.html.includes("시장 뉴스 신호 (공개 RSS)"), "news signal panel missing from discovery view");
+assert(files.html.includes('id="loadNewsSignalsButton"'), "news signal load button missing");
+assert(files.html.includes('id="newsSignalsList"'), "news signal list mount missing");
+assert(files.html.includes("크리에이터 데이터 아님"), "news panel must state items are market signals, not creator data");
+assert(files.app.includes("loadNewsSignals"), "news signal loader missing");
+assert(files.app.includes("renderNewsSignals"), "news signal renderer missing");
+assert(files.app.includes("buildLocalNewsSignals"), "news signal offline fallback missing");
+assert(files.app.includes("드라이런 샘플"), "dry-run news signals must be labeled as samples");
+assert(files.client.includes("fetchNewsSignals"), "news signal API client method missing");
+assert(files.css.includes(".news-signal-item"), "news signal styling missing");
+// External headlines open in a new tab without opener access, and hostile feed
+// URLs (javascript:/data:) must never become clickable hrefs.
+assert(/news-signal-item[\s\S]{0,200}?rel="noopener noreferrer"/.test(files.app), "news links must use rel=noopener");
+assert(files.app.includes("function safeExternalUrl("), "external URL scheme guard missing");
+assert(files.app.includes("safeExternalUrl(item.url)"), "news link hrefs must pass through the scheme guard");
+
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");
 assert(files.app.includes("bearerTokenInput"), "settings save must include the bearer token");
