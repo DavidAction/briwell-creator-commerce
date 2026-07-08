@@ -80,8 +80,10 @@ scripts/
 tests/
   test_policy.py
 .env.production.example
-render.yaml
 ```
+
+The Render blueprint lives at the repository root (`render.yaml`) because Render
+only detects blueprints there; it points at this directory via `rootDir`.
 
 ## Local Setup
 
@@ -180,16 +182,18 @@ Production configuration template:
 Production readiness requires managed PostgreSQL, OIDC auth, managed secrets,
 backup/restore evidence, rate limiting, and provider keys.
 
-Render deployment scaffold:
+Render deployment scaffold (repository root):
 
 ```text
-render.yaml
+../../render.yaml
 ```
 
-The Render blueprint deploys the FastAPI API as a Python web service, runs
+The Render blueprint deploys the FastAPI API as a Python web service with a
+managed Render Postgres (`DATABASE_URL` injected via `fromDatabase`), runs
 production readiness checks, applies migrations/seeds, and starts Uvicorn.
 Set the `sync: false` environment variables in Render from Supabase, Gemini,
-and the backup/restore verification record before first production deploy.
+Shopify, and the backup/restore verification record before first production
+deploy. Full sequence: `docs/DEPLOY_RENDER.md` at the repository root.
 
 Dashboard CORS origins must also be configured:
 

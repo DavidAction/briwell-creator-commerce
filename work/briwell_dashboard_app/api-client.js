@@ -22,8 +22,14 @@
     if (nextConfig.email) {
       localStorage.setItem("briwell.email", nextConfig.email);
     }
-    if (nextConfig.bearerToken) {
-      localStorage.setItem("briwell.bearerToken", nextConfig.bearerToken);
+    if (typeof nextConfig.bearerToken === "string") {
+      // An explicit empty string clears a previously saved token (log out of
+      // the production API); undefined leaves the stored token untouched.
+      if (nextConfig.bearerToken) {
+        localStorage.setItem("briwell.bearerToken", nextConfig.bearerToken);
+      } else {
+        localStorage.removeItem("briwell.bearerToken");
+      }
     }
   }
 

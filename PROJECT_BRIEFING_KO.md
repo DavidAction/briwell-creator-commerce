@@ -187,6 +187,46 @@ defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 
 ⚠️ **잔여(코드 밖, 0.0.9와 동일)**: Shopify 스토어/커스텀 앱 생성 → `.env` 시크릿 → preflight
 통과 확인 → 웹훅 등록 → 테스트 주문 검증. 계정 생기면 `docs/SHOPIFY_GOLIVE.md` 순서대로.
 
+## 0.0.11 라이브 전환 준비 1차 + 파생 수치 정직화 (2026-07-08) — 테스트 360 통과/26 스킵
+
+**배경 — C(트렌드 탭) 착수 전 비판 평가로 우선순위 재배열.** 평가 결론: (1) 트렌드 탭
+tier-1만으로는 핵심 패널(모멘텀 크리에이터 테이블)이 채워지지 않음 — `creator_provided`는
+운영자 API 임포트 계약일 뿐 크리에이터 제출 채널이 없고, 실제 아웃리치 0건이라 "탭→발굴→
+아웃리치→관계→데이터→탭" 순환 의존. 뉴스 RSS는 시장 신호이지 크리에이터 모멘텀이 아님.
+0.0.8의 목업도 리포에 미커밋. (2) 전체 병목은 발굴 폭이 아니라 **라이브 전환**(공개 배포·
+관리형 DB·OIDC) — Shopify go-live 런북 스스로 공개 HTTPS+DB를 전제하는데 로드맵 A의 해당
+항목들이 계속 밀려 있었음. 재배열: ① 라이브 전환 인프라 → ② 수동 리서치 실데이터 파일럿
+(플레이북 Low/Medium 경로, 기존 인테이크 화면으로 충분) → ③ C 축소판(제출 채널→뉴스 패널→
+풀 탭은 실데이터 유입 후). 이번 세션 = ①의 코드 부분 + 파생 수치 정직화.
+
+**A. Render 배포 준비 (계정 불필요 부분 완료)**
+1. `render.yaml`을 **리포 루트로 이전**(Render 블루프린트는 루트만 인식; `rootDir:
+   work/briwell_mvp_app`). 기존 위치(work/briwell_mvp_app/render.yaml)는 블루프린트로
+   감지되지 않는 배포 불능 상태였음.
+2. **SHOPIFY_* 환경변수 7종 추가** — 기존 블루프린트는 0.0.7 Shopify 통합 이전 작성이라
+   전무했음(그대로 배포 시 웹훅 전부 503). dry-run 이중 게이트 기본값으로 fail-closed.
+3. 관리형 Postgres 블록(`briwell-postgres`, basic-256mb — 무료 티어는 30일 만료) +
+   `DATABASE_URL`을 `fromDatabase`로 주입. `PYTHON_VERSION=3.14.4` 명시.
+4. **`docs/DEPLOY_RENDER.md` 런북 신설**: Supabase OIDC(비대칭 JWT 서명키 필수·role claim
+   SQL)→백업/복원 증빙(BACKUP_RESTORE_TESTED_AT 게이트)→블루프린트 배포(sync:false 표)→
+   검증 curl→대시보드 연결→Shopify 연계→롤백. README/orchestration 참조 경로 갱신.
+
+**B. OIDC 배선 1단계 (대시보드)**
+1. 연결 설정 드로어에 **Bearer 토큰(OIDC) 필드** 추가 — api-client에 bearerToken 지원
+   (스토리지→`Authorization` 헤더)이 이미 있었는데 입력 UI가 없던 갭 해소. 빈 값 저장 시
+   저장된 토큰 삭제(로그아웃). 저장/삭제 브라우저 검증 완료.
+2. 프로덕션 API는 헤더 RBAC를 readiness가 차단하므로 이 필드가 배포 후 대시보드 사용의
+   전제. 풀 로그인 플로우(Supabase JS)는 후속 작업.
+
+**C. 파생 수치 정직화 (경영 화면 — "그럴듯한 가짜" 방지)**
+1. `추정` 태그(.derived-tag): GMV 예측 카드 + 캠페인 퍼널의 전환율 파생 단계(브랜드세이프
+   fallback·승인·응답). `buildCampaignFunnel()`이 stage별 `derived` 플래그 반환 — 실측
+   브랜드세이프 카운트가 생기면 해당 태그 자동 소멸.
+2. 각주(.derived-note): 메트릭 스파크라인·전기 대비 %(현재 값 기반 대표 형상임을 명시),
+   GMV 추이 히어로("추정 곡선"), 퍼널(전환율 65/70/35 명시 + 실카운트 단계 구분). 히어로
+   델타 배지도 "추정 전기 대비"로 변경.
+3. 스모크 회귀 단정 추가, 브라우저 검증 완료.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**
@@ -294,7 +334,7 @@ b2b-b2c-1-dm/
 ├─ outputs/                   27개 산출 문서(PRD·감사·리뷰·템플릿·SQL)
 ├─ docs/                      핸드오프·개발 노트
 ├─ HANDOFF.md / README.md     외부 개발자/AI 인계 문서
-└─ render.yaml                Render.com 배포 설정(예정)
+└─ render.yaml                Render 블루프린트(API+관리형 Postgres, 0.0.11에서 루트로 이전)
 ```
 
 ### 핵심 업무 흐름 (의도된 가치 루프)
@@ -333,7 +373,7 @@ b2b-b2c-1-dm/
 - 백엔드: **FastAPI** + Pydantic v2, psycopg(PostgreSQL), httpx, PyJWT(OIDC용), uvicorn
 - DB: **PostgreSQL 17.10**(로컬은 포터블, 프로덕션은 managed 예정)
 - 프론트: 순수 HTML/CSS/JS(빌드 없음) + 스모크 테스트(node)
-- 배포(예정): **Render.com**(`render.yaml`), Supabase Auth/OIDC(예정)
+- 배포(준비 완료, 실행 대기): **Render.com**(루트 `render.yaml` 블루프린트 + `docs/DEPLOY_RENDER.md` 런북), Supabase Auth/OIDC(런북 1단계)
 
 ---
 

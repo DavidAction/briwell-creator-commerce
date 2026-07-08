@@ -880,7 +880,7 @@ def _build_handoff_package_section() -> dict[str, Any]:
             "work/briwell_mvp_app/README.md",
             "work/briwell_dashboard_app/README.md",
             "work/briwell_mvp_app/.env.example",
-            "work/briwell_mvp_app/render.yaml",
+            "render.yaml",
         ],
         "verification_commands": [
             "cd work/briwell_mvp_app && .venv\\Scripts\\python.exe -m pytest -q",

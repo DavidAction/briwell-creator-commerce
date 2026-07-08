@@ -1,7 +1,17 @@
+# Render Blueprint for the Briwell API + managed PostgreSQL.
+#
+# Blueprint files are only detected at the repository root; the API itself
+# lives in work/briwell_mvp_app (see rootDir). Deploy steps: docs/DEPLOY_RENDER.md.
+#
+# Every `sync: false` key must be filled in the Render dashboard before the
+# first deploy — the preDeployCommand readiness gate fails closed (exit 1)
+# until production config is complete, so a half-configured service never boots.
+
 services:
   - type: web
     name: briwell-api
     runtime: python
+    rootDir: work/briwell_mvp_app
     plan: starter
     region: virginia
     buildCommand: pip install -r requirements.txt
@@ -10,6 +20,8 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: checksPass
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.4
       - key: APP_ENV
         value: production
       - key: APP_NAME
@@ -17,7 +29,9 @@ services:
       - key: USE_DATABASE
         value: "true"
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: briwell-postgres
+          property: connectionString
       - key: MANAGED_SECRET_PROVIDER
         value: render_environment
       - key: AUTH_PROVIDER
@@ -67,3 +81,30 @@ services:
         value: "true"
       - key: BACKUP_RESTORE_TESTED_AT
         sync: false
+      # --- Shopify integration (briefing 0.0.7; docs/SHOPIFY_GOLIVE.md) ---
+      # Webhook receivers fail closed (503) until SHOPIFY_WEBHOOK_SECRET is set,
+      # and discount issuance stays in dry-run until the dual gate below is
+      # opened at go-live step 5. Safe to deploy before the Shopify store exists.
+      - key: SHOPIFY_SHOP_DOMAIN
+        sync: false
+      - key: SHOPIFY_ADMIN_API_TOKEN
+        sync: false
+      - key: SHOPIFY_API_VERSION
+        value: "2026-01"
+      - key: SHOPIFY_WEBHOOK_SECRET
+        sync: false
+      - key: SHOPIFY_FX_RATES
+        sync: false
+      - key: SHOPIFY_DRY_RUN
+        value: "true"
+      - key: ALLOW_LIVE_SHOPIFY_CALLS
+        value: "false"
+
+databases:
+  # Managed Postgres for the pilot. basic-256mb (not free) because Render's
+  # free Postgres expires after 30 days; fits the approved $80-140/mo budget.
+  - name: briwell-postgres
+    plan: basic-256mb
+    region: virginia
+    databaseName: briwell
+    user: briwell

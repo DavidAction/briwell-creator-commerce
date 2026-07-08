@@ -914,6 +914,34 @@ textarea:focus-visible {
   min-height: 84px;
 }
 
+/* Derived/estimated figure markers: keep estimates visually distinct from
+   measured counts so preview-formula numbers never read as real data. */
+.derived-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--subtle);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.derived-note {
+  margin: 6px 0 14px;
+  color: var(--subtle);
+  font-size: 11.5px;
+}
+
+.gmv-trend-legend .derived-note {
+  margin: 0 0 0 auto;
+}
+
 .gmv-trend-chart {
   display: block;
   width: 100%;

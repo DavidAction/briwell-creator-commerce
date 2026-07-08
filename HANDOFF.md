@@ -11,14 +11,16 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state:** backend `360 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
-1. Per-screen KPI metric strips on candidates/tracking/settlement (`renderScreenKpis()` + per-screen builders). All numbers are real-data anchored: candidates derive from `buildCommandMetrics()`, tracking/settlement aggregate session write logs (`state.sessionSnapshots`/`sessionContracts`/`sessionDiscountCodes`) that only count completed writes (cancelled and API-rejected writes are excluded). Payout table and settlement KPIs share one source (`PAYOUT_ROWS`). Dashboard Phase 3 is now complete.
-2. Shopify go-live preflight: `scripts/shopify_golive_preflight.py` — executable checklist for runbook step 2 (domain/token/webhook secret/API version/FX incl. MXN·PEN coverage/DB/live gates), zero network calls, `--json` mode, cp949-safe output. Referenced from `docs/SHOPIFY_GOLIVE.md` step 2. 6 pure-logic tests (354→360).
-3. `48b863f` Campaign execution funnel wired to live state (`buildCampaignFunnel()`), replacing hardcoded 24/14/9/6/2.
-4. `5cf7a7d`/`d5b387b` Dashboard Phase 3 pass 1 + real Shopify integration (HMAC webhook receivers, gated Admin API discount issuance) + `scripts/register_shopify_webhooks.py` + `docs/SHOPIFY_GOLIVE.md`.
+1. Live-transition prep (briefing 0.0.11): `render.yaml` moved to the repo root (Render only detects root blueprints; `rootDir` points at the app), SHOPIFY_* env vars added (the old blueprint predated the Shopify integration — deploying it would have 503'd every webhook), managed Postgres block with `DATABASE_URL` via `fromDatabase`, and a full deploy runbook `docs/DEPLOY_RENDER.md` (Supabase OIDC → backup evidence → blueprint → verify → dashboard hookup). Dashboard settings drawer gained a Bearer-token (OIDC) field — production rejects header RBAC, so this is how the dashboard talks to a deployed API until a full login flow exists.
+2. Derived-figure honesty markers (briefing 0.0.11): `추정` tags + footnotes on the GMV forecast card, ratio-derived funnel stages (auto-clears when real brand-safe counts exist), representative-shape sparklines, and the GMV trend hero.
+3. Per-screen KPI metric strips on candidates/tracking/settlement, all real-data anchored via session write logs (cancelled/API-rejected writes excluded). Dashboard Phase 3 complete.
+4. Shopify go-live preflight `scripts/shopify_golive_preflight.py` (executable checklist for runbook step 2, zero network calls) + earlier Shopify integration/funnel work (briefing 0.0.7–0.0.10).
 
-**Next candidates (pick one):**
-- **B. Shopify go-live (ops, not code — blocked on David creating a Shopify account/store)** — CODE + TOOLING READY, dry-run paths verified 2026-07-08. When the account exists, follow `docs/SHOPIFY_GOLIVE.md`: create the custom app, set `SHOPIFY_*` secrets in `.env`, run `python -m scripts.shopify_golive_preflight` until nothing is MISSING, register webhooks, verify with a test order.
-- **C. Trend-signal tab for Creator Search** — DESIGNED + MOCKUP APPROVED-FOR-REVIEW, not built. A "트렌드" sub-tab under Creator Search surfacing rising creators/formats. Tier-1 sources = `creator_provided` intake + public Google-News RSS (both legal, buildable today); tier-2 = official TikTok/IG APIs (skeleton exists) and licensed vendors (Data365/BrightData), which light up the same UI later. Building tier-1 doubles as real-data inflow (roadmap priority 2). See briefing 0.0.8. **This is the main remaining code work.**
+**Priority order (re-evaluated 2026-07-08, briefing 0.0.11 배경 — do not silently reorder):**
+1. **Deploy (ops — needs David's Render + Supabase accounts)**: follow `docs/DEPLOY_RENDER.md`. Blueprint and runbook are ready; the readiness gate fails closed until config is complete.
+2. **Real-data pilot without new code**: manually research 10–20 real LATAM creators via the playbook's Low/Medium-risk lanes (`outputs/briwell_pilot_operations_playbook_v0.md`) and register them through the existing intake screens; execute at least one manual outreach. This is roadmap priority 2 — it does not need the trend tab.
+3. **C slimmed down (code, in order)**: (a) creator_provided submission channel (form spec or email+CSV template) — the real prerequisite for trend signals; (b) news-RSS panel on the existing discovery screen; (c) full trend tab only after real data flows. Full-tab design notes in briefing 0.0.8; the 0.0.8 mockup was never committed.
+4. **Shopify go-live (ops — blocked on Shopify account)**: `docs/SHOPIFY_GOLIVE.md` + `python -m scripts.shopify_golive_preflight`.
 
 **Compliance decision on record (do NOT re-litigate):** the user asked twice to port the local `trend-viewer` tool's TikTok collection, which relies on `tikwm` — a third-party proxy that bypasses TikTok's X-Bogus/msToken signing and TLS-fingerprint anti-bot controls. This was declined: it violates the non-negotiable constraints below (unauthorized scraping / anti-bot bypass), which are enforced in `app/core/policy.py`, and it is a real business risk (platform bans, third-party dependency). The trend feature is being delivered via legal source lanes instead. A prior session (briefing §0.3) already made the same call.
 
@@ -117,13 +119,15 @@ python -m http.server 8070
 
 ## Production Notes
 
-Current production blockers:
+Current production blockers (deploy-ready as of 2026-07-08 — the root `render.yaml`
+blueprint plus `docs/DEPLOY_RENDER.md` resolve 1–2 and most of 3–5 once executed;
+blocked only on Render/Supabase accounts):
 
-1. Managed DB is not yet connected.
-2. Secret manager is not yet configured.
-3. OAuth/OIDC is scaffolded but not wired to a live dashboard login flow.
-4. Backup automation and restore-test evidence are not productionized.
-5. Rate limit and monitoring are not productionized.
+1. Managed DB is not yet connected (blueprint provisions `briwell-postgres`).
+2. Secret manager is not yet configured (blueprint uses Render env vars, `sync: false`).
+3. OIDC is scaffolded and the dashboard can send a Bearer token (settings drawer), but there is no full login flow yet.
+4. Backup automation and restore-test evidence are not productionized (runbook step 2 gates on it).
+5. Rate limit is enabled in the blueprint; monitoring/alerting is still open.
 
 ## Git Workflow
 

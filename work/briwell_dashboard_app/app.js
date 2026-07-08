@@ -164,6 +164,8 @@ function hydrateConfigControls() {
   const config = window.BriwellApi.readConfig();
   byId("apiBaseInput").value = config.apiBase;
   byId("roleSelect").value = config.role;
+  const bearerInput = byId("bearerTokenInput");
+  if (bearerInput) bearerInput.value = config.bearerToken || "";
   const recentScreenMode = byId("recentScreenMode");
   if (recentScreenMode) {
     recentScreenMode.value = localStorage.getItem("briwell.recentScreenMode") || "dry_run";
@@ -237,6 +239,7 @@ function bindActions() {
     window.BriwellApi.saveConfig({
       apiBase: byId("apiBaseInput").value.trim(),
       role: byId("roleSelect").value,
+      bearerToken: byId("bearerTokenInput")?.value.trim() ?? "",
     });
     refreshFromApi();
   });
@@ -448,7 +451,8 @@ function renderGmvTrendHero(metrics) {
     const first = gmvSeries[0] || 0;
     const last = gmvSeries[gmvSeries.length - 1] || 0;
     const changePercent = first ? Math.round(((last - first) / first) * 100) : 0;
-    deltaBadge.textContent = `전기 대비 ${changePercent >= 0 ? "+" : ""}${changePercent}%`;
+    deltaBadge.textContent = `추정 전기 대비 ${changePercent >= 0 ? "+" : ""}${changePercent}%`;
+    deltaBadge.title = "실측 이력 축적 전 대표 형상 곡선 기반 추정치";
   }
 }
 
@@ -464,12 +468,15 @@ function buildCampaignFunnel() {
   const brandSafe = Object.values(state.recentScreenResults).filter((result) =>
     ["fit", "monitor"].includes(result.suitability_decision)
   ).length;
+  // derived=true marks counts produced by assumed conversion ratios rather
+  // than observed pipeline state; the renderer surfaces this as an 추정 tag
+  // so operators never mistake a ratio-derived stage for a measured one.
   const stages = [
-    { label: "숏리스트", count: shortlist },
-    { label: "초안 작성", count: screened },
-    { label: "브랜드 세이프", count: brandSafe || Math.round(screened * 0.65) },
-    { label: "승인", count: Math.round((brandSafe || screened * 0.65) * 0.7) },
-    { label: "응답", count: Math.round((brandSafe || screened * 0.65) * 0.7 * 0.35) },
+    { label: "숏리스트", count: shortlist, derived: false },
+    { label: "초안 작성", count: screened, derived: false },
+    { label: "브랜드 세이프", count: brandSafe || Math.round(screened * 0.65), derived: !brandSafe },
+    { label: "승인", count: Math.round((brandSafe || screened * 0.65) * 0.7), derived: true },
+    { label: "응답", count: Math.round((brandSafe || screened * 0.65) * 0.7 * 0.35), derived: true },
   ];
   // Enforce monotonic non-increasing counts (each stage <= previous).
   for (let i = 1; i < stages.length; i += 1) {
@@ -489,10 +496,18 @@ function renderCampaignFunnel() {
   container.innerHTML = stages
     .map(
       (stage) =>
-        `<div style="--stage:${stage.percent}%"><strong>${stage.count}</strong>` +
-        `<span>${stage.label}</span><em>${stage.percent}%</em></div>`
+        `<div style="--stage:${stage.percent}%"><strong>${stage.count}${
+          stage.derived ? '<i class="derived-tag" title="문서화된 전환율로 파생한 추정치 (실측 아님)">추정</i>' : ""
+        }</strong>` + `<span>${stage.label}</span><em>${stage.percent}%</em></div>`
     )
     .join("");
+  const note = byId("campaignFunnelNote");
+  if (note) {
+    const derivedLabels = stages.filter((stage) => stage.derived).map((stage) => stage.label);
+    note.textContent = derivedLabels.length
+      ? `추정 = 문서화된 전환율(65%/70%/35%)로 파생: ${derivedLabels.join(", ")} · 숏리스트·초안은 실카운트`
+      : "전 단계 실측 카운트";
+  }
 }
 
 function renderCommerceCommand() {

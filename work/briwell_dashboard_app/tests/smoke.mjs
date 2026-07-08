@@ -101,6 +101,22 @@ assert(
   "session recorders must only fire on the offline preview fallback, not on API rejections"
 );
 
+// --- Derived-figure honesty markers: estimates must never read as measured data ---
+assert(files.css.includes(".derived-tag"), "derived tag styling missing");
+assert(files.css.includes(".derived-note"), "derived note styling missing");
+assert(files.html.includes("파이프라인 GMV 예측 <i class=\"derived-tag\""), "GMV forecast metric must carry the 추정 tag");
+assert(files.html.includes('id="campaignFunnelNote"'), "campaign funnel derived-note mount missing");
+assert(files.html.includes("추정 곡선 · 실측 매출 이력 축적 전 대표 형상"), "GMV trend hero derived disclaimer missing");
+assert(files.html.includes("현재 값 기반 대표 형상입니다"), "sparkline derived footnote missing");
+assert(/derived:\s*!brandSafe/.test(files.app), "brand-safe funnel stage must flag ratio-derived counts");
+assert(files.app.includes('stage.derived ? \'<i class="derived-tag"'), "funnel renderer must tag derived stages");
+assert(files.app.includes("추정 전기 대비"), "GMV hero delta badge must be labeled as an estimate");
+
+// --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
+assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");
+assert(files.app.includes("bearerTokenInput"), "settings save must include the bearer token");
+assert(files.client.includes('localStorage.removeItem("briwell.bearerToken")'), "clearing the bearer token field must remove the stored token");
+
 assert(files.html.includes("Briwell Creator Commerce Intelligence"), "missing global dashboard title");
 assert(files.html.includes("글로벌 MCN 운영 콘솔"), "missing Korean executive positioning copy");
 assert(files.html.includes("오늘 처리해야 할 최고 우선순위 액션"), "missing Korean operator action copy");
