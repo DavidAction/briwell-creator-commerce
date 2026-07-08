@@ -29,6 +29,7 @@ const state = {
   recallSafeguards: buildPreviewRecallSafeguards(),
   keywordPlaybook: null,
   tiktokProviderRun: null,
+  creatorProvidedRun: null,
   creators: [
     {
       creator_id: "creator-1",
@@ -119,7 +120,14 @@ const state = {
   ],
 };
 
-const WRITE_CONFIRM_ALLOWLIST = ["/outreach/claims-check", "/operations/outreach-crm/board"];
+// creator-provided/import is pure compute: the provider only normalizes the
+// uploaded rows and returns import payloads — persistence happens later via
+// the gated /creators/import and /videos/import write actions.
+const WRITE_CONFIRM_ALLOWLIST = [
+  "/outreach/claims-check",
+  "/operations/outreach-crm/board",
+  "/providers/creator-provided/import",
+];
 const WRITE_CONFIRM_SUPPRESS_KEY = "briwell.writeConfirmSuppressUntil";
 const WRITE_CONFIRM_SUPPRESS_MS = 10 * 60 * 1000;
 
@@ -247,6 +255,9 @@ function bindActions() {
   byId("runDiscoveryButton").addEventListener("click", runDiscoveryPlan);
   byId("loadKeywordPlaybookButton").addEventListener("click", loadKeywordPlaybook);
   byId("runTiktokProviderButton").addEventListener("click", runTiktokProviderDiscovery);
+  byId("copyCreatorRequestButton").addEventListener("click", copyCreatorRequestText);
+  byId("previewCreatorProvidedButton").addEventListener("click", previewCreatorProvided);
+  byId("runCreatorProvidedButton").addEventListener("click", runCreatorProvidedImport);
   byId("saveCampaignButton").addEventListener("click", saveCampaign);
   byId("prepareDraftsButton").addEventListener("click", prepareDrafts);
   byId("claimsCheckButton").addEventListener("click", runClaimsCheck);
@@ -1815,6 +1826,253 @@ async function importVideos() {
   showToast(`최근 게시물 ${posts.length}개 연결됨`);
 }
 
+// --- creator_provided submission channel (briefing 0.0.8 → slimmed-C step (a)) ---
+// Creators fill the two CSV templates; the operator adds consent_ref/provided_at,
+// uploads here, and the rows are normalized through the creator_provided provider
+// (pure compute) before flowing into the standard intake/import machinery.
+
+function copyCreatorRequestText() {
+  const textarea = byId("creatorRequestText");
+  if (!textarea) return;
+  const copyText = textarea.value;
+  const done = () => showToast("스페인어 요청문 복사됨 · 수동 발송만 허용");
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(copyText).then(done, () => fallbackCopy(textarea, done));
+  } else {
+    fallbackCopy(textarea, done);
+  }
+}
+
+function fallbackCopy(textarea, done) {
+  textarea.focus();
+  textarea.select();
+  try {
+    document.execCommand("copy");
+    done();
+  } catch (_error) {
+    showToast("복사 실패 · 텍스트를 직접 선택해 주세요");
+  }
+}
+
+function numOrNull(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+  const numeric = Number(text);
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
+async function parseCreatorProvidedFiles() {
+  const profileRows = parseCsv(await readFileInput("cpProfileCsvInput"));
+  let postRows = [];
+  if (byId("cpPostsCsvInput")?.files?.length) {
+    postRows = parseCsv(await readFileInput("cpPostsCsvInput"));
+  }
+
+  const issues = [];
+  const warnings = [];
+
+  // The provider truncates at max_results (cap 50); block instead of silently
+  // dropping submissions past the cap.
+  if (profileRows.length > 50) {
+    issues.push(`프로필 행 ${profileRows.length}개 — 한 번에 최대 50명까지만 처리됩니다. 파일을 나눠 주세요.`);
+  }
+
+  const creators = profileRows.map((row, index) => {
+    const label = row.username ? `@${String(row.username).replace(/^@/, "")}` : `프로필 행 ${index + 2}`;
+    if (!String(row.username || "").trim()) issues.push(`${label}: username 누락`);
+    if (!String(row.country || "").trim()) issues.push(`${label}: country 누락`);
+    if (!String(row.consent_ref || "").trim()) issues.push(`${label}: consent_ref(동의 참조) 누락`);
+    if (!String(row.provided_at || "").trim()) issues.push(`${label}: provided_at(수신 시각) 누락`);
+    return {
+      provider_creator_id: String(row.provider_creator_id || "").trim() || undefined,
+      country: normalizeCountry(row.country),
+      username: String(row.username || "").replace(/^@/, "").trim(),
+      display_name: String(row.display_name || "").trim() || undefined,
+      profile_url: String(row.profile_url || "").trim() || undefined,
+      profile_image_url: String(row.profile_image_url || "").trim() || undefined,
+      bio: String(row.bio || "").trim() || undefined,
+      follower_count: numOrNull(row.follower_count),
+      avg_views: numOrNull(row.avg_views),
+      engagement_rate: numOrNull(row.engagement_rate),
+      product_category: String(row.product_category || "").trim() || undefined,
+      signals: splitList(row.signals),
+      consent_ref: String(row.consent_ref || "").trim(),
+      provided_at: String(row.provided_at || "").trim(),
+    };
+  });
+
+  const knownUsernames = new Set(creators.map((creator) => creator.username).filter(Boolean));
+  const videosByCreator = {};
+  let matchedPostCount = 0;
+  postRows.forEach((row, index) => {
+    const username = String(row.username || row.provider_creator_id || "").replace(/^@/, "").trim();
+    const label = username ? `@${username}` : `게시물 행 ${index + 2}`;
+    if (!username) {
+      issues.push(`${label}: username 누락`);
+      return;
+    }
+    if (!String(row.url || "").trim()) issues.push(`${label}: url 누락`);
+    if (!String(row.consent_ref || "").trim()) issues.push(`${label}: consent_ref(동의 참조) 누락`);
+    if (!String(row.provided_at || "").trim()) issues.push(`${label}: provided_at(수신 시각) 누락`);
+    if (!knownUsernames.has(username)) {
+      // The provider silently drops posts without a matching profile row; warn
+      // up front so the operator is never surprised by a lower video_count.
+      if (!warnings.includes(`${label}: 프로필 CSV에 없는 계정 — 게시물 제외됨`)) {
+        warnings.push(`${label}: 프로필 CSV에 없는 계정 — 게시물 제외됨`);
+      }
+      return;
+    }
+    matchedPostCount += 1;
+    (videosByCreator[username] = videosByCreator[username] || []).push({
+      url: String(row.url || "").trim(),
+      platform_video_id: String(row.platform_video_id || "").trim() || undefined,
+      caption: String(row.caption || "").trim() || undefined,
+      hashtags: splitList(row.hashtags),
+      posted_at: String(row.posted_at || "").trim() || null,
+      view_count: numOrNull(row.view_count),
+      like_count: numOrNull(row.like_count),
+      comment_count: numOrNull(row.comment_count),
+      share_count: numOrNull(row.share_count),
+      save_count: numOrNull(row.save_count),
+      duration_seconds: numOrNull(row.duration_seconds),
+      thumbnail_url: String(row.thumbnail_url || "").trim() || undefined,
+      transcript: String(row.transcript || "").trim() || undefined,
+      consent_ref: String(row.consent_ref || "").trim(),
+      provided_at: String(row.provided_at || "").trim(),
+    });
+  });
+
+  return { creators, videosByCreator, issues, warnings, matchedPostCount };
+}
+
+async function previewCreatorProvided() {
+  try {
+    const parsed = await parseCreatorProvidedFiles();
+    showResult("creatorProvidedResult", {
+      status: parsed.issues.length ? "consent_blocked" : "preview_ready",
+      creator_count: parsed.creators.length,
+      matched_post_count: parsed.matchedPostCount,
+      blockers: parsed.issues,
+      warnings: parsed.warnings,
+    });
+    showToast(
+      parsed.issues.length
+        ? `동의/필수값 누락 ${parsed.issues.length}건 · 정규화 불가`
+        : `크리에이터 ${parsed.creators.length}명 · 게시물 ${parsed.matchedPostCount}개 준비됨`
+    );
+  } catch (error) {
+    showResult("creatorProvidedResult", { status: "preview_failed", message: error.message });
+  }
+}
+
+async function runCreatorProvidedImport() {
+  let parsed;
+  try {
+    parsed = await parseCreatorProvidedFiles();
+  } catch (error) {
+    showResult("creatorProvidedResult", { status: "preview_failed", message: error.message });
+    return;
+  }
+  if (parsed.issues.length) {
+    showResult("creatorProvidedResult", {
+      status: "consent_blocked",
+      message: "모든 행에 consent_ref와 provided_at(및 username/country/url)이 필요합니다.",
+      blockers: parsed.issues,
+    });
+    showToast("동의 정보 누락 · 정규화 거부됨");
+    return;
+  }
+  if (!parsed.creators.length) {
+    showResult("creatorProvidedResult", { status: "empty", message: "프로필 CSV에 행이 없습니다." });
+    return;
+  }
+
+  const payload = {
+    max_results: Math.min(50, Math.max(1, parsed.creators.length)),
+    recent_posts_per_creator: 20,
+    payload: { creators: parsed.creators, videos_by_creator: parsed.videosByCreator },
+  };
+
+  try {
+    const response = await window.BriwellApi.importCreatorProvided(payload);
+    state.creatorProvidedRun = response;
+    applyCreatorProvidedToIntake(response);
+    showResult("creatorProvidedResult", response);
+    showToast(`크리에이터 제공 데이터 ${response.creator_count || 0}명 정규화 · 인테이크 반영됨`);
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("creatorProvidedResult", error.payload);
+      return;
+    }
+    if (error.payload) {
+      // API rejected the payload (e.g. validation) — nothing was normalized.
+      showResult("creatorProvidedResult", error.payload);
+      return;
+    }
+    const local = buildLocalCreatorProvidedRun(parsed);
+    state.creatorProvidedRun = local;
+    applyCreatorProvidedToIntake(local);
+    showResult("creatorProvidedResult", {
+      status: "local_preview_normalized",
+      creator_count: local.creator_count,
+      video_count: local.video_count,
+    });
+    showToast("미리보기 정규화 · API 오프라인");
+  }
+  renderAll();
+}
+
+// Mirrors the server-side creator_provided normalization closely enough for the
+// offline preview: same source labels, same provider_creator_id fallback.
+function buildLocalCreatorProvidedRun(parsed) {
+  const creators = parsed.creators.map((row) => ({
+    ...row,
+    provider: "creator_provided",
+    provider_creator_id: row.provider_creator_id || row.username,
+    source_type: "creator_provided",
+    source_risk_level: "low",
+  }));
+  const videosByCreator = {};
+  Object.entries(parsed.videosByCreator).forEach(([username, videos]) => {
+    const creator = creators.find((item) => item.username === username || item.provider_creator_id === username);
+    if (!creator) return;
+    videosByCreator[creator.provider_creator_id] = videos.slice(0, 20).map((video) => ({
+      ...video,
+      provider: "creator_provided",
+      provider_creator_id: creator.provider_creator_id,
+      creator_username: creator.username,
+      source_type: "creator_provided",
+      source_risk_level: "low",
+    }));
+  });
+  return {
+    status: "local_preview_normalized",
+    provider: "creator_provided",
+    mode: "preview",
+    source_type: "creator_provided",
+    creator_count: creators.length,
+    video_count: Object.values(videosByCreator).reduce((sum, items) => sum + items.length, 0),
+    creators,
+    videos_by_creator: videosByCreator,
+  };
+}
+
+// Route the normalized run into the standard intake state so the existing
+// quality gate, screening, and gated import buttons all apply unchanged.
+function applyCreatorProvidedToIntake(response) {
+  applyProviderRunToPreview(response);
+  const creators = (response.creators || []).map(normalizeProviderCreator);
+  if (!creators.length) return;
+  state.intakeCreators = creators;
+  state.intakeCreatorHeaders = Object.keys(creators[0]);
+  creators.forEach((creator) => {
+    const posts = state.recentPostsByCreator[creator.creator_id];
+    if (posts?.length) {
+      state.recentPostHeadersByCreator[creator.creator_id] = Object.keys(posts[0]);
+    }
+  });
+}
+
 async function runRecentScreenForCreator(creatorId) {
   const creator = state.creators.find((item) => item.creator_id === creatorId);
   const posts = (state.recentPostsByCreator[creatorId] || []).slice(0, 20);
@@ -2528,6 +2786,7 @@ function normalizeApiCreator(creator) {
 }
 
 function normalizeProviderCreator(creator) {
+  const isCreatorProvided = creator.provider === "creator_provided" || creator.source_type === "creator_provided";
   return normalizeApiCreator({
     ...creator,
     id: creator.creator_id || creator.provider_creator_id || stableCreatorId(creator.username || "creator"),
@@ -2540,16 +2799,27 @@ function normalizeProviderCreator(creator) {
     follower_count: creator.follower_count,
     avg_views: creator.avg_views,
     engagement_rate: creator.engagement_rate,
-    platform: "tiktok",
+    platform: creator.platform || platformFromProfileUrl(creator.profile_url),
     source_type: creator.source_type || "approved_provider",
     source_risk_level: creator.source_risk_level || "low_medium",
     final_score: providerPreviewScore(creator),
     risk_penalty: creator.source_risk_level === "low" ? 3 : 6,
-    segment: "provider_discovered",
-    signals: creator.kbeauty_fit_signals || [creator.matched_intent || "provider"],
+    segment: isCreatorProvided ? "creator_submitted" : "provider_discovered",
+    signals:
+      creator.kbeauty_fit_signals ||
+      (Array.isArray(creator.signals) && creator.signals.length ? creator.signals : [creator.matched_intent || "provider"]),
     recommended_products: [creator.product_category].filter(Boolean),
-    recommended_campaign_angle: `${formatProductCategory(creator.product_category)} creator found through ${creator.provider || "provider"} query "${creator.matched_query || ""}".`,
+    recommended_campaign_angle: isCreatorProvided
+      ? "크리에이터 본인 제공 데이터(동의 확보) 기반 후보 — 최근 20개 스크리닝으로 검증 필요"
+      : `${formatProductCategory(creator.product_category)} creator found through ${creator.provider || "provider"} query "${creator.matched_query || ""}".`,
   });
+}
+
+function platformFromProfileUrl(url) {
+  const text = String(url || "").toLowerCase();
+  if (text.includes("instagram.com")) return "instagram";
+  if (text.includes("youtube.com") || text.includes("youtu.be")) return "youtube";
+  return "tiktok";
 }
 
 function normalizeProviderVideo(video, creatorId) {

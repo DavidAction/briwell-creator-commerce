@@ -235,6 +235,33 @@ tier-1만으로는 핵심 패널(모멘텀 크리에이터 테이블)이 채워�
 주의 문구 추가. **재발 방지**: "모든 구현 작업 후 커밋 전 비판적 자가 검증" 상시 지침을
 HANDOFF 워킹 컨벤션·머신 훅·메모리에 등록(사용자 지시, 재요청 불필요).
 
+## 0.0.12 creator_provided 제출 채널 (2026-07-08) — C 축소판 1단계 완료
+
+우선순위 재배열(0.0.11 배경)의 코드 트랙 첫 항목. 크리에이터가 본인 데이터를 제출하는
+합법 유입 채널을 템플릿+대시보드로 구축 — 실데이터 파일럿(수동 아웃리치)과 맞물리는 전제.
+
+1. **제출 템플릿 2종** (`work/briwell_dashboard_app/templates/creator_provided_{profile,posts}_template.csv`)
+   — provider 계약(consent_ref·provided_at 포함)과 1:1. Excel 호환 위해 악센트 제거(기존 관례).
+2. **스페인어 요청문** `docs/CREATOR_DATA_REQUEST_ES.md` — DM용/이메일용 2종 + 동의 문구 +
+   운영자 체크리스트(consent_ref = 동의 메시지 참조, provided_at = 수신 시각, 수동 발송만).
+   대시보드에서 DM용 원클릭 복사.
+3. **대시보드 패널** (후보 인테이크 → "크리에이터 제공 데이터"): 템플릿 다운로드, 요청문 복사,
+   CSV 2종 업로드 → 미리보기(검증) → 정규화 실행. **동의 fail-closed**: consent_ref/provided_at
+   없는 행이 있으면 정규화 거부(개별 행 사유 표시). 50명 초과 업로드는 서버 silent truncation
+   방지 위해 차단. 프로필에 없는 계정의 게시물은 경고로 표시(서버가 조용히 버리는 것 예방).
+4. **배선**: `/providers/creator-provided/import`(순수 정규화 — DB 쓰기 없음이라 쓰기 확인
+   allowlist에 등재, compute 배지). 정규화 결과는 applyCreatorProvidedToIntake로 **기존 인테이크
+   상태에 주입** — 품질 게이트·최근 20 스크리닝·크리에이터/영상 등록(쓰기 게이트)이 그대로 적용.
+   오프라인 시 서버 계약을 미러링한 로컬 정규화 폴백. instagram/youtube 프로필 URL이면
+   플랫폼 자동 추론(기존 tiktok 하드코딩 수정), segment=creator_submitted.
+5. **검증**: 서버 provider에 대시보드와 동일 형태 payload 실행(live_completed, consent 메타 보존
+   확인), 브라우저 E2E(정상 제출→인테이크 반영, 동의 누락→차단, 미매칭 게시물→경고), 스모크
+   회귀 단정 다수 추가. 자가 검증에서 잡은 것: splitPipeList 중복 정의→기존 splitList 재사용,
+   CSV 템플릿 악센트 제거, >50명 차단.
+
+⚠️ 다음: C 축소판 (b) 발굴 화면 뉴스 RSS 패널(백엔드 fetcher 필요) — 단, David의 Render/Supabase
+배포(1순위)와 수동 리서치 파일럿(2순위)이 먼저 움직이면 그쪽 지원 우선.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

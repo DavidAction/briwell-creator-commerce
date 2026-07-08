@@ -1,0 +1,3 @@
+provider_creator_id,country,username,display_name,profile_url,profile_image_url,bio,follower_count,avg_views,engagement_rate,product_category,signals,consent_ref,provided_at
+,MX,tu.usuario,Tu Nombre,https://www.tiktok.com/@tu.usuario,,"Creadora de skincare coreano en espanol. Rutinas y reviews honestas.",48200,18600,6.8,sunscreen,"SPF Authority|K-Beauty Fit",ig-dm-2026-07-08-tu.usuario,2026-07-08T00:00:00Z
+,PE,otra.creadora,Otra Creadora,https://www.instagram.com/otra.creadora,,"Educacion de cuidado de piel sensible.",32800,12100,5.4,calming_serum,"Education-Led|Sensitive Skin",email-2026-07-08-otra.creadora,2026-07-08T00:00:00Z

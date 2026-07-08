@@ -98,6 +98,7 @@
     listCreators: (params) => request(`/creators${toQuery(params)}`),
     importCreators: (body) => request("/creators/import", { method: "POST", body }),
     importVideos: (body) => request("/videos/import", { method: "POST", body }),
+    importCreatorProvided: (body) => request("/providers/creator-provided/import", { method: "POST", body }),
     listCampaigns: (params) => request(`/campaigns${toQuery(params)}`),
     createCampaign: (body) => request("/campaigns", { method: "POST", body }),
     createDiscoveryPlan: (body) => request("/discovery/plans", { method: "POST", body }),

@@ -914,6 +914,31 @@ textarea:focus-visible {
   min-height: 84px;
 }
 
+/* creator_provided submission panel: collapsible Spanish request copy. */
+.request-copy-details {
+  margin-top: 10px;
+}
+
+.request-copy-details summary {
+  cursor: pointer;
+  color: var(--subtle);
+  font-size: var(--fs-cap);
+  font-weight: var(--w-med);
+}
+
+.request-copy-details textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
 /* Derived/estimated figure markers: keep estimates visually distinct from
    measured counts so preview-formula numbers never read as real data. */
 .derived-tag {

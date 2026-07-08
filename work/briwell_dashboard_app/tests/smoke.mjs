@@ -50,6 +50,7 @@ const requiredEndpoints = [
   "/performance/snapshots",
   "/settlements/contracts",
   "/commerce/discount-codes/issue",
+  "/providers/creator-provided/import",
 ];
 
 // --- Phase 3 elevation: currency-explicit revenue + Shopify discount issuance ---
@@ -111,6 +112,28 @@ assert(files.html.includes("현재 값 기반 대표 형상입니다"), "sparkli
 assert(/derived:\s*!brandSafe/.test(files.app), "brand-safe funnel stage must flag ratio-derived counts");
 assert(files.app.includes('stage.derived ? \'<i class="derived-tag"'), "funnel renderer must tag derived stages");
 assert(files.app.includes("추정 전기 대비"), "GMV hero delta badge must be labeled as an estimate");
+
+// --- creator_provided submission channel (slimmed-C step (a); docs/CREATOR_DATA_REQUEST_ES.md) ---
+files.cpProfileTemplate = readFileSync(join(root, "templates", "creator_provided_profile_template.csv"), "utf8");
+files.cpPostsTemplate = readFileSync(join(root, "templates", "creator_provided_posts_template.csv"), "utf8");
+assert(files.html.includes("크리에이터 제공 데이터 (creator_provided)"), "creator_provided intake panel missing");
+assert(files.html.includes('id="cpProfileCsvInput"'), "creator_provided profile CSV input missing");
+assert(files.html.includes('id="cpPostsCsvInput"'), "creator_provided posts CSV input missing");
+assert(files.html.includes('id="runCreatorProvidedButton" data-compute-action'), "normalize button must carry the compute-action badge (no DB write)");
+assert(files.html.includes('id="creatorRequestText"'), "Spanish request copy textarea missing");
+assert(files.app.includes("parseCreatorProvidedFiles"), "creator_provided CSV parser missing");
+assert(files.app.includes("runCreatorProvidedImport"), "creator_provided normalize runner missing");
+assert(files.app.includes("applyCreatorProvidedToIntake"), "creator_provided intake application missing");
+assert(files.app.includes("buildLocalCreatorProvidedRun"), "creator_provided offline preview fallback missing");
+assert(files.client.includes("importCreatorProvided"), "creator_provided API client method missing");
+// Consent is fail-closed: rows without consent_ref/provided_at must block normalization.
+assert(files.app.includes("consent_blocked"), "consent-missing rows must block normalization");
+assert(/if\s*\(parsed\.issues\.length\)\s*{[\s\S]{0,400}?return;/.test(files.app), "runCreatorProvidedImport must refuse to run with consent blockers");
+// The normalize endpoint is pure compute, so it belongs on the write-confirm allowlist.
+assert(/WRITE_CONFIRM_ALLOWLIST = \[[\s\S]*?"\/providers\/creator-provided\/import"/.test(files.app), "creator-provided import must be allowlisted as pure compute");
+// Templates must carry the consent columns the operator fills before upload.
+assert(files.cpProfileTemplate.includes("consent_ref") && files.cpProfileTemplate.includes("provided_at"), "profile template missing consent columns");
+assert(files.cpPostsTemplate.includes("consent_ref") && files.cpPostsTemplate.includes("provided_at"), "posts template missing consent columns");
 
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");

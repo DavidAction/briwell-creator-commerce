@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Briwell Creator Commerce Intelligence</title>
-  <link rel="stylesheet" href="./styles.css?v=20260708b">
+  <link rel="stylesheet" href="./styles.css?v=20260708c">
 </head>
 <body>
   <div class="app-shell">
@@ -536,6 +536,39 @@
           <section class="panel span-12">
             <div class="panel-heading">
               <div>
+                <h2>크리에이터 제공 데이터 (creator_provided)</h2>
+                <p class="panel-subtitle">크리에이터가 직접 제출한 프로필·최근 게시물 데이터를 동의 검증 후 정규화 — 합법 실데이터 유입 레인</p>
+              </div>
+              <span class="badge green">낮은 리스크 · 동의 필수</span>
+            </div>
+            <div class="form-grid">
+              <label>
+                <span>프로필 CSV (크리에이터 제출)</span>
+                <input id="cpProfileCsvInput" type="file" accept=".csv,text/csv">
+              </label>
+              <label>
+                <span>최근 게시물 CSV (선택)</span>
+                <input id="cpPostsCsvInput" type="file" accept=".csv,text/csv">
+              </label>
+            </div>
+            <div class="button-row">
+              <a class="button" href="./templates/creator_provided_profile_template.csv" download>프로필 템플릿</a>
+              <a class="button" href="./templates/creator_provided_posts_template.csv" download>게시물 템플릿</a>
+              <button class="button" id="copyCreatorRequestButton">스페인어 요청문 복사</button>
+              <button class="button" id="previewCreatorProvidedButton">제출 파일 미리보기</button>
+              <button class="button primary" id="runCreatorProvidedButton" data-compute-action>정규화 &amp; 인테이크 반영</button>
+            </div>
+            <p class="field-hint">업로드 전 운영자가 각 행의 consent_ref(동의 메시지 참조)와 provided_at(수신 시각)을 채워야 합니다 — 비어 있으면 정규화가 거부됩니다. 요청문 전문과 절차: docs/CREATOR_DATA_REQUEST_ES.md</p>
+            <details class="request-copy-details">
+              <summary>스페인어 요청문 (DM용) 보기</summary>
+              <textarea id="creatorRequestText" readonly rows="7">Hola 👋 Somos el equipo de Creator Partnerships de Briwell (K-Beauty coreana para Latinoamérica). Nos encantó tu contenido y queremos evaluar una colaboración pagada contigo. Para hacerlo con datos reales — y solo con tu permiso — ¿podrías compartirnos tus estadísticas (seguidores, vistas promedio, engagement) y tus últimas 20 publicaciones? Te podemos enviar dos plantillas sencillas para llenar, o si ya tienes un media kit o un export de analytics, también nos sirve tal cual. Al enviarnos esta información nos autorizas a usarla únicamente para evaluar esta colaboración. No la compartimos con terceros y la eliminamos si nos lo pides. ¡Gracias! ✨</textarea>
+            </details>
+            <div id="creatorProvidedResult" class="result-box"></div>
+          </section>
+
+          <section class="panel span-12">
+            <div class="panel-heading">
+              <div>
                 <h2>임포트 품질 게이트</h2>
                 <p class="panel-subtitle">후보 등록 전 필수값, 국가 커버리지, 중복, 최근 20개 데이터 품질을 점검</p>
               </div>
@@ -783,7 +816,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./api-client.js?v=20260708"></script>
-  <script src="./app.js?v=20260708b"></script>
+  <script src="./api-client.js?v=20260708b"></script>
+  <script src="./app.js?v=20260708d"></script>
 </body>
 </html>
