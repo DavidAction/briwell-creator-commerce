@@ -68,6 +68,39 @@ assert(files.html.includes("Shopify 자사몰 (주력)"), "campaign channel must
   assert(nextChunk.includes("content-grid"), `${view} must use the elevated content-grid layout`);
 });
 
+// --- Phase 3 remainder: per-screen KPI metric strips (candidates/tracking/settlement) ---
+[
+  ["view-candidates", "candidatesKpis"],
+  ["view-tracking", "trackingKpis"],
+  ["view-settlement", "settlementKpis"],
+].forEach(([view, mount]) => {
+  const viewIndex = files.html.indexOf(`id="${view}"`);
+  const nextChunk = files.html.slice(viewIndex, viewIndex + 200);
+  assert(nextChunk.includes(`id="${mount}"`), `${view} must open with its KPI strip mount (${mount})`);
+});
+assert(files.app.includes("buildCandidateKpis"), "candidates KPI builder missing");
+assert(files.app.includes("buildTrackingKpis"), "tracking KPI builder missing");
+assert(files.app.includes("buildSettlementKpis"), "settlement KPI builder missing");
+assert(files.app.includes("renderScreenKpis"), "per-screen KPI renderer missing");
+assert(files.css.includes(".screen-kpis"), "per-screen KPI strip styling missing");
+// KPI strips must aggregate real recorded writes, not hardcoded numbers: session
+// write logs exist and every recorder re-renders the strips.
+assert(files.app.includes("sessionSnapshots"), "session snapshot log missing");
+assert(files.app.includes("sessionContracts"), "session contract log missing");
+assert(files.app.includes("sessionDiscountCodes"), "session discount code log missing");
+["recordSessionSnapshot", "recordSessionContract", "recordSessionDiscountCode"].forEach((fn) => {
+  assert(files.app.includes(`function ${fn}(`), `${fn} session recorder missing`);
+});
+// Payout table and settlement KPIs must share one data source so they cannot disagree.
+assert(files.app.includes("PAYOUT_ROWS"), "shared payout rows source missing");
+// API-rejected writes (error.payload present) must never count as recorded work.
+assert(
+  /if\s*\(!error\.payload\)\s*recordSessionSnapshot/.test(files.app) &&
+    /if\s*\(!error\.payload\)\s*recordSessionContract/.test(files.app) &&
+    /if\s*\(!error\.payload\)\s*recordSessionDiscountCode/.test(files.app),
+  "session recorders must only fire on the offline preview fallback, not on API rejections"
+);
+
 assert(files.html.includes("Briwell Creator Commerce Intelligence"), "missing global dashboard title");
 assert(files.html.includes("글로벌 MCN 운영 콘솔"), "missing Korean executive positioning copy");
 assert(files.html.includes("오늘 처리해야 할 최고 우선순위 액션"), "missing Korean operator action copy");

@@ -40,6 +40,16 @@ ALLOW_LIVE_SHOPIFY_CALLS=false
 `SHOPIFY_FX_RATES` is fail-closed: a webhook order in a currency missing here is
 rejected (HTTP 422), not persisted with a guessed rate. Add every currency you sell in.
 
+Then verify the configuration with the preflight checklist (no network calls,
+safe to run anytime):
+
+```powershell
+python -m scripts.shopify_golive_preflight
+```
+
+It reports each item as READY / MISSING / WARN with the runbook step to fix it,
+and exits 0 only when nothing required is missing.
+
 ## 3. Register the webhooks
 
 Webhooks require the secret from step 1 (the receiver returns 503 without it).

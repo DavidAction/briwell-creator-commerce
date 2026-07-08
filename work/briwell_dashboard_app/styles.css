@@ -909,6 +909,11 @@ textarea:focus-visible {
   font-weight: 660;
 }
 
+/* Per-screen KPI strips: same cards as the command view, minus the sparkline row. */
+.screen-kpis .metric-card {
+  min-height: 84px;
+}
+
 .gmv-trend-chart {
   display: block;
   width: 100%;

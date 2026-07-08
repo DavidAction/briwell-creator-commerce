@@ -20,6 +20,11 @@ const state = {
     "creator-3": buildSeedPosts("creator-3", "cleanser", 12),
   },
   recentScreenResults: {},
+  // Session-scoped write logs: only successful (non-cancelled, non-rejected) operator
+  // writes land here so per-screen KPI strips aggregate real recorded work, not intent.
+  sessionSnapshots: [],
+  sessionContracts: [],
+  sessionDiscountCodes: [],
   coverageAudit: buildPreviewCoverageAudit(["MX", "PE", "EC"], "sunscreen", 4),
   recallSafeguards: buildPreviewRecallSafeguards(),
   keywordPlaybook: null,
@@ -317,6 +322,7 @@ async function refreshFromApi() {
 
 function renderAll() {
   renderCommandMetrics();
+  renderScreenKpis();
   renderCommerceCommand();
   renderCampaignFunnel();
   renderOperatorActions();
@@ -652,6 +658,133 @@ function buildCommandMetrics() {
     pipelineGmvUsd,
     targetProgress,
   };
+}
+
+// --- Per-screen KPI strips (Phase 3 remainder) ---------------------------------
+// Same contract as buildCampaignFunnel: every number is anchored to live state.
+// candidates = creator pool + screening state; tracking/settlement = the session
+// write logs (state.sessionSnapshots 등), so counts only move when a write actually
+// completed (cancelled or API-rejected writes never land in the logs).
+
+function buildCandidateKpis() {
+  const metrics = buildCommandMetrics();
+  const creators = state.creators;
+  const scored = creators.filter((creator) => Number.isFinite(Number(creator.final_score)));
+  const averageScore = scored.length
+    ? Math.round(scored.reduce((sum, creator) => sum + Number(creator.final_score), 0) / scored.length)
+    : 0;
+  const markets = new Set(creators.map((creator) => creator.country).filter(Boolean));
+  const topCreator = [...scored].sort((a, b) => Number(b.final_score) - Number(a.final_score))[0];
+  return [
+    {
+      label: "활성 후보 풀",
+      value: String(creators.length + state.intakeCreators.length),
+      note: `시장 ${markets.size}곳 · 인테이크 대기 ${state.intakeCreators.length}`,
+    },
+    {
+      label: "평균 적합 점수",
+      value: String(averageScore),
+      note: topCreator ? `최고 @${topCreator.username} ${topCreator.final_score}점` : "점수 데이터 없음",
+    },
+    {
+      label: "스크리닝 완료",
+      value: `${metrics.screenedCount}/${creators.length}`,
+      note: `최근 20개 커버리지 ${metrics.coveragePercent}%`,
+    },
+    {
+      label: "아웃리치 준비",
+      value: String(metrics.outreachReadyCount),
+      note: `낮은 리스크 ${metrics.lowRiskCount}명 · 데이터 공백 ${metrics.postGapCount}명`,
+    },
+  ];
+}
+
+function buildTrackingKpis() {
+  const snapshots = state.sessionSnapshots;
+  const liveCount = snapshots.filter((entry) => entry.recorded === "live").length;
+  const totalViews = snapshots.reduce((sum, entry) => sum + Number(entry.view_count || 0), 0);
+  const revenueUsd = snapshots.reduce((sum, entry) => sum + Number(entry.revenue_usd || 0), 0);
+  const rollupRevenue = state.operationsPipeline?.performance?.rollup?.summary?.revenue_usd;
+  return [
+    {
+      label: "세션 스냅샷",
+      value: String(snapshots.length),
+      note: snapshots.length
+        ? `라이브 기록 ${liveCount} · 미리보기 ${snapshots.length - liveCount}`
+        : "스냅샷 저장 시 집계 시작",
+    },
+    {
+      label: "추적 조회수",
+      value: formatCompactNumber(totalViews),
+      note: "세션 저장 스냅샷 합계",
+    },
+    {
+      label: "매출 (USD 환산)",
+      value: formatCurrencyCompact(revenueUsd),
+      note: "기록시점 FX 환산 · USD 25K 파일럿 목표",
+    },
+    {
+      label: "운영 rollup 매출",
+      value: rollupRevenue == null ? "대기" : formatCurrencyCompact(rollupRevenue),
+      note: rollupRevenue == null ? "운영 파이프라인 실행 시 집계" : "성과 rollup 기준",
+    },
+  ];
+}
+
+function buildSettlementKpis() {
+  const pendingRows = PAYOUT_ROWS.filter((row) => row.status === "pending");
+  const blockedRows = PAYOUT_ROWS.filter((row) => row.status === "blocked");
+  const pendingUsd = pendingRows.reduce((sum, row) => sum + row.amount_usd, 0);
+  const contractFeeUsd = state.sessionContracts.reduce((sum, entry) => sum + Number(entry.fee_usd || 0), 0);
+  const codes = state.sessionDiscountCodes;
+  const liveCodes = codes.filter((entry) => entry.mode === "live").length;
+  return [
+    {
+      label: "지급 대기",
+      value: formatCurrencyCompact(pendingUsd),
+      note: `대기 ${pendingRows.length}건 · 증빙 확인 후 지급`,
+    },
+    {
+      label: "증빙 차단",
+      value: String(blockedRows.length),
+      note: blockedRows.length ? blockedRows.map((row) => `${row.creator} ${row.blocker}`).join(" · ") : "차단 없음",
+    },
+    {
+      label: "세션 계약 저장",
+      value: String(state.sessionContracts.length),
+      note: state.sessionContracts.length
+        ? `비용 합계 ${formatCurrencyCompact(contractFeeUsd)}`
+        : "계약 저장 시 집계 시작",
+    },
+    {
+      label: "할인코드 발급",
+      value: String(codes.length),
+      note: codes.length ? `라이브 ${liveCodes} · 드라이런/미리보기 ${codes.length - liveCodes}` : "발급 시 집계 시작",
+    },
+  ];
+}
+
+function renderScreenKpis() {
+  const mounts = [
+    ["candidatesKpis", buildCandidateKpis],
+    ["trackingKpis", buildTrackingKpis],
+    ["settlementKpis", buildSettlementKpis],
+  ];
+  mounts.forEach(([id, build]) => {
+    const mount = byId(id);
+    if (!mount) return;
+    mount.innerHTML = build()
+      .map(
+        (kpi) => `
+      <article class="metric-card">
+        <span class="metric-label">${escapeHtml(kpi.label)}</span>
+        <strong>${escapeHtml(kpi.value)}</strong>
+        <small>${escapeHtml(kpi.note)}</small>
+      </article>
+    `
+      )
+      .join("");
+  });
 }
 
 function evaluateImportQuality() {
@@ -1163,24 +1296,25 @@ function updateRecentScreenModeAvailability() {
   }
 }
 
+// Single source for payout preview rows so the payout table and the settlement
+// KPI strip can never disagree. amount_usd is numeric for aggregation.
+const PAYOUT_ROWS = [
+  { creator: "@luzskincare", amount_usd: 150, status: "pending", blocker: "게시물 URL" },
+  { creator: "@pielconandrea", amount_usd: 220, status: "blocked", blocker: "인보이스 URL" },
+  { creator: "@rutina.ec", amount_usd: 120, status: "pending", blocker: "세금 증빙" },
+];
+
 function renderPayoutTable() {
-  const rows = [
-    ["@luzskincare", "$150", "pending", "게시물 URL"],
-    ["@pielconandrea", "$220", "blocked", "인보이스 URL"],
-    ["@rutina.ec", "$120", "pending", "세금 증빙"],
-  ];
-  byId("payoutTable").innerHTML = rows
-    .map(
-      ([creator, amount, status, blocker]) => `
+  byId("payoutTable").innerHTML = PAYOUT_ROWS.map(
+    (row) => `
       <tr>
-        <td>${escapeHtml(creator)}</td>
-        <td>${escapeHtml(amount)}</td>
-        <td>${status === "blocked" ? '<span class="badge red">차단</span>' : '<span class="badge amber">대기</span>'}</td>
-        <td>${escapeHtml(blocker)}</td>
+        <td>${escapeHtml(row.creator)}</td>
+        <td>${escapeHtml(formatCurrencyCompact(row.amount_usd))}</td>
+        <td>${row.status === "blocked" ? '<span class="badge red">차단</span>' : '<span class="badge amber">대기</span>'}</td>
+        <td>${escapeHtml(row.blocker)}</td>
       </tr>
     `
-    )
-    .join("");
+  ).join("");
 }
 
 function renderCreatorImportPreview() {
@@ -2105,15 +2239,30 @@ async function saveSnapshot() {
     source_type: "manual",
     source_risk_level: "low",
   };
+  const revenueUsd = revenue.amount * revenue.fxRate;
   try {
-    showResult("snapshotResult", await window.BriwellApi.savePerformanceSnapshot(payload));
+    const response = await window.BriwellApi.savePerformanceSnapshot(payload);
+    showResult("snapshotResult", response);
+    recordSessionSnapshot(payload, revenueUsd, response.status === "persisted" ? "live" : "preview");
   } catch (error) {
     if (error.cancelled) {
       showResult("snapshotResult", error.payload);
       return;
     }
     showResult("snapshotResult", error.payload || { status: "local_preview_saved", snapshot: payload });
+    // Only the offline preview fallback counts as recorded; an API rejection payload
+    // (e.g. 422 currency/FX validation) means nothing was stored anywhere.
+    if (!error.payload) recordSessionSnapshot(payload, revenueUsd, "preview");
   }
+}
+
+function recordSessionSnapshot(payload, revenueUsd, recorded) {
+  state.sessionSnapshots.push({
+    view_count: payload.view_count,
+    revenue_usd: revenueUsd,
+    recorded,
+  });
+  renderScreenKpis();
 }
 
 async function issueDiscountCode() {
@@ -2133,8 +2282,10 @@ async function issueDiscountCode() {
     showResult("issueDiscountResult", response);
     if (response.status === "dry_run") {
       showToast("드라이런 · Shopify에 실제 생성되지 않음");
+      recordSessionDiscountCode("dry_run");
     } else {
       showToast(`할인코드 ${response.discount_code?.code || payload.code} 발급 완료`);
+      recordSessionDiscountCode("live");
     }
   } catch (error) {
     if (error.cancelled) {
@@ -2142,7 +2293,13 @@ async function issueDiscountCode() {
       return;
     }
     showResult("issueDiscountResult", error.payload || { status: "local_preview_saved", discount_code: payload });
+    if (!error.payload) recordSessionDiscountCode("preview");
   }
+}
+
+function recordSessionDiscountCode(mode) {
+  state.sessionDiscountCodes.push({ mode });
+  renderScreenKpis();
 }
 
 async function saveContract() {
@@ -2153,10 +2310,25 @@ async function saveContract() {
     compensation_terms: { fee_usd: Number(byId("contractFee").value || 0), sample: true },
   };
   try {
-    showResult("contractResult", await window.BriwellApi.saveContract(payload));
+    const response = await window.BriwellApi.saveContract(payload);
+    showResult("contractResult", response);
+    recordSessionContract(payload, response.status === "persisted" ? "live" : "preview");
   } catch (error) {
+    if (error.cancelled) {
+      showResult("contractResult", error.payload);
+      return;
+    }
     showResult("contractResult", error.payload || { status: "local_preview_saved", contract: payload });
+    if (!error.payload) recordSessionContract(payload, "preview");
   }
+}
+
+function recordSessionContract(payload, recorded) {
+  state.sessionContracts.push({
+    fee_usd: payload.compensation_terms?.fee_usd || 0,
+    recorded,
+  });
+  renderScreenKpis();
 }
 
 function buildPreviewDiscoveryRows(countries, product, platform, limit) {

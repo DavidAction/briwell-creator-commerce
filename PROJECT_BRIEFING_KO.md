@@ -161,6 +161,32 @@ defer(지금은 문제 아님): #1 full-analysis 동기 LLM 팬아웃(라이브 
 ⚠️ **David가 할 남은 일**: `docs/SHOPIFY_GOLIVE.md` 따라 스토어에서 앱 생성 + `.env`에 `SHOPIFY_*`
 시크릿 입력 + 스크립트로 웹훅 등록 + 테스트 주문 검증. 코드는 준비 완료, 수동 절차만 남음.
 
+## 0.0.10 화면별 KPI 스트립 + Shopify go-live preflight (2026-07-08) — 테스트 360 통과/26 스킵
+
+**A. 대시보드 Phase 3 잔여 완료 — 화면별 KPI 메트릭 스트립 (스모크+브라우저 검증)**
+1. candidates/tracking/settlement 화면 상단에 KPI 스트립 신설(`renderScreenKpis()` + 화면별 빌더 3개,
+   커맨드 화면 metric-card 스타일 재사용 `.screen-kpis`).
+2. 전 수치 실데이터 앵커: 후보 화면은 후보 풀·평균 적합점수·스크리닝·아웃리치 준비
+   (buildCommandMetrics 파생), 성과/정산 화면은 **세션 쓰기 로그**(state.sessionSnapshots /
+   sessionContracts / sessionDiscountCodes) 집계 — 실제 완료된 쓰기만 카운트. 취소(cancelled)·
+   API 거부(error.payload 있음)는 집계 제외, 오프라인 미리보기 폴백만 preview로 구분 집계.
+3. 지급 대기/차단 KPI와 지급 테이블은 단일 소스 `PAYOUT_ROWS` 공유(불일치 원천 차단).
+4. 브라우저 검증: 스냅샷 저장→성과 KPI 즉시 갱신(1건/12K뷰/$318.6), 계약 저장·할인코드
+   발급→정산 KPI 즉시 갱신 확인. 스모크에 회귀 단정 추가(마운트 위치·빌더·세션 로그·
+   API 거부 미집계 가드).
+
+**B. Shopify go-live preflight (계정 없이 가능한 부분 완료)**
+1. `scripts/shopify_golive_preflight.py` 신설 — 런북 2단계 전제조건을 실행 가능 체크리스트로:
+   도메인(*.myshopify.com)/admin 토큰(shpat_)/웹훅 시크릿/API 버전/FX 레이트(파일럿 통화
+   MXN·PEN 커버리지)/USE_DATABASE/라이브 게이트를 READY·MISSING·WARN·INFO로 보고.
+   **네트워크 호출 0**이라 계정 없이 언제든 안전. `--json` 지원, cp949 콘솔 안전(ASCII 출력).
+2. 순수 로직 테스트 6개 추가(354→360). 런북 2단계에 preflight 실행 안내 반영.
+3. 실검증: 웹훅 등록 스크립트 dry-run 정상(게이트 닫힘 시 계획만 출력 + 차단 사유 안내),
+   preflight가 현 미설정 상태를 정확히 5건 MISSING으로 보고(exit 1).
+
+⚠️ **잔여(코드 밖, 0.0.9와 동일)**: Shopify 스토어/커스텀 앱 생성 → `.env` 시크릿 → preflight
+통과 확인 → 웹훅 등록 → 테스트 주문 검증. 계정 생기면 `docs/SHOPIFY_GOLIVE.md` 순서대로.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**
