@@ -26,6 +26,8 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Working conventions:** model routing for this project is Fable 5 for planning/review, Sonnet 5 for implementation, Haiku 4.5 for mechanical work (briefing §0.3). The user works across multiple computers and relies on git + auto-push to sync between them, so commit before switching machines.
 
+**Mandatory post-work self-verification (user directive, 2026-07-08):** after completing any implementation work and BEFORE reporting it done or committing, run a critical self-verification pass unprompted — re-read the full diff, check changes against runtime gates/configs/docs for contradictions, verify assumptions against actual code, run the relevant tests, fix findings, and report them (or an explicit clean result). Precedent: the 2026-07-08 re-check of already-committed work found a deploy blueprint missing `OUTBOX_WORKER_ENABLED` and a runbook step contradicting the production CORS gate.
+
 ## Business Context
 
 Briwell sells Korean cosmetics into Latin America. The first B2C online growth system focuses on creator commerce operations for Mexico, Peru, and Ecuador.

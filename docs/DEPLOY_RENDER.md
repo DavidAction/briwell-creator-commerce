@@ -68,9 +68,13 @@ first deploy and update the timestamp.
 
 3. Deploy. `preDeployCommand` runs the readiness gate then
    `bootstrap_db.py --with-seeds --with-keywords --verify` against the managed
-   DB. If the gate exits 1, a listed blocker (e.g. `OIDC_CONFIGURATION_MISSING`)
-   tells you which variable is wrong — fix and redeploy; nothing half-configured
-   ever boots.
+   DB (idempotent: applied SQL files are checksum-tracked and skipped). If the
+   gate exits 1, a listed blocker (e.g. `OIDC_CONFIGURATION_MISSING`) tells you
+   which variable is wrong — fix and redeploy; nothing half-configured ever boots.
+4. If the build rejects `PYTHON_VERSION=3.14.4` or the Postgres plan name
+   `basic-256mb`, Render's error lists the accepted values — pick the closest
+   (latest 3.13.x / smallest paid Postgres plan) and update `render.yaml` so the
+   blueprint stays the source of truth.
 
 ## 4. Verify
 
@@ -93,13 +97,18 @@ is fine pre-store). A `401` means the JWT/JWKS wiring is off — recheck step 1.
 ## 5. Connect the dashboard
 
 1. Deploy `work/briwell_dashboard_app` as a static site (`vercel.json` is
-   included) or keep serving it locally.
-2. Make sure its origin is listed in `CORS_ALLOWED_ORIGINS`.
+   included). A locally served dashboard **cannot** talk to the production API:
+   the readiness gate refuses localhost entries in `CORS_ALLOWED_ORIGINS`
+   (`CORS_LOCALHOST_ORIGIN_NOT_ALLOWED_IN_PRODUCTION`), so the dashboard needs
+   a public origin.
+2. Make sure that origin is listed in `CORS_ALLOWED_ORIGINS`.
 3. In the dashboard 연결 설정 drawer: set API 주소 to the Render URL and paste
    the Supabase access token into the Bearer 토큰 field. The client sends it as
    `Authorization: Bearer …`; header RBAC is rejected in production, so calls
    without a token will 401. Tokens expire (~1h default) — re-issue with the
-   curl above, or raise the JWT expiry in Supabase for the pilot.
+   curl above, or raise the JWT expiry in Supabase for the pilot. The token is
+   kept in browser localStorage: use a per-operator browser profile and clear
+   the field (save with it empty) on shared machines.
 
 ## 6. Shopify (later, when the store exists)
 

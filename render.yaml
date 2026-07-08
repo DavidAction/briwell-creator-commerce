@@ -20,6 +20,8 @@ services:
     healthCheckPath: /health
     autoDeployTrigger: checksPass
     envVars:
+      # Matches the locally verified interpreter. If Render's build rejects the
+      # version, drop to the latest 3.13.x — the code needs only 3.10+ syntax.
       - key: PYTHON_VERSION
         value: 3.14.4
       - key: APP_ENV
@@ -78,6 +80,11 @@ services:
       - key: TIKTOK_PROVIDER_DAILY_RESULT_LIMIT
         value: "2000"
       - key: RATE_LIMIT_ENABLED
+        value: "true"
+      # In-app DB job worker (app lifespan starts it when USE_DATABASE is on).
+      # Defaults to false in config for local dev; without this, queued analysis
+      # jobs would sit unprocessed in production.
+      - key: OUTBOX_WORKER_ENABLED
         value: "true"
       - key: BACKUP_RESTORE_TESTED_AT
         sync: false
