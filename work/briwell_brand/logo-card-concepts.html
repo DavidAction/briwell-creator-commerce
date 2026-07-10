@@ -97,6 +97,31 @@
       font-size: 13.5px; color: var(--muted); line-height: 1.8; max-width: 76ch; word-break: keep-all;
     }
     .print-note strong { color: var(--ink); }
+
+    /* ------- exploration grid D–M ------- */
+    .explore-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .exp-card {
+      border: 1px solid var(--line); border-radius: 14px; background: var(--card);
+      padding: 26px 28px 24px;
+    }
+    .exp-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .exp-tag {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: var(--paper);
+      background: var(--aqua); border-radius: 999px; padding: 2px 12px;
+    }
+    .exp-head h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 19px; font-weight: 600; }
+    .exp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; min-height: 43px; word-break: keep-all; }
+    .exp-row { display: flex; align-items: center; gap: 22px; }
+    .exp-main { flex: 1; display: flex; align-items: center; gap: 14px; }
+    .exp-chip {
+      background: var(--ink); border-radius: 10px; width: 64px; height: 64px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .exp-tiny {
+      border: 1px solid var(--line); border-radius: 10px; width: 64px; height: 64px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (max-width: 900px) { .explore-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -389,6 +414,326 @@
           </div>
           <div class="biz-label">C · 뒷면 (ES)</div>
         </div>
+      </div>
+    </section>
+
+    <!-- =============== EXPLORATION D–M =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">D–M</span><h2>확장 탐색 — 다양한 느낌 10안</h2></div>
+      <p class="dir-note">모노그램 · 헤리티지 · 기하학 · 한자 정(井) · 타이포 전용 · 인장까지 스펙트럼을
+        넓힌 탐색안. 각 카드: 기본 락업 / 잉크 반전 칩 / 축소 테스트. 명함은 기존 KO↔ES 양면 구조를
+        공유하고 마크만 교체됩니다 — 픽되면 그 마크로 명함 시안을 다시 떠 드립니다.</p>
+      <div class="explore-grid">
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">D</span><h3>모노그램 B</h3></div>
+          <p class="exp-desc">다리 아치 두 개가 글자 B가 되고, 아랫볼에 수원이 고입니다. 코퍼레이트·클래식 — 서류·인장·자수에 강한 레터마크.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="3.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="3.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="4.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">E</span><h3>두레박</h3></div>
+          <p class="exp-desc">"기쁨으로 물을 긷는" 그 도구를 그대로. 헤리티지·크래프트의 손맛 — 패키징·스티커에서 이야기가 삽니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#0C2E2F" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M26.5 33 Q32 29.5 37.5 33" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#F5F2EA" stroke-width="3" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#F5F2EA" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#F5F2EA" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M26.5 33 Q32 29.5 37.5 33" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#0C2E2F" stroke-width="4" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#0C2E2F" stroke-width="4" stroke-linejoin="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">F</span><h3>물결 링</h3></div>
+          <p class="exp-desc">링의 바닥이 물결로 열려 있습니다 — 닫힌 원이 아니라 흐르는 원. 가장 모던·테크, 앱 아이콘 감성.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#0E7C71" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#2FD0BC" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#0E7C71" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">G</span><h3>우물 정(井)</h3></div>
+          <p class="exp-desc">우물틀을 위에서 본 모양이 곧 한자 井. 한국적 뿌리와 기하학이 동시에 — 격자 사이로 물이 들여다보입니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#0C2E2F" stroke-width="3.2" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="4.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#F5F2EA" stroke-width="3.2" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="4.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="5.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">H</span><h3>넘치는 샘</h3></div>
+          <p class="exp-desc">차고 넘치는 그릇 — "채우면 넘친다"는 비전의 직역. 풍성함과 환대의 무드, 리테일·선물 패키지와 어울립니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#0C2E2F" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M21 27 Q32 22.5 43 27" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#0E7C71" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#0E7C71" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="2.6" fill="#D9A441"/>
+                <circle cx="24" cy="18" r="2" fill="#2FD0BC"/>
+                <circle cx="40" cy="18" r="2" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#F5F2EA" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M21 27 Q32 22.5 43 27" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="2.6" fill="#D9A441"/>
+                <circle cx="24" cy="18" r="2" fill="#2FD0BC"/>
+                <circle cx="40" cy="18" r="2" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="3.4" fill="#D9A441"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">I</span><h3>두 우물의 만남</h3></div>
+          <p class="exp-desc">두 원(한국·중남미)이 겹치는 자리에 금빛 한 점. 파트너십·수출입 서사가 가장 담백하게 읽히는 기하학.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#0E7C71" stroke-width="3"/>
+                <circle cx="32" cy="32" r="3.2" fill="#D9A441"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#F5F2EA" stroke-width="3"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#2FD0BC" stroke-width="3"/>
+                <circle cx="32" cy="32" r="3.2" fill="#D9A441"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#0C2E2F" stroke-width="4.2"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#0E7C71" stroke-width="4.2"/>
+                <circle cx="32" cy="32" r="4" fill="#D9A441"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">J</span><h3>시그니처 마침표</h3></div>
+          <p class="exp-desc">마크 없는 타이포 전용 — 워드마크 끝의 금빛 물방울 마침표와 파문 언더라인이 서명. 미니멀·에디토리얼.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <div style="display:flex; align-items:flex-end; gap:5px">
+                  <span class="wordmark" style="font-size:34px">bri<em>well</em></span>
+                  <svg width="15" height="20" viewBox="0 0 24 32" style="margin-bottom:6px"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+                </div>
+                <svg width="160" height="10" viewBox="0 0 160 10"><path d="M3 7 Q80 1 157 7" fill="none" stroke="#2FD0BC" stroke-width="2.2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="exp-chip">
+              <svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="14" height="19" viewBox="0 0 24 32"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">K</span><h3>다리와 반영</h3></div>
+          <p class="exp-desc">수면 위의 다리와 물에 비친 반영이 만나 비로소 원(우물)이 완성됩니다. 가장 시적인 안 — 절반은 현실, 절반은 물.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M7 32 H57" stroke="#D9A441" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#0E7C71" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.85"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M7 32 H57" stroke="#D9A441" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#2FD0BC" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.9"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="5 5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">L</span><h3>물의 소용돌이</h3></div>
+          <p class="exp-desc">원 안을 가르는 S자 물길 — 태극의 기운을 물로 옮겼습니다. 한·중남미 두 문화가 한 우물 안에서 도는 그림.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#0E7C71" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="32" cy="20" r="3" fill="#D9A441"/>
+                <circle cx="32" cy="44" r="3" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#F5F2EA" stroke-width="3"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#2FD0BC" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="32" cy="20" r="3" fill="#D9A441"/>
+                <circle cx="32" cy="44" r="3" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#0C2E2F" stroke-width="4.2"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#0E7C71" stroke-width="4.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">M</span><h3>씰 엠블럼</h3></div>
+          <p class="exp-desc">SEOUL → LATAM 원형 인장. 스탬프·뱃지 무드 — 박스 테이프, 패키지 실링, 보증 마크로 확장성이 가장 큽니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="72" height="72" viewBox="0 0 64 64">
+                <defs>
+                  <path id="sealTextPath" d="M 32 32 m -21.5 0 a 21.5 21.5 0 1 1 43 0 a 21.5 21.5 0 1 1 -43 0"/>
+                </defs>
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#0C2E2F" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#0C2E2F" stroke-width="1.1" opacity="0.65"/>
+                <text font-family="Inter, sans-serif" font-size="6.1" font-weight="600" letter-spacing="1.7" fill="#0C2E2F">
+                  <textPath href="#sealTextPath">BRIWELL · SEOUL → LATAM ·</textPath>
+                </text>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#0C2E2F" stroke-width="2"/>
+                <circle cx="32" cy="32" r="2.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="44" height="44" viewBox="0 0 64 64">
+                <defs>
+                  <path id="sealTextPathInv" d="M 32 32 m -21.5 0 a 21.5 21.5 0 1 1 43 0 a 21.5 21.5 0 1 1 -43 0"/>
+                </defs>
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#F5F2EA" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#F5F2EA" stroke-width="1.1" opacity="0.65"/>
+                <text font-family="Inter, sans-serif" font-size="6.1" font-weight="600" letter-spacing="1.7" fill="#F5F2EA">
+                  <textPath href="#sealTextPathInv">BRIWELL · SEOUL → LATAM ·</textPath>
+                </text>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#F5F2EA" stroke-width="2"/>
+                <circle cx="32" cy="32" r="2.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="26" height="26" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#0C2E2F" stroke-width="1.4" opacity="0.65"/>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#0C2E2F" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="2.8" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
