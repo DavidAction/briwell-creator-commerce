@@ -2,15 +2,22 @@
 
 This document is for external development teams and AI coding tools continuing the Briwell MVP.
 
-## Start Here (last updated 2026-07-08)
+## Start Here (last updated 2026-07-10)
 
 Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; latest state lives in the numbered `0.0.x` sections, most recent = highest number).
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook.
 
-**Latest verified state:** backend `360 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
+**Latest verified state (re-run 2026-07-10):** backend `368 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-2. ES creator landing page approved — concept C (briefing 0.0.14): strategy session →
+   3 full-page concepts with official product photos (Parnell / Essenherb·BRTC / Dermal) →
+   David picked C, now `work/briwell_landing_page/index.html`. Form-only CTA (placeholder
+   links until the apply form exists — spec ready in `docs/CREATOR_APPLY_FORM_ES.md`,
+   mapped to the creator_provided CSV columns), no operational promises in copy, dead
+   live-pulse fetch removed from landing.js. Open: form creation, domain/hosting/email,
+   brand photo-usage confirmation, ko/ page renewal — all David decisions.
 -1. Market news-signal panel on the discovery screen (briefing 0.0.13): public Google News RSS fetcher (`app/trends/news_rss.py`, `GET /trends/news`) behind the house dual live gate (`NEWS_RSS_*`, dry-run samples by default, 15-min cache), Spanish per-market queries, XSS-guarded panel rendering. Market signals only — never creator workflow inputs. Slimmed-C step (b) is done; production render.yaml ships with the news gates open (public feed).
 0. creator_provided submission channel (briefing 0.0.12): two creator-facing CSV templates (consent columns required), Spanish request copy (`docs/CREATOR_DATA_REQUEST_ES.md`) with one-click copy in the dashboard, and an intake panel that validates consent fail-closed, normalizes via `/providers/creator-provided/import` (pure compute, allowlisted), and feeds the existing quality-gate/screening/import machinery. Slimmed-C step (a) is done.
 1. Live-transition prep (briefing 0.0.11): `render.yaml` moved to the repo root (Render only detects root blueprints; `rootDir` points at the app), SHOPIFY_* env vars added (the old blueprint predated the Shopify integration — deploying it would have 503'd every webhook), managed Postgres block with `DATABASE_URL` via `fromDatabase`, and a full deploy runbook `docs/DEPLOY_RENDER.md` (Supabase OIDC → backup evidence → blueprint → verify → dashboard hookup). Dashboard settings drawer gained a Bearer-token (OIDC) field — production rejects header RBAC, so this is how the dashboard talks to a deployed API until a full login flow exists.
@@ -20,7 +27,7 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Priority order (re-evaluated 2026-07-08, briefing 0.0.11 배경 — do not silently reorder):**
 1. **Deploy (ops — needs David's Render + Supabase accounts)**: follow `docs/DEPLOY_RENDER.md`. Blueprint and runbook are ready; the readiness gate fails closed until config is complete.
-2. **Real-data pilot without new code**: manually research 10–20 real LATAM creators via the playbook's Low/Medium-risk lanes (`outputs/briwell_pilot_operations_playbook_v0.md`) and register them through the existing intake screens; execute at least one manual outreach. This is roadmap priority 2 — it does not need the trend tab.
+2. **Real-data pilot without new code**: manually research 10–20 real LATAM creators via the playbook's Low/Medium-risk lanes (`outputs/briwell_pilot_operations_playbook_v0.md`) and register them through the existing intake screens; execute at least one manual outreach. This is roadmap priority 2 — it does not need the trend tab. The outreach landing page is ready (see -2 above); to include its link in outreach messages, the apply form + domain must exist first.
 3. **C slimmed down (code, in order)**: (a) ~~creator_provided submission channel~~ — DONE 2026-07-08 (briefing 0.0.12); (b) ~~news-RSS panel on the discovery screen~~ — DONE 2026-07-08 (briefing 0.0.13); (c) full trend tab only after real data flows. Full-tab design notes in briefing 0.0.8; the 0.0.8 mockup was never committed. **All account-independent code work is now done — the remaining priorities (deploy, real-data pilot, Shopify) need David's accounts/ops.**
 4. **Shopify go-live (ops — blocked on Shopify account)**: `docs/SHOPIFY_GOLIVE.md` + `python -m scripts.shopify_golive_preflight`.
 
