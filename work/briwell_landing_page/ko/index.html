@@ -1,233 +1,392 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Briwell — 시스템으로 여는 LATAM K-뷰티 크리에이터 커머스</title>
-  <meta name="description" content="Briwell은 멕시코·페루·에콰도르에서 K-뷰티를 크리에이터 커머스로 판매하는 회사입니다. 발굴부터 정산까지 자체 운영 시스템으로 움직입니다.">
+  <meta name="description" content="Briwell은 멕시코·페루·에콰도르를 향한 K-뷰티 크리에이터 커머스를 운영합니다. 발굴부터 정산까지 하나의 시스템, 동의 기반 데이터, 검증 가능한 사실.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-  <link rel="stylesheet" href="../assets/landing.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237c8cff'/%3E%3Ctext x='16' y='22' font-size='15' font-weight='800' text-anchor='middle' fill='%23131022' font-family='sans-serif'%3EBR%3C/text%3E%3C/svg%3E">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Noto+Serif+KR:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; scroll-behavior: smooth; }
+    :root {
+      --bg: #F7F4EF;
+      --ink: #211D1A;
+      --muted: #7A736B;
+      --accent: #D96C47;
+      --accent-soft: rgba(217,108,71,0.10);
+      --line: rgba(33,29,26,0.14);
+      --card: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    .serif { font-family: 'Fraunces', 'Noto Serif KR', serif; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 0; border-bottom: 1px solid var(--line);
+    }
+    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; }
+    .logo span { color: var(--accent); font-style: italic; }
+    .nav-note { font-size: 12px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; }
+    .nav-cta {
+      font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none;
+      border: 1px solid var(--ink); padding: 8px 20px; border-radius: 999px;
+    }
+
+    .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 64px; align-items: start; }
+    .kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 30px;
+    }
+    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    h1 {
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-weight: 600;
+      font-size: clamp(40px, 4.6vw, 58px); line-height: 1.14; letter-spacing: -0.01em; margin-bottom: 28px;
+    }
+    h1 em, h2 em { font-style: normal; color: var(--accent); }
+    .sub { font-size: 17px; line-height: 1.75; color: var(--muted); max-width: 46ch; margin-bottom: 36px; word-break: keep-all; }
+    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 48px; }
+    .btn-primary {
+      display: inline-block; font-size: 16px; font-weight: 600; color: #fff;
+      background: var(--ink); text-decoration: none; padding: 17px 36px; border-radius: 8px;
+    }
+    .cta-hint { font-size: 13px; color: var(--muted); max-width: 24ch; line-height: 1.5; word-break: keep-all; }
+
+    .stats { display: flex; border-top: 1px solid var(--line); }
+    .stat { flex: 1; padding: 22px 24px 0 0; }
+    .stat + .stat { border-left: 1px solid var(--line); padding-left: 24px; }
+    .stat-num { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+    .stat-num em { font-style: normal; color: var(--accent); font-size: 16px; }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; line-height: 1.55; word-break: keep-all; }
+
+    .side { display: flex; flex-direction: column; gap: 20px; }
+    .feature-card { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px rgba(33,29,26,0.12); }
+    .feature-card img { display: block; width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; }
+    .feature-tag {
+      position: absolute; top: 14px; left: 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink); background: rgba(247,244,239,0.92); padding: 6px 12px; border-radius: 999px;
+    }
+    .proof-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      overflow: hidden; box-shadow: 0 16px 32px rgba(33,29,26,0.08);
+    }
+    .proof-card img { display: block; width: 100%; }
+    .proof-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--line); }
+    .proof-label { font-size: 12px; color: var(--muted); }
+    .proof-tag {
+      flex: 0 0 auto; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+    }
+
+    .marquee {
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      padding: 16px 0; overflow: hidden; white-space: nowrap;
+    }
+    .marquee-inner {
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 15px; color: var(--muted); letter-spacing: 0.04em;
+    }
+    .marquee-inner b { color: var(--accent); font-weight: 400; margin: 0 18px; }
+
+    section { padding: 88px 0; }
+    .section-kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 24px;
+    }
+    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    h2 {
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-weight: 600; font-size: clamp(28px, 3.4vw, 42px);
+      line-height: 1.2; margin-bottom: 18px; max-width: 26ch; word-break: keep-all;
+    }
+    .section-sub { font-size: 16px; line-height: 1.75; color: var(--muted); max-width: 60ch; margin-bottom: 48px; word-break: keep-all; }
+
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); }
+    .why-col { padding: 32px 28px 0 0; }
+    .why-col + .why-col { border-left: 1px solid var(--line); padding-left: 28px; }
+    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+    .why-col h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+    .why-col p { font-size: 14.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+
+    .pipeline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .pipeline-card { display: flex; flex-direction: column; }
+    .pipeline-img {
+      border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+      box-shadow: 0 16px 36px rgba(33,29,26,0.10); background: var(--card);
+    }
+    .pipeline-img img { width: 100%; display: block; }
+    .pipeline-step { font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--accent); margin: 16px 0 4px; }
+    .pipeline-card h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .pipeline-card p { font-size: 14px; line-height: 1.65; color: var(--muted); word-break: keep-all; }
+
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .brand-card { display: flex; flex-direction: column; }
+    .brand-img { border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; box-shadow: 0 16px 36px rgba(33,29,26,0.10); }
+    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 18px 0 4px; }
+    .brand-card h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .brand-card p { font-size: 14.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+
+    .pullquote { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; }
+    .pullquote blockquote {
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: clamp(22px, 3vw, 32px); font-weight: 500;
+      line-height: 1.5; max-width: 30ch; margin: 0 auto 18px; word-break: keep-all;
+    }
+    .pullquote blockquote em { font-style: normal; color: var(--accent); }
+    .pullquote cite { font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+    .consent { background: var(--ink); color: #F3EFE9; border-radius: 16px; padding: 72px 64px; }
+    .consent .section-kicker { color: var(--accent); }
+    .consent h2 { color: #fff; }
+    .consent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .consent p.lead { font-size: 16px; line-height: 1.75; color: rgba(243,239,233,0.75); word-break: keep-all; }
+    .consent-list { display: flex; flex-direction: column; gap: 14px; }
+    .consent-item {
+      display: flex; gap: 12px; font-size: 15px; line-height: 1.65; color: rgba(243,239,233,0.85);
+      border: 1px solid rgba(243,239,233,0.2); border-radius: 10px; padding: 14px 18px; word-break: keep-all;
+    }
+    .consent-item::before { content: '—'; color: var(--accent); font-weight: 600; }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+    .step { border-top: 2px solid var(--ink); padding-top: 20px; }
+    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--accent); margin-bottom: 10px; }
+    .step h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .step p { font-size: 14px; line-height: 1.65; color: var(--muted); word-break: keep-all; }
+
+    .final { text-align: center; border-top: 1px solid var(--line); padding: 110px 0; }
+    .final h2 { margin-left: auto; margin-right: auto; max-width: 24ch; }
+    .final .cta-row { justify-content: center; margin-bottom: 0; margin-top: 36px; }
+    footer {
+      border-top: 1px solid var(--line); padding: 28px 0; display: flex;
+      justify-content: space-between; font-size: 12px; color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      .hero, .consent-grid { grid-template-columns: 1fr; }
+      .why-grid { grid-template-columns: 1fr; }
+      .why-col + .why-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 24px; padding-top: 24px; }
+      .brand-grid, .pipeline-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .stats { flex-direction: column; }
+      .stat { padding-right: 0; }
+      .stat + .stat { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 20px; padding-top: 20px; }
+      .consent { padding: 56px 28px; }
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 34px; }
+      h2 { font-size: 26px; }
+      .wrap { padding-left: 24px; padding-right: 24px; }
+      section { padding: 64px 0; }
+    }
+  </style>
 </head>
 <body>
-  <div class="orbs" aria-hidden="true">
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="orb orb-c"></div>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="logo">bri<span>well</span></div>
+      <a class="nav-cta" href="#contacto">파트너 문의</a>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="kicker">K-Beauty · 멕시코 · 페루 · 에콰도르</div>
+        <h1>감이 아니라,<br>시스템으로.<br><em>K-뷰티를 라탐에.</em></h1>
+        <p class="sub">Briwell은 라틴아메리카를 향한 K-뷰티 크리에이터 커머스를 만듭니다.
+          크리에이터 발굴부터 콘텐츠 검증, 캠페인, 크리에이터별 매출 어트리뷰션,
+          커미션 정산까지 — 전 과정이 하나의 시스템 위에서 이어집니다.</p>
+        <div class="cta-row">
+          <a class="btn-primary" href="#contacto">파트너 문의하기</a>
+          <span class="cta-hint">라탐 진출이 궁금한 K-뷰티 브랜드·유통 파트너 환영</span>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-num">3 <em>개 시장</em></div>
+            <div class="stat-label">멕시코 · 페루 · 에콰도르 — 스페인어권 라탐 1차 진출</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">1 <em>개 파이프라인</em></div>
+            <div class="stat-label">발굴 → 검증 → 캠페인 → 어트리뷰션 → 정산, 단절 없이</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">0 <em>건 무단 수집</em></div>
+            <div class="stat-label">동의 없는 데이터는 시스템이 자동으로 거부</div>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="feature-card">
+          <span class="feature-tag">Seoul → LATAM</span>
+          <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="에센허브 — 서울에서 라탐으로 가는 K-뷰티">
+        </div>
+        <div class="proof-card">
+          <img src="../assets/img/01_command_overview.png" alt="Briwell 운영 콘솔 — LATAM 크리에이터 커머스 운영 센터">
+          <div class="proof-meta">
+            <span class="proof-label">실제 운영 콘솔 — 목업이 아닙니다</span>
+            <span class="proof-tag">시스템 실물</span>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
-  <div class="grain" aria-hidden="true"></div>
 
-  <nav class="nav">
-    <div class="wrap nav-inner">
-      <a class="brand" href="#top">
-        <span class="brand-mark">BR</span>
-        Briwell
-      </a>
-      <div class="nav-links">
-        <a href="#system">운영 시스템</a>
-        <a href="#compliance">컴플라이언스</a>
-        <a href="#numbers">지표</a>
-        <a href="#partner">파트너</a>
-      </div>
-      <div class="lang-switch" aria-label="언어">
-        <a href="../">ES</a>
-        <a class="on" href="./" aria-current="page">KO</a>
-      </div>
-      <a class="btn btn-primary btn-sm" href="#partner">파트너 문의</a>
-    </div>
-  </nav>
-
-  <header class="hero" id="top">
-    <div class="wrap">
-      <span class="eyebrow reveal"><span class="dot"></span>멕시코 · 페루 · 에콰도르 — K-뷰티 크리에이터 커머스</span>
-      <h1 class="reveal reveal-d1">감이 아니라 <em>시스템</em>으로,<br>K-뷰티를 라탐에 팝니다</h1>
-      <p class="hero-sub reveal reveal-d2">
-        Briwell은 라틴아메리카에서 한국 화장품을 판매하는 커머스 오퍼레이터입니다.
-        크리에이터 발굴부터 콘텐츠 검증, 캠페인, Shopify 매출 어트리뷰션, 커미션 정산까지 —
-        전 과정을 자체 개발한 운영 시스템 위에서 실행합니다.
-      </p>
-      <div class="hero-ctas reveal reveal-d3">
-        <a class="btn btn-primary" href="#system">운영 시스템 살펴보기</a>
-        <a class="btn" href="#partner">파트너 문의</a>
-      </div>
-    </div>
-  </header>
-
-  <div class="pulse" role="complementary" aria-label="LATAM K-뷰티 시장 신호">
-    <div class="wrap">
-      <div class="pulse-label"><span class="live-dot"></span>시스템이 수집 중인 시장 신호 — 실제 현지 언론 기사</div>
-    </div>
-    <div class="ticker">
-      <div class="ticker-track">
-        <span class="headline-chip"><span class="src">MX</span>Vogue México — 얼굴용 스틱 선크림 베스트</span>
-        <span class="headline-chip"><span class="src">MX</span>Excélsior — 멕시코 여성을 사로잡은 한국 뷰티</span>
-        <span class="headline-chip"><span class="src">PE</span>El Peruano — 페루 화장품 시장 1분기 6% 성장, 24억 솔 규모</span>
-        <span class="headline-chip"><span class="src">MX</span>Expansión — 한국 스킨케어 열풍이 멕시코 뷰티 시장을 바꾸다</span>
-        <span class="headline-chip"><span class="src">PE</span>El Comercio — 한국 스킨케어 입문 가이드와 스타 제품</span>
-        <span class="headline-chip"><span class="src">EC</span>Primicias — 한국발 선케어 혁명, 에콰도르 상륙</span>
-        <span class="headline-chip"><span class="src">PE</span>Perú Retail — 리플리 백화점, K-뷰티 전용 공간 오픈</span>
-        <span class="headline-chip"><span class="src">PE</span>Gestión — 페루 시장에 진출하는 새로운 한국 뷰티 브랜드</span>
-        <span class="headline-chip"><span class="src">MX</span>Time Out México — CDMX 뷰티 페스티벌, 한국 왕복 티켓 이벤트</span>
-      </div>
+  <div class="marquee">
+    <div class="marquee-inner">
+      크리에이터 커머스 <b>·</b> 동의 기반 데이터 <b>·</b> 크리에이터별 매출 어트리뷰션
+      <b>·</b> 인간 승인 아웃리치 <b>·</b> 크리에이터 커머스 <b>·</b> 동의 기반 데이터 <b>·</b> 커미션 자동 계산
     </div>
   </div>
 
-  <section id="system">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-kicker reveal">운영 시스템</div>
-        <h2 class="reveal reveal-d1">발굴에서 정산까지,<br>하나의 <em>파이프라인</em></h2>
-        <p class="sec-sub reveal reveal-d2">
-          엑셀과 DM으로는 국경 너머의 크리에이터 커머스를 운영할 수 없습니다.
-          Briwell은 전 단계를 자체 시스템으로 표준화했습니다.
-        </p>
-      </div>
-      <div class="pipeline">
-        <div class="pipe-rail"><div class="pipe-rail-fill"></div></div>
-        <div class="pipe-step">
-          <div class="pipe-node">1</div>
-          <div class="pipe-body">
-            <h3>합법 소스 기반 크리에이터 발굴</h3>
-            <p>시장×제품군별 스페인어 키워드 전략과 승인된 데이터 소스 4개 레인(수동 리서치,
-            공식 API, 승인 프로바이더, 크리에이터 직접 제공)으로 후보 풀을 만듭니다.
-            공개 뉴스 RSS로 시장 모멘텀 신호를 함께 수집합니다.</p>
-            <span class="pipe-tag">무단 스크래핑 원천 차단</span>
-          </div>
+  <div class="wrap">
+    <section>
+      <div class="section-kicker">왜 Briwell</div>
+      <h2>대행사가 아니라, <em>운영 시스템</em>을 가진 팀</h2>
+      <div class="why-grid">
+        <div class="why-col">
+          <div class="why-no">i.</div>
+          <h3>파이프라인이 하나로</h3>
+          <p>발굴, 최근 20개 게시물 검증, 캠페인 매칭, 크리에이터별 할인코드 발급,
+            주문·환불 웹훅 어트리뷰션, 커미션 정산이 한 시스템 안에서 이어집니다.</p>
         </div>
-        <div class="pipe-step">
-          <div class="pipe-node">2</div>
-          <div class="pipe-body">
-            <h3>최근 20개 게시물 검증 게이트</h3>
-            <p>단일 히트작이 아니라 최근 20개 게시물 전체를 AI로 스크리닝해 브랜드 적합도를
-            판정합니다. 데이터가 부족한 후보는 시스템이 통과시키지 않습니다.</p>
-            <span class="pipe-tag">AI 스크리닝 + 품질 게이트</span>
-          </div>
+        <div class="why-col">
+          <div class="why-no">ii.</div>
+          <h3>컴플라이언스가 코드로</h3>
+          <p>무단 스크래핑과 자동 DM은 정책 모듈이 차단합니다. 아웃리치는 사람의
+            승인 없이는 다음 상태로 넘어가지 못하게 코드로 강제되어 있습니다.</p>
         </div>
-        <div class="pipe-step">
-          <div class="pipe-node">3</div>
-          <div class="pipe-body">
-            <h3>브랜드 세이프티와 인간 승인</h3>
-            <p>아웃리치 문구의 화장품 표현 규제 리스크를 자동 검사하고, 모든 발송은
-            사람이 승인한 뒤 수동으로 이뤄집니다. 자동 DM 발송은 시스템 차원에서 금지되어
-            있습니다.</p>
-            <span class="pipe-tag">클레임 검사 · 수동 발송 원칙</span>
-          </div>
-        </div>
-        <div class="pipe-step">
-          <div class="pipe-node">4</div>
-          <div class="pipe-body">
-            <h3>Shopify 매출 어트리뷰션</h3>
-            <p>크리에이터별 전용 할인코드를 Shopify에 자동 발급하고, 주문·환불 웹훅으로
-            매출을 크리에이터 단위로 귀속합니다. 통화(MXN·PEN·USD)와 기록 시점 환율까지
-            명시된 원장에 쌓입니다.</p>
-            <span class="pipe-tag">할인코드 어트리뷰션 · FX 명시 원장</span>
-          </div>
-        </div>
-        <div class="pipe-step">
-          <div class="pipe-node">5</div>
-          <div class="pipe-body">
-            <h3>추가만 가능한 커미션 원장으로 정산</h3>
-            <p>매출 발생과 환불 차감이 append-only 원장에 기록되고, 계약·증빙과 연결되어
-            정산됩니다. 크리에이터와 회사 모두 같은 숫자를 봅니다.</p>
-            <span class="pipe-tag">감사 가능한 정산</span>
-          </div>
+        <div class="why-col">
+          <div class="why-no">iii.</div>
+          <h3>정직한 숫자</h3>
+          <p>추정치는 추정이라고 표시합니다. 자동 테스트 368개가 모든 변경마다
+            도는, 검증 가능한 시스템입니다.</p>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="screens">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-kicker reveal">실제 화면</div>
-        <h2 class="reveal reveal-d1">지금 <em>운영 중인</em> 시스템입니다</h2>
-        <p class="sec-sub reveal reveal-d2">콘셉트 목업이 아니라, 실제로 구동되는 운영 콘솔의 화면입니다.</p>
+    <section>
+      <div class="section-kicker">파이프라인</div>
+      <h2>발굴에서 정산까지, <em>화면 그대로</em></h2>
+      <p class="section-sub">아래는 실제 운영 콘솔 화면입니다. 데모용 목업이 아니라,
+        오늘도 자동 테스트가 돌고 있는 시스템의 실물입니다.</p>
+      <div class="pipeline-grid">
+        <div class="pipeline-card">
+          <div class="pipeline-img"><img src="../assets/img/04_discovery_news_signals.png" alt="발굴 화면 — 시장 뉴스 신호 패널"></div>
+          <div class="pipeline-step">i. 발굴</div>
+          <h3>시장 신호 기반 발굴</h3>
+          <p>국가·제품군별 키워드 플랜과 공개 시장 신호로 후보 크리에이터를 찾습니다.</p>
+        </div>
+        <div class="pipeline-card">
+          <div class="pipeline-img"><img src="../assets/img/07_candidates_intelligence.png" alt="후보 크리에이터 인텔리전스 화면"></div>
+          <div class="pipeline-step">ii. 검증</div>
+          <h3>후보 인텔리전스</h3>
+          <p>최근 20개 게시물 스크린과 브랜드 적합성 평가를 거쳐 숏리스트를 만듭니다.</p>
+        </div>
+        <div class="pipeline-card">
+          <div class="pipeline-img"><img src="../assets/img/09_brand_safety_review.png" alt="브랜드 세이프티 리뷰 화면"></div>
+          <div class="pipeline-step">iii. 세이프티</div>
+          <h3>브랜드 세이프티</h3>
+          <p>모든 아웃리치와 콘텐츠는 사람이 검토하는 승인 게이트를 통과해야 합니다.</p>
+        </div>
       </div>
-      <div class="shots">
-        <figure class="browser-frame reveal">
-          <div class="bf-bar"><i></i><i></i><i></i><span>briwell · 경영 현황</span></div>
-          <img src="../assets/img/01_command_overview.png" alt="Briwell 운영 콘솔 — 경영 현황 대시보드" loading="lazy">
-          <figcaption class="bf-cap">파이프라인 GMV·커버리지·검수 대기까지 한 화면의 경영 현황</figcaption>
-        </figure>
-        <figure class="browser-frame reveal reveal-d1">
-          <div class="bf-bar"><i></i><i></i><i></i><span>briwell · 후보 인텔리전스</span></div>
-          <img src="../assets/img/07_candidates_intelligence.png" alt="Briwell 운영 콘솔 — 후보 인텔리전스" loading="lazy">
-          <figcaption class="bf-cap">적합 점수·리스크·최근 콘텐츠 신호 기반 후보 검증</figcaption>
-        </figure>
-        <figure class="browser-frame reveal">
-          <div class="bf-bar"><i></i><i></i><i></i><span>briwell · 시장 신호</span></div>
-          <img src="../assets/img/04_discovery_news_signals.png" alt="Briwell 운영 콘솔 — 실시간 시장 뉴스 신호" loading="lazy">
-          <figcaption class="bf-cap">현지 언론 헤드라인을 실시간 수집하는 시장 신호 패널</figcaption>
-        </figure>
-        <figure class="browser-frame reveal reveal-d1">
-          <div class="bf-bar"><i></i><i></i><i></i><span>briwell · 브랜드 세이프티</span></div>
-          <img src="../assets/img/09_brand_safety_review.png" alt="Briwell 운영 콘솔 — 브랜드 세이프티 검수" loading="lazy">
-          <figcaption class="bf-cap">표현 규제 자동 검사와 수동 발송 승인 게이트</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="compliance">
-    <div class="wrap">
-      <div class="trust-band reveal">
-        <div class="sec-kicker">컴플라이언스 아키텍처</div>
-        <h2>동의 없는 데이터는<br>시스템이 <em>거부합니다</em></h2>
-        <ul class="trust-list">
-          <li><span class="check">✓</span><span><b>Fail-closed 정책 엔진</b>허용된 수집 소스(수동·공식 API·승인 프로바이더·크리에이터 제공) 외의 데이터는 코드 레벨에서 워크플로우 진입이 차단됩니다.</span></li>
-          <li><span class="check">✓</span><span><b>동의 메타데이터 필수</b>크리에이터 제공 데이터는 동의 참조와 제공 시각이 없으면 정규화 자체가 거부됩니다.</span></li>
-          <li><span class="check">✓</span><span><b>자동 발송 금지</b>모든 아웃리치는 사람이 작성·승인 후 수동 발송. 봇·안티봇 우회·CAPTCHA 우회는 구현하지 않습니다.</span></li>
-          <li><span class="check">✓</span><span><b>추정치의 정직한 표기</b>대시보드의 예측·파생 수치는 실측과 구분되는 '추정' 라벨을 강제합니다. 내부 지표부터 속이지 않습니다.</span></li>
-        </ul>
+    <section>
+      <div class="section-kicker">취급 브랜드</div>
+      <h2>우리가 라탐으로 가져가는 <em>제품들</em></h2>
+      <p class="section-sub">민감 피부 더마, 보태니컬 스킨케어, 글로벌 베스트셀러 마스크팩 —
+        세 갈래의 큐레이션으로 시작합니다.</p>
+      <div class="brand-grid">
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/parnell-pad.jpg" alt="파넬 시카마누 코튼 클리어 패드"></div>
+          <div class="brand-co">일레븐코퍼레이션</div>
+          <h3>파넬 Parnell</h3>
+          <p>시카마누 라인 — 센텔라와 마누카 꿀로 민감 피부를 진정시키는 고효능 더마 코스메틱.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/ami-rosemary.jpg" alt="에센허브 로즈마리 워시"></div>
+          <div class="brand-co">아미코스메틱스</div>
+          <h3>에센허브 &amp; BRTC</h3>
+          <p>티트리 보태니컬부터 액티브 맥스 선케어까지 — 연구소 기반 더마 코스메틱 하우스.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/dermal-mask-model2.jpg" alt="더말 마스크팩"></div>
+          <div class="brand-co">더말코리아</div>
+          <h3>더말 Dermal</h3>
+          <p>전 세계에서 수백만 장이 팔린 마스크팩 — 가장 공유하기 쉬운 K-뷰티 리추얼.</p>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="numbers">
-    <div class="wrap">
-      <div class="sec-head">
-        <div class="sec-kicker reveal">있는 그대로의 지표</div>
-        <h2 class="reveal reveal-d1">부풀린 숫자 대신 <em>검증 가능한 사실</em></h2>
-      </div>
-      <div class="stats">
-        <div class="stat reveal"><div class="n">3</div><div class="l">런칭 시장 — 멕시코 · 페루 · 에콰도르</div></div>
-        <div class="stat reveal reveal-d1"><div class="n">20</div><div class="l">후보당 검증하는 최근 게시물 수 — 단일 히트작 승인 불가</div></div>
-        <div class="stat reveal reveal-d2"><div class="n">4</div><div class="l">승인된 데이터 소스 레인 — 그 외는 시스템이 거부</div></div>
-        <div class="stat reveal reveal-d3"><div class="n">368</div><div class="l">운영 시스템의 자동 테스트 수 — 매 변경마다 전체 통과</div></div>
-      </div>
-    </div>
-  </section>
+    <section class="pullquote">
+      <blockquote>"천 명의 크리에이터가 아니라 <em>맞는 크리에이터</em>를 찾습니다 —
+        그리고 진지하게 대합니다."</blockquote>
+      <cite>— Briwell 팀, 서울</cite>
+    </section>
 
-  <section class="final-cta" id="partner">
-    <div class="wrap">
-      <span class="eyebrow reveal"><span class="dot"></span>파트너 · 투자 · 브랜드 입점 문의</span>
-      <h2 class="reveal reveal-d1">라탐 시장이 궁금한<br>K-뷰티 브랜드와 <em>함께</em> 갑니다</h2>
-      <p class="sec-sub reveal reveal-d2">
-        검증된 크리에이터 네트워크와 운영 시스템 위에서 브랜드의 LATAM 진출을 실행합니다.
-        제품 공급·유통 제휴, 투자, 협업 제안을 기다립니다.
-      </p>
-      <div class="hero-ctas reveal reveal-d3">
-        <!-- TODO(David): 공개 전 공식 이메일로 교체 -->
-        <a class="btn btn-primary" href="mailto:hola@briwell.co?subject=Briwell%20%ED%8C%8C%ED%8A%B8%EB%84%88%20%EB%AC%B8%EC%9D%98">파트너 문의하기</a>
-        <a class="btn" href="../">Programa de creadores (ES)</a>
+    <section class="consent">
+      <div class="consent-grid">
+        <div>
+          <div class="section-kicker">데이터 원칙</div>
+          <h2>동의 없는 데이터는 시스템이 <em>거부합니다</em></h2>
+          <p class="lead">슬로건이 아닙니다. 플랫폼이 크리에이터 데이터를 받기 전에 동의를
+            검증하고, 동의가 없으면 등록 자체가 실패하도록(fail-closed) 만들어져 있습니다.
+            기술적 통제이지, 약속이 아닙니다.</p>
+        </div>
+        <div class="consent-list">
+          <div class="consent-item"><span>동의 없는 레코드는 인테이크에서 자동 거부됩니다.</span></div>
+          <div class="consent-item"><span>승인된 소스 레인만 사용 — 무단 스크래핑·안티봇 우회 없음.</span></div>
+          <div class="consent-item"><span>모든 아웃리치는 사람이 검토하고 사람이 보냅니다. 자동 DM 없음.</span></div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <footer>
-    <div class="wrap foot-inner">
-      <div>© 2026 Briwell — LATAM K-Beauty Creator Commerce</div>
-      <div class="foot-links">
-        <a href="#system">운영 시스템</a>
-        <a href="#compliance">컴플라이언스</a>
-        <a href="../">Español</a>
+    <section>
+      <div class="section-kicker">함께 가는 방식</div>
+      <h2>브랜드 파트너와 <em>네 단계</em>로</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-no">i.</div>
+          <h3>문의</h3>
+          <p>브랜드와 제품, 그리고 라탐에서 원하는 그림을 들려주세요.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">ii.</div>
+          <h3>적합성 검토</h3>
+          <p>제품·시장 적합성과 규제 요건을 함께 검토합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">iii.</div>
+          <h3>파일럿 캠페인</h3>
+          <p>검증된 크리에이터와 소규모로 시작해 데이터로 확인합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">iv.</div>
+          <h3>정산과 리포트</h3>
+          <p>크리에이터별 매출 어트리뷰션과 커미션 정산 내역을 투명하게 공유합니다.</p>
+        </div>
       </div>
-    </div>
-  </footer>
+    </section>
 
-  <script src="../assets/landing.js"></script>
+    <section class="final" id="contacto">
+      <div class="section-kicker" style="justify-content:center">라탐이 궁금하신가요?</div>
+      <h2>K-뷰티 브랜드와 <em>함께</em> 갑니다.</h2>
+      <div class="cta-row">
+        <!-- TODO: 이메일/폼 결정 후 연결 -->
+        <a class="btn-primary" href="#contacto">파트너 문의하기</a>
+        <span class="cta-hint">간단한 소개만 남겨주셔도 됩니다</span>
+      </div>
+    </section>
+
+    <footer>
+      <span>© 2026 Briwell · 서울</span>
+      <span>K-Beauty Creator Commerce · MX · PE · EC</span>
+    </footer>
+  </div>
 </body>
 </html>

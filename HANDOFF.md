@@ -16,8 +16,10 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
    David picked C, now `work/briwell_landing_page/index.html`. Form-only CTA (placeholder
    links until the apply form exists — spec ready in `docs/CREATOR_APPLY_FORM_ES.md`,
    mapped to the creator_provided CSV columns), no operational promises in copy, dead
-   live-pulse fetch removed from landing.js. Open: form creation, domain/hosting/email,
-   brand photo-usage confirmation, ko/ page renewal — all David decisions.
+   live-pulse fetch removed from landing.js. The ko/ company page (brand partners /
+   grant reviewers) was renewed 2026-07-10 in the C design system, old version
+   preserved. Open: form creation, domain/hosting/email, brand photo-usage
+   confirmation — all David decisions.
 -1. Market news-signal panel on the discovery screen (briefing 0.0.13): public Google News RSS fetcher (`app/trends/news_rss.py`, `GET /trends/news`) behind the house dual live gate (`NEWS_RSS_*`, dry-run samples by default, 15-min cache), Spanish per-market queries, XSS-guarded panel rendering. Market signals only — never creator workflow inputs. Slimmed-C step (b) is done; production render.yaml ships with the news gates open (public feed).
 0. creator_provided submission channel (briefing 0.0.12): two creator-facing CSV templates (consent columns required), Spanish request copy (`docs/CREATOR_DATA_REQUEST_ES.md`) with one-click copy in the dashboard, and an intake panel that validates consent fail-closed, normalizes via `/providers/creator-provided/import` (pure compute, allowlisted), and feeds the existing quality-gate/screening/import machinery. Slimmed-C step (a) is done.
 1. Live-transition prep (briefing 0.0.11): `render.yaml` moved to the repo root (Render only detects root blueprints; `rootDir` points at the app), SHOPIFY_* env vars added (the old blueprint predated the Shopify integration — deploying it would have 503'd every webhook), managed Postgres block with `DATABASE_URL` via `fromDatabase`, and a full deploy runbook `docs/DEPLOY_RENDER.md` (Supabase OIDC → backup evidence → blueprint → verify → dashboard hookup). Dashboard settings drawer gained a Bearer-token (OIDC) field — production rejects header RBAC, so this is how the dashboard talks to a deployed API until a full login flow exists.

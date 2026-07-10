@@ -9,8 +9,10 @@ session and a 3-concept comparison. `index.html` is the official ES creator land
 - `concepts/` — the A/B/C concept archive from the 2026-07-10 pick (A = dark "system/operator",
   B = clean K-beauty, C = winner). `concepts/index.html` is a side-by-side viewer.
 - `_superseded_index_2026-07-09.html` — the pre-strategy-session WIP, kept for reference only.
-- `ko/index.html` — Korean company page, still the OLD design; renewal to C tone is an
-  open decision. Uses `assets/landing.css` + `assets/landing.js`.
+- `ko/index.html` — Korean company page, renewed 2026-07-10 in the C design system
+  (self-contained like the ES page; targets brand partners / grant reviewers; verifiable
+  facts only). Old design preserved as `ko/_superseded_ko_2026-07-09.html`.
+  `assets/landing.css` + `assets/landing.js` are now used only by the superseded archives.
 - `assets/img/products/` — official brand product photos + `SOURCES.md` (provenance; confirm
   usage rights with the brands before public launch).
 - `assets/img/*.png` — dashboard screenshots used as "sistema real" proof.
@@ -41,7 +43,8 @@ iframe inside a ≥520px window instead.
 
 ## Before public launch (open items)
 
-- [ ] Create the application form (Tally/Google Form) and wire the CTA links.
-- [ ] Domain + hosting + receiving email (all undecided as of 2026-07-10).
+- [ ] Create the application form (Tally/Google Form, spec in `docs/CREATOR_APPLY_FORM_ES.md`)
+      and wire the ES CTA links (`#aplicar`, 2 places).
+- [ ] Domain + hosting + receiving email (all undecided as of 2026-07-10) — then wire the
+      KO partner-contact CTA (`#contacto`, 2 places).
 - [ ] Brand-side confirmation for product photo usage.
-- [ ] Decide on ko/ page renewal.

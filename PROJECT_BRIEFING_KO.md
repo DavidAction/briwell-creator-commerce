@@ -299,6 +299,10 @@ C 축소판 (b): 구글 뉴스 **공개 RSS** 기반 LATAM K-뷰티 시장 헤�
 2. **산출물**: `work/briwell_landing_page/index.html`(확정본, 자기완결 단일 파일),
    `concepts/`(3안 아카이브 + 비교 뷰어), `assets/img/products/`(브랜드 공식 제품 사진 14장 +
    SOURCES.md 출처 기록), README.md. 구 WIP는 `_superseded_index_2026-07-09.html`로 보존.
+   **KO 회사 페이지도 C 시스템으로 리뉴얼**(2026-07-10, `ko/index.html`, 자기완결; 타겟 =
+   브랜드 파트너·심사역; 한글 세리프는 Noto Serif KR; 검증 가능한 사실만 — 테스트 368개·
+   fail-closed 동의·인간 승인 게이트; 구판은 `ko/_superseded_ko_2026-07-09.html` 보존,
+   landing.css/js는 이제 구판 아카이브 전용).
 3. **카피 원칙(코드·컴플라이언스와 정합)**: 운영 약속 금지(David 지시로 "72시간 회신"·"제품 발송"
    제거), Shopify 매장 표현 금지, 허위 수치·커미션율 미기재, 동의 문구는 인테이크 fail-closed
    검증과 일치("Si no diste permiso, el sistema lo rechaza").
@@ -308,9 +312,9 @@ C 축소판 (b): 구글 뉴스 **공개 RSS** 기반 LATAM K-뷰티 시장 헤�
    수정. ⚠️ 헤드리스 Edge는 창 폭 ~500px 미만을 무시해 375px 캡처가 왜곡됨 — same-origin
    iframe 래퍼(520px 창 + 375px iframe)로 촬영해야 함.
 6. **다음(전부 David 결정/계정 대기)**: 지원 폼 생성(`docs/CREATOR_APPLY_FORM_ES.md` 스펙
-   완성 — Tally 권장, 응답이 creator_provided CSV로 매핑되도록 설계) → CTA 연결(index.html
-   `#aplicar` 2곳), 도메인·호스팅(Render static 제안)·수신 이메일, 브랜드 사진 사용 확인,
-   ko/ 회사 페이지 리뉴얼 여부.
+   완성 — Tally 권장, 응답이 creator_provided CSV로 매핑되도록 설계) → ES CTA 연결(index.html
+   `#aplicar` 2곳), 도메인·호스팅(Render static 제안)·수신 이메일 → KO 파트너 문의 CTA 연결
+   (`#contacto` 2곳), 브랜드 사진 사용 확인.
 
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
