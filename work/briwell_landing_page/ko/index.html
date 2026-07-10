@@ -3,164 +3,188 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Briwell — 시스템으로 여는 LATAM K-뷰티 크리에이터 커머스</title>
-  <meta name="description" content="Briwell은 멕시코·페루·에콰도르를 향한 K-뷰티 크리에이터 커머스를 운영합니다. 발굴부터 정산까지 하나의 시스템, 동의 기반 데이터, 검증 가능한 사실.">
+  <title>Briwell — 다리이자 우물, 한국과 중남미를 잇다</title>
+  <meta name="description" content="브리웰(Briwell)은 Bridge + Well — 서울의 깊은 K-뷰티 우물에서 길어 올린 생명력을 크리에이터라는 우물을 통해 중남미로 흘려보냅니다. 발굴부터 정산까지 하나의 시스템.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%230E7C71' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%232FD0BC'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Noto+Serif+KR:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Noto+Serif+KR:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-x: hidden; scroll-behavior: smooth; }
     :root {
-      --bg: #F7F4EF;
-      --ink: #211D1A;
-      --muted: #7A736B;
-      --accent: #D96C47;
-      --accent-soft: rgba(217,108,71,0.10);
-      --line: rgba(33,29,26,0.14);
+      --paper: #F5F2EA;
+      --ink: #0C2E2F;
+      --muted: #5C6E6A;
+      --aqua: #0E7C71;
+      --aqua-bright: #2FD0BC;
+      --gold: #D9A441;
+      --line: rgba(12, 46, 47, 0.14);
       --card: #FFFFFF;
+      --deep-glow: rgba(47, 208, 188, 0.14);
     }
     body {
       font-family: 'Inter', 'Noto Sans KR', system-ui, sans-serif;
-      background: var(--bg); color: var(--ink);
+      background: var(--paper); color: var(--ink);
       -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
-    .serif { font-family: 'Fraunces', 'Noto Serif KR', serif; }
     .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+
     .nav {
       display: flex; align-items: center; justify-content: space-between;
       padding: 28px 0; border-bottom: 1px solid var(--line);
     }
-    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; }
-    .logo span { color: var(--accent); font-style: italic; }
-    .nav-note { font-size: 12px; color: var(--muted); letter-spacing: 0.16em; text-transform: uppercase; }
+    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; display: flex; align-items: center; gap: 9px; }
+    .logo-mark { width: 20px; height: 20px; flex: 0 0 auto; }
+    .logo em { font-style: italic; color: var(--aqua); }
     .nav-cta {
-      font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none;
-      border: 1px solid var(--ink); padding: 8px 20px; border-radius: 999px;
+      font-size: 13px; font-weight: 600; color: var(--paper); text-decoration: none;
+      background: var(--ink); padding: 9px 22px; border-radius: 999px;
     }
 
-    .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 64px; align-items: start; }
+    .hero { padding: 76px 0 64px; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 60px; align-items: center; position: relative; }
+    .hero::before {
+      content: ''; position: absolute; top: -140px; left: -220px; width: 520px; height: 520px;
+      border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(217,164,65,0.10) 0%, transparent 62%);
+    }
     .kicker {
       display: flex; align-items: center; gap: 14px;
       font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--accent); font-weight: 600; margin-bottom: 30px;
+      color: var(--aqua); font-weight: 600; margin-bottom: 30px;
     }
-    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--gold); }
     h1 {
-      font-family: 'Fraunces', 'Noto Serif KR', serif; font-weight: 600;
-      font-size: clamp(40px, 4.6vw, 58px); line-height: 1.14; letter-spacing: -0.01em; margin-bottom: 28px;
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-weight: 500;
+      font-size: clamp(38px, 4.6vw, 58px); line-height: 1.18; letter-spacing: -0.01em; margin-bottom: 26px;
+      word-break: keep-all;
     }
-    h1 em, h2 em { font-style: normal; color: var(--accent); }
-    .sub { font-size: 17px; line-height: 1.75; color: var(--muted); max-width: 46ch; margin-bottom: 36px; word-break: keep-all; }
-    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 48px; }
+    h1 em, h2 em { font-style: normal; color: var(--aqua); }
+    .sub { font-size: 17px; line-height: 1.8; color: var(--muted); max-width: 46ch; margin-bottom: 34px; word-break: keep-all; }
+    .sub strong { color: var(--ink); font-weight: 600; }
+    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 40px; }
     .btn-primary {
-      display: inline-block; font-size: 16px; font-weight: 600; color: #fff;
-      background: var(--ink); text-decoration: none; padding: 17px 36px; border-radius: 8px;
+      display: inline-block; font-size: 16px; font-weight: 600; color: var(--paper);
+      background: var(--ink); text-decoration: none; padding: 17px 38px; border-radius: 999px;
+      box-shadow: 0 14px 30px rgba(12,46,47,0.22);
     }
     .cta-hint { font-size: 13px; color: var(--muted); max-width: 24ch; line-height: 1.5; word-break: keep-all; }
-
     .stats { display: flex; border-top: 1px solid var(--line); }
     .stat { flex: 1; padding: 22px 24px 0 0; }
     .stat + .stat { border-left: 1px solid var(--line); padding-left: 24px; }
     .stat-num { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
-    .stat-num em { font-style: normal; color: var(--accent); font-size: 16px; }
+    .stat-num em { font-style: normal; color: var(--aqua); font-size: 16px; }
     .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; line-height: 1.55; word-break: keep-all; }
 
-    .side { display: flex; flex-direction: column; gap: 20px; }
-    .feature-card { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px rgba(33,29,26,0.12); }
-    .feature-card img { display: block; width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; }
-    .feature-tag {
-      position: absolute; top: 14px; left: 14px;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--ink); background: rgba(247,244,239,0.92); padding: 6px 12px; border-radius: 999px;
+    .wellscape { position: relative; display: flex; justify-content: center; }
+    .ripples { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(14,124,113,0.28); }
+    .r1 { width: 112%; aspect-ratio: 1; animation: ripple 7s ease-out infinite; }
+    .r2 { width: 126%; aspect-ratio: 1; border-color: rgba(14,124,113,0.16); animation: ripple 7s ease-out 1.4s infinite; }
+    .r3 { width: 140%; aspect-ratio: 1; border-color: rgba(217,164,65,0.20); animation: ripple 7s ease-out 2.8s infinite; }
+    @keyframes ripple { 0% { transform: scale(0.94); opacity: 0; } 18% { opacity: 1; } 100% { transform: scale(1.06); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .ripple { animation: none; opacity: 0.6; } }
+    .well-frame {
+      position: relative; width: min(380px, 82%); aspect-ratio: 1; border-radius: 50%;
+      overflow: hidden; box-shadow: 0 34px 70px rgba(12,46,47,0.26), inset 0 0 0 10px rgba(245,242,234,0.9);
     }
-    .proof-card {
-      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-      overflow: hidden; box-shadow: 0 16px 32px rgba(33,29,26,0.08);
-    }
-    .proof-card img { display: block; width: 100%; }
-    .proof-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--line); }
-    .proof-label { font-size: 12px; color: var(--muted); }
-    .proof-tag {
-      flex: 0 0 auto; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+    .well-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .well-caption {
+      position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line);
+      border-radius: 999px; padding: 7px 16px; white-space: nowrap;
     }
 
-    .marquee {
-      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-      padding: 16px 0; overflow: hidden; white-space: nowrap;
-    }
-    .marquee-inner {
-      font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 15px; color: var(--muted); letter-spacing: 0.04em;
-    }
-    .marquee-inner b { color: var(--accent); font-weight: 400; margin: 0 18px; }
+    .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 15px 0; overflow: hidden; white-space: nowrap; }
+    .marquee-inner { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 15px; color: var(--muted); letter-spacing: 0.04em; }
+    .marquee-inner b { color: var(--gold); font-weight: 400; margin: 0 18px; }
 
-    section { padding: 88px 0; }
+    section { padding: 92px 0; }
     .section-kicker {
       display: flex; align-items: center; gap: 14px;
       font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--accent); font-weight: 600; margin-bottom: 24px;
+      color: var(--aqua); font-weight: 600; margin-bottom: 24px;
     }
-    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--gold); }
     h2 {
       font-family: 'Fraunces', 'Noto Serif KR', serif; font-weight: 600; font-size: clamp(28px, 3.4vw, 42px);
-      line-height: 1.2; margin-bottom: 18px; max-width: 26ch; word-break: keep-all;
+      line-height: 1.25; margin-bottom: 18px; max-width: 26ch; word-break: keep-all;
     }
-    .section-sub { font-size: 16px; line-height: 1.75; color: var(--muted); max-width: 60ch; margin-bottom: 48px; word-break: keep-all; }
+    .section-sub { font-size: 16px; line-height: 1.8; color: var(--muted); max-width: 60ch; margin-bottom: 48px; word-break: keep-all; }
+
+    /* brand story */
+    .story { border-top: 1px solid var(--line); }
+    .story-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .story-copy p { font-size: 16px; line-height: 1.85; color: var(--muted); margin-bottom: 18px; word-break: keep-all; }
+    .story-copy p strong { color: var(--ink); font-weight: 600; }
+    .verse {
+      border-left: 2px solid var(--gold); padding: 6px 0 6px 24px; margin: 28px 0;
+    }
+    .verse blockquote {
+      font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 20px; font-weight: 500;
+      line-height: 1.6; color: var(--ink); margin-bottom: 8px; word-break: keep-all;
+    }
+    .verse cite { font-style: normal; font-size: 12px; letter-spacing: 0.14em; color: var(--muted); }
+
+    /* vision ripple diagram */
+    .vision-diagram { display: flex; justify-content: center; }
+    .vision-diagram svg { width: min(460px, 100%); height: auto; }
 
     .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); }
     .why-col { padding: 32px 28px 0 0; }
     .why-col + .why-col { border-left: 1px solid var(--line); padding-left: 28px; }
-    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--gold); margin-bottom: 12px; }
     .why-col h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
-    .why-col p { font-size: 14.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
+    .why-col p { font-size: 14.5px; line-height: 1.75; color: var(--muted); word-break: keep-all; }
 
     .pipeline-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
     .pipeline-card { display: flex; flex-direction: column; }
     .pipeline-img {
       border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
-      box-shadow: 0 16px 36px rgba(33,29,26,0.10); background: var(--card);
+      box-shadow: 0 16px 36px rgba(12,46,47,0.12); background: var(--card);
     }
     .pipeline-img img { width: 100%; display: block; }
-    .pipeline-step { font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--accent); margin: 16px 0 4px; }
+    .pipeline-step { font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--gold); margin: 16px 0 4px; }
     .pipeline-card h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; margin-bottom: 6px; }
-    .pipeline-card p { font-size: 14px; line-height: 1.65; color: var(--muted); word-break: keep-all; }
+    .pipeline-card p { font-size: 14px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
 
-    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-    .brand-card { display: flex; flex-direction: column; }
-    .brand-img { border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; box-shadow: 0 16px 36px rgba(33,29,26,0.10); }
-    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 18px 0 4px; }
-    .brand-card h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-    .brand-card p { font-size: 14.5px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
-
-    .pullquote { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; }
-    .pullquote blockquote {
-      font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: clamp(22px, 3vw, 32px); font-weight: 500;
-      line-height: 1.5; max-width: 30ch; margin: 0 auto 18px; word-break: keep-all;
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    .brand-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .brand-well {
+      width: min(280px, 90%); aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+      box-shadow: 0 22px 48px rgba(12,46,47,0.20), inset 0 0 0 8px rgba(255,255,255,0.85);
     }
-    .pullquote blockquote em { font-style: normal; color: var(--accent); }
-    .pullquote cite { font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .brand-well img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 20px 0 4px; }
+    .brand-card h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 23px; font-weight: 600; margin-bottom: 8px; }
+    .brand-card p { font-size: 14.5px; line-height: 1.75; color: var(--muted); max-width: 32ch; word-break: keep-all; }
 
-    .consent { background: var(--ink); color: #F3EFE9; border-radius: 16px; padding: 72px 64px; }
-    .consent .section-kicker { color: var(--accent); }
-    .consent h2 { color: #fff; }
-    .consent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-    .consent p.lead { font-size: 16px; line-height: 1.75; color: rgba(243,239,233,0.75); word-break: keep-all; }
-    .consent-list { display: flex; flex-direction: column; gap: 14px; }
-    .consent-item {
-      display: flex; gap: 12px; font-size: 15px; line-height: 1.65; color: rgba(243,239,233,0.85);
-      border: 1px solid rgba(243,239,233,0.2); border-radius: 10px; padding: 14px 18px; word-break: keep-all;
+    .deep { background: var(--ink); color: #EDF2EF; border-radius: 18px; padding: 84px 64px; position: relative; overflow: hidden; }
+    .deep::before {
+      content: ''; position: absolute; top: -160px; right: -160px; width: 480px; height: 480px;
+      border-radius: 50%; background: radial-gradient(circle, var(--deep-glow) 0%, transparent 65%); pointer-events: none;
     }
-    .consent-item::before { content: '—'; color: var(--accent); font-weight: 600; }
+    .deep > * { position: relative; }
+    .deep .section-kicker { color: var(--aqua-bright); }
+    .deep h2 { color: #fff; }
+    .deep h2 em { color: var(--aqua-bright); }
+    .deep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .deep p.lead { font-size: 16px; line-height: 1.8; color: rgba(237,242,239,0.75); word-break: keep-all; }
+    .deep-list { display: flex; flex-direction: column; gap: 14px; }
+    .deep-item {
+      display: flex; gap: 12px; font-size: 15px; line-height: 1.7; color: rgba(237,242,239,0.85);
+      border: 1px solid rgba(237,242,239,0.2); border-radius: 10px; padding: 14px 18px; word-break: keep-all;
+    }
+    .deep-item::before { content: '◦'; color: var(--aqua-bright); font-weight: 700; }
 
     .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
-    .step { border-top: 2px solid var(--ink); padding-top: 20px; }
-    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--accent); margin-bottom: 10px; }
+    .step { border-top: 2px solid var(--aqua); padding-top: 20px; }
+    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--gold); margin-bottom: 10px; }
     .step h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-    .step p { font-size: 14px; line-height: 1.65; color: var(--muted); word-break: keep-all; }
+    .step p { font-size: 14px; line-height: 1.7; color: var(--muted); word-break: keep-all; }
 
-    .final { text-align: center; border-top: 1px solid var(--line); padding: 110px 0; }
+    .final { text-align: center; border-top: 1px solid var(--line); padding: 116px 0; }
     .final h2 { margin-left: auto; margin-right: auto; max-width: 24ch; }
     .final .cta-row { justify-content: center; margin-bottom: 0; margin-top: 36px; }
     footer {
@@ -169,7 +193,8 @@
     }
 
     @media (max-width: 920px) {
-      .hero, .consent-grid { grid-template-columns: 1fr; }
+      .hero, .story-grid, .deep-grid { grid-template-columns: 1fr; }
+      .wellscape { margin-top: 12px; }
       .why-grid { grid-template-columns: 1fr; }
       .why-col + .why-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 24px; padding-top: 24px; }
       .brand-grid, .pipeline-grid { grid-template-columns: 1fr; }
@@ -177,10 +202,10 @@
       .stats { flex-direction: column; }
       .stat { padding-right: 0; }
       .stat + .stat { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 20px; padding-top: 20px; }
-      .consent { padding: 56px 28px; }
+      .deep { padding: 60px 28px; }
     }
     @media (max-width: 480px) {
-      h1 { font-size: 34px; }
+      h1 { font-size: 32px; }
       h2 { font-size: 26px; }
       .wrap { padding-left: 24px; padding-right: 24px; }
       section { padding: 64px 0; }
@@ -190,17 +215,24 @@
 <body>
   <div class="wrap">
     <nav class="nav">
-      <div class="logo">bri<span>well</span></div>
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="13" fill="none" stroke="#0E7C71" stroke-width="2.5"/>
+          <circle cx="16" cy="16" r="6" fill="#2FD0BC"/>
+        </svg>
+        bri<em>well</em>
+      </div>
       <a class="nav-cta" href="#contacto">파트너 문의</a>
     </nav>
 
     <section class="hero">
       <div>
-        <div class="kicker">K-Beauty · 멕시코 · 페루 · 에콰도르</div>
-        <h1>감이 아니라,<br>시스템으로.<br><em>K-뷰티를 라탐에.</em></h1>
-        <p class="sub">Briwell은 라틴아메리카를 향한 K-뷰티 크리에이터 커머스를 만듭니다.
-          크리에이터 발굴부터 콘텐츠 검증, 캠페인, 크리에이터별 매출 어트리뷰션,
-          커미션 정산까지 — 전 과정이 하나의 시스템 위에서 이어집니다.</p>
+        <div class="kicker">Bridge + Well · 서울 → 중남미</div>
+        <h1>깊은 우물 하나가<br>다른 우물들을 <em>채웁니다.</em></h1>
+        <p class="sub"><strong>브리웰(Briwell)은 다리(Bridge)이자 우물(Well)</strong>입니다.
+          서울의 깊은 K-뷰티 우물에서 길어 올린 생명력을, 크리에이터라는 우물을 통해
+          중남미의 커뮤니티로 흘려보냅니다. 착취가 아니라 채움으로 —
+          <strong>우물을 채우면, 커뮤니티가 넘칩니다.</strong></p>
         <div class="cta-row">
           <a class="btn-primary" href="#contacto">파트너 문의하기</a>
           <span class="cta-hint">라탐 진출이 궁금한 K-뷰티 브랜드·유통 파트너 환영</span>
@@ -208,42 +240,82 @@
         <div class="stats">
           <div class="stat">
             <div class="stat-num">3 <em>개 시장</em></div>
-            <div class="stat-label">멕시코 · 페루 · 에콰도르 — 스페인어권 라탐 1차 진출</div>
+            <div class="stat-label">멕시코 · 페루 · 에콰도르 — 하나의 다리로</div>
           </div>
           <div class="stat">
             <div class="stat-num">1 <em>개 파이프라인</em></div>
-            <div class="stat-label">발굴 → 검증 → 캠페인 → 어트리뷰션 → 정산, 단절 없이</div>
+            <div class="stat-label">발굴 → 검증 → 캠페인 → 어트리뷰션 → 정산</div>
           </div>
           <div class="stat">
             <div class="stat-num">0 <em>건 무단 수집</em></div>
-            <div class="stat-label">동의 없는 데이터는 시스템이 자동으로 거부</div>
+            <div class="stat-label">동의 없이는, 한 방울도</div>
           </div>
         </div>
       </div>
-      <div class="side">
-        <div class="feature-card">
-          <span class="feature-tag">Seoul → LATAM</span>
-          <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="에센허브 — 서울에서 라탐으로 가는 K-뷰티">
+      <div class="wellscape">
+        <div class="ripples" aria-hidden="true">
+          <div class="ripple r1"></div>
+          <div class="ripple r2"></div>
+          <div class="ripple r3"></div>
         </div>
-        <div class="proof-card">
-          <img src="../assets/img/01_command_overview.png" alt="Briwell 운영 콘솔 — LATAM 크리에이터 커머스 운영 센터">
-          <div class="proof-meta">
-            <span class="proof-label">실제 운영 콘솔 — 목업이 아닙니다</span>
-            <span class="proof-tag">시스템 실물</span>
-          </div>
+        <div class="well-frame">
+          <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="서울의 우물에서 — 에센허브">
         </div>
+        <span class="well-caption">Seoul → LATAM</span>
       </div>
     </section>
   </div>
 
   <div class="marquee">
     <div class="marquee-inner">
-      크리에이터 커머스 <b>·</b> 동의 기반 데이터 <b>·</b> 크리에이터별 매출 어트리뷰션
-      <b>·</b> 인간 승인 아웃리치 <b>·</b> 크리에이터 커머스 <b>·</b> 동의 기반 데이터 <b>·</b> 커미션 자동 계산
+      다리이자 우물 <b>◦</b> 동의 없이는 한 방울도 <b>◦</b> 크리에이터를 채우면 커뮤니티가 넘친다
+      <b>◦</b> 서울에서 중남미로 <b>◦</b> 다리이자 우물 <b>◦</b> 검증 가능한 사실만 <b>◦</b> 커미션 자동 계산
     </div>
   </div>
 
   <div class="wrap">
+    <section class="story">
+      <div class="story-grid">
+        <div class="story-copy">
+          <div class="section-kicker">이름에 담은 것</div>
+          <h2>우물은 마르지 않을 때<br><em>다리</em>가 됩니다</h2>
+          <p>브리웰이라는 이름은 <strong>Bridge(다리)와 Well(우물)</strong>을 잇대어 만들었습니다.
+            우물은 퍼낼수록 다시 차오르는 깊음이고, 다리는 그 깊음을 건너편에 전하는 길입니다.</p>
+          <p>이삭이 아버지의 우물을 다시 팠던 것처럼 — 막히면 또 파고, 다투면 옮겨 파서
+            마침내 <strong>르호봇, "넉넉한 자리"</strong>에 이르렀던 것처럼 — 우리는 한국의
+            K-뷰티라는 깊은 우물과 중남미의 커뮤니티 사이에서 계속 파는 사람들입니다.</p>
+          <div class="verse">
+            <blockquote>"그러므로 너희가 기쁨으로 구원의 우물들에서 물을 길으리로다"</blockquote>
+            <cite>이사야 12:3 — 브리웰의 출발점이 된 문장</cite>
+          </div>
+          <p>그래서 우리의 방식은 긷는 기쁨을 닮으려 합니다. 크리에이터에게서 짜내는 것이 아니라
+            먼저 채우는 것. 채워진 우물은 강요하지 않아도 스스로 넘칩니다.</p>
+        </div>
+        <div class="vision-diagram">
+          <svg viewBox="0 0 460 460" role="img" aria-label="브리웰 비전 — 서울의 우물이 크리에이터의 우물을 채우고, 커뮤니티로 넘친다">
+            <defs>
+              <radialGradient id="wellGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#2FD0BC" stop-opacity="0.55"/>
+                <stop offset="100%" stop-color="#2FD0BC" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <circle cx="230" cy="230" r="216" fill="none" stroke="#D9A441" stroke-width="1" stroke-dasharray="2 7" opacity="0.8"/>
+            <circle cx="230" cy="230" r="156" fill="none" stroke="#0E7C71" stroke-width="1" opacity="0.45"/>
+            <circle cx="230" cy="230" r="96" fill="none" stroke="#0E7C71" stroke-width="1.4" opacity="0.7"/>
+            <circle cx="230" cy="230" r="44" fill="url(#wellGlow)"/>
+            <circle cx="230" cy="230" r="36" fill="none" stroke="#0C2E2F" stroke-width="2.4"/>
+            <circle cx="230" cy="230" r="13" fill="#2FD0BC"/>
+            <text x="230" y="180" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" font-weight="600" fill="#0C2E2F">서울의 우물</text>
+            <text x="230" y="118" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" font-weight="600" fill="#0E7C71">크리에이터의 우물</text>
+            <text x="230" y="58" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="13" font-weight="600" fill="#B07E24">넘쳐 흐르는 커뮤니티</text>
+            <text x="230" y="205" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="11" fill="#5C6E6A">제품 · 시스템 · 채움</text>
+            <text x="230" y="143" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="11" fill="#5C6E6A">코드 · 커미션 · 케어</text>
+            <text x="230" y="83" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-size="11" fill="#5C6E6A">멕시코 · 페루 · 에콰도르</text>
+          </svg>
+        </div>
+      </div>
+    </section>
+
     <section>
       <div class="section-kicker">왜 Briwell</div>
       <h2>대행사가 아니라, <em>운영 시스템</em>을 가진 팀</h2>
@@ -298,24 +370,24 @@
 
     <section>
       <div class="section-kicker">취급 브랜드</div>
-      <h2>우리가 라탐으로 가져가는 <em>제품들</em></h2>
+      <h2>우물에서 길어 올린 <em>것들</em></h2>
       <p class="section-sub">민감 피부 더마, 보태니컬 스킨케어, 글로벌 베스트셀러 마스크팩 —
         세 갈래의 큐레이션으로 시작합니다.</p>
       <div class="brand-grid">
         <div class="brand-card">
-          <div class="brand-img"><img src="../assets/img/products/parnell-pad.jpg" alt="파넬 시카마누 코튼 클리어 패드"></div>
+          <div class="brand-well"><img src="../assets/img/products/parnell-pad.jpg" alt="파넬 시카마누 코튼 클리어 패드"></div>
           <div class="brand-co">일레븐코퍼레이션</div>
           <h3>파넬 Parnell</h3>
           <p>시카마누 라인 — 센텔라와 마누카 꿀로 민감 피부를 진정시키는 고효능 더마 코스메틱.</p>
         </div>
         <div class="brand-card">
-          <div class="brand-img"><img src="../assets/img/products/ami-rosemary.jpg" alt="에센허브 로즈마리 워시"></div>
+          <div class="brand-well"><img src="../assets/img/products/ami-rosemary.jpg" alt="에센허브 로즈마리 워시"></div>
           <div class="brand-co">아미코스메틱스</div>
           <h3>에센허브 &amp; BRTC</h3>
           <p>티트리 보태니컬부터 액티브 맥스 선케어까지 — 연구소 기반 더마 코스메틱 하우스.</p>
         </div>
         <div class="brand-card">
-          <div class="brand-img"><img src="../assets/img/products/dermal-mask-model2.jpg" alt="더말 마스크팩"></div>
+          <div class="brand-well"><img src="../assets/img/products/dermal-mask-model2.jpg" alt="더말 마스크팩"></div>
           <div class="brand-co">더말코리아</div>
           <h3>더말 Dermal</h3>
           <p>전 세계에서 수백만 장이 팔린 마스크팩 — 가장 공유하기 쉬운 K-뷰티 리추얼.</p>
@@ -323,32 +395,28 @@
       </div>
     </section>
 
-    <section class="pullquote">
-      <blockquote>"천 명의 크리에이터가 아니라 <em>맞는 크리에이터</em>를 찾습니다 —
-        그리고 진지하게 대합니다."</blockquote>
-      <cite>— Briwell 팀, 서울</cite>
-    </section>
-
-    <section class="consent">
-      <div class="consent-grid">
-        <div>
-          <div class="section-kicker">데이터 원칙</div>
-          <h2>동의 없는 데이터는 시스템이 <em>거부합니다</em></h2>
-          <p class="lead">슬로건이 아닙니다. 플랫폼이 크리에이터 데이터를 받기 전에 동의를
-            검증하고, 동의가 없으면 등록 자체가 실패하도록(fail-closed) 만들어져 있습니다.
-            기술적 통제이지, 약속이 아닙니다.</p>
-        </div>
-        <div class="consent-list">
-          <div class="consent-item"><span>동의 없는 레코드는 인테이크에서 자동 거부됩니다.</span></div>
-          <div class="consent-item"><span>승인된 소스 레인만 사용 — 무단 스크래핑·안티봇 우회 없음.</span></div>
-          <div class="consent-item"><span>모든 아웃리치는 사람이 검토하고 사람이 보냅니다. 자동 DM 없음.</span></div>
+    <section>
+      <div class="deep">
+        <div class="deep-grid">
+          <div>
+            <div class="section-kicker">데이터 원칙</div>
+            <h2>동의 없이는, <em>한 방울도.</em></h2>
+            <p class="lead">슬로건이 아닙니다. 플랫폼이 크리에이터 데이터를 받기 전에 동의를
+              검증하고, 동의가 없으면 등록 자체가 실패하도록(fail-closed) 만들어져 있습니다.
+              기술적 통제이지, 약속이 아닙니다.</p>
+          </div>
+          <div class="deep-list">
+            <div class="deep-item"><span>동의 없는 레코드는 인테이크에서 자동 거부됩니다.</span></div>
+            <div class="deep-item"><span>승인된 소스 레인만 사용 — 무단 스크래핑·안티봇 우회 없음.</span></div>
+            <div class="deep-item"><span>모든 아웃리치는 사람이 검토하고 사람이 보냅니다. 자동 DM 없음.</span></div>
+          </div>
         </div>
       </div>
     </section>
 
     <section>
       <div class="section-kicker">함께 가는 방식</div>
-      <h2>브랜드 파트너와 <em>네 단계</em>로</h2>
+      <h2>브랜드 파트너와 <em>함께 우물을 팝니다</em></h2>
       <div class="steps-grid">
         <div class="step">
           <div class="step-no">i.</div>
@@ -375,7 +443,7 @@
 
     <section class="final" id="contacto">
       <div class="section-kicker" style="justify-content:center">라탐이 궁금하신가요?</div>
-      <h2>K-뷰티 브랜드와 <em>함께</em> 갑니다.</h2>
+      <h2>함께 <em>넘치게</em> 합시다.</h2>
       <div class="cta-row">
         <!-- TODO: 이메일/폼 결정 후 연결 -->
         <a class="btn-primary" href="#contacto">파트너 문의하기</a>
@@ -385,7 +453,7 @@
 
     <footer>
       <span>© 2026 Briwell · 서울</span>
-      <span>K-Beauty Creator Commerce · MX · PE · EC</span>
+      <span>Bridge + Well · MX · PE · EC</span>
     </footer>
   </div>
 </body>

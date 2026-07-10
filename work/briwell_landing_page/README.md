@@ -1,18 +1,28 @@
-# Briwell Landing (ES creator page)
+# Briwell Landing (ES creator page + KO company page)
 
 Concept C ("editorial hybrid") was approved by David on 2026-07-10 after a strategy
-session and a 3-concept comparison. `index.html` is the official ES creator landing.
+session and a 3-concept comparison. On 2026-07-11 David revealed the brand identity —
+**Briwell = Bridge + Well** (Isaiah 12:3 "wells of salvation", Isaac's wells, living
+water; one deep well filling other wells, Korea ↔ LATAM) — and both pages were rebuilt
+in the identity-driven design system **"The Well"**: deep-well teal ink `#0C2E2F`,
+living-water aqua (`#0E7C71` text / `#2FD0BC` decorative), sunlight gold `#D9A441`
+(decorative only), stone paper `#F5F2EA`; circular "well-mouth" photo frames; concentric
+ripple motifs; deep-ink sections; double-circle logo mark. Copy axis: ES "Que tu
+contenido rebose." / "Sin tu permiso, ni una gota." · KO "깊은 우물 하나가 다른 우물들을
+채웁니다." / "동의 없이는, 한 방울도." Scripture appears only in the KO brand-story
+section; the ES page uses universal water language.
 
 ## Files
 
-- `index.html` — **the approved landing** (self-contained: inline CSS, Google Fonts, no JS needed).
+- `index.html` — **the ES creator landing, "The Well" design** (self-contained: inline CSS, Google Fonts, no JS needed).
 - `concepts/` — the A/B/C concept archive from the 2026-07-10 pick (A = dark "system/operator",
   B = clean K-beauty, C = winner). `concepts/index.html` is a side-by-side viewer.
 - `_superseded_index_2026-07-09.html` — the pre-strategy-session WIP, kept for reference only.
-- `ko/index.html` — Korean company page, renewed 2026-07-10 in the C design system
-  (self-contained like the ES page; targets brand partners / grant reviewers; verifiable
-  facts only). Old design preserved as `ko/_superseded_ko_2026-07-09.html`.
-  `assets/landing.css` + `assets/landing.js` are now used only by the superseded archives.
+- `ko/index.html` — Korean company page in "The Well" design (self-contained; targets
+  brand partners / grant reviewers; verifiable facts only; brand-story section with the
+  Isaiah 12:3 founding verse and a concentric-ripple vision diagram). Old design preserved
+  as `ko/_superseded_ko_2026-07-09.html`. `assets/landing.css` + `assets/landing.js` are
+  now used only by the superseded archives.
 - `assets/img/products/` — official brand product photos + `SOURCES.md` (provenance; confirm
   usage rights with the brands before public launch).
 - `assets/img/*.png` — dashboard screenshots used as "sistema real" proof.

@@ -11,6 +11,13 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state (re-run 2026-07-10):** backend `368 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-3. Brand-identity redesign "The Well" (briefing 0.0.15): David revealed the brand core —
+   Briwell = Bridge + Well (Isaiah 12:3 wells of salvation, Isaac's wells, living water;
+   one deep well filling other wells, Korea ↔ LATAM). Both landing pages rebuilt in the
+   identity-driven design system (deep-teal/aqua/gold/stone palette, circular well-mouth
+   photo frames, ripple motifs, deep-ink sections). Scripture only in the KO brand-story
+   section; ES uses universal water language; all 0.0.14 copy rules kept. Identity also
+   saved to assistant memory (briwell-brand-identity).
 -2. ES creator landing page approved — concept C (briefing 0.0.14): strategy session →
    3 full-page concepts with official product photos (Parnell / Essenherb·BRTC / Dermal) →
    David picked C, now `work/briwell_landing_page/index.html`. Form-only CTA (placeholder

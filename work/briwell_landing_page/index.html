@@ -3,148 +3,180 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Briwell — Programa de Creadores K-Beauty en Latinoamérica</title>
-  <meta name="description" content="Programa de creadores de Briwell: K-beauty coreana auténtica para México, Perú y Ecuador. Código exclusivo, comisiones claras y colaboración con consentimiento.">
+  <title>Briwell — K-Beauty de Seúl a Latinoamérica</title>
+  <meta name="description" content="Briwell es puente y pozo: K-beauty auténtica de Seúl que fluye a Latinoamérica a través de creadores. Código exclusivo, comisión clara, consentimiento primero.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%230E7C71' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%232FD0BC'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { overflow-x: hidden; scroll-behavior: smooth; }
     :root {
-      --bg: #F7F4EF;
-      --ink: #211D1A;
-      --muted: #7A736B;
-      --accent: #D96C47;
-      --accent-soft: rgba(217,108,71,0.10);
-      --line: rgba(33,29,26,0.14);
+      --paper: #F5F2EA;
+      --ink: #0C2E2F;
+      --muted: #5C6E6A;
+      --aqua: #0E7C71;        /* living water — text-safe */
+      --aqua-bright: #2FD0BC; /* living water — decorative */
+      --gold: #D9A441;        /* joy / sunlight on water — decorative only */
+      --line: rgba(12, 46, 47, 0.14);
       --card: #FFFFFF;
+      --deep-glow: rgba(47, 208, 188, 0.14);
     }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg); color: var(--ink);
+      background: var(--paper); color: var(--ink);
       -webkit-font-smoothing: antialiased; overflow-x: hidden;
     }
     .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+
     .nav {
       display: flex; align-items: center; justify-content: space-between;
       padding: 28px 0; border-bottom: 1px solid var(--line);
     }
-    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; }
-    .logo span { color: var(--accent); font-style: italic; }
+    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; display: flex; align-items: center; gap: 9px; }
+    .logo-mark { width: 20px; height: 20px; flex: 0 0 auto; }
+    .logo em { font-style: italic; color: var(--aqua); }
     .nav-cta {
-      font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none;
-      border: 1px solid var(--ink); padding: 8px 20px; border-radius: 999px;
+      font-size: 13px; font-weight: 600; color: var(--paper); text-decoration: none;
+      background: var(--ink); padding: 9px 22px; border-radius: 999px;
     }
 
-    .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 64px; align-items: start; }
+    /* ---------- hero ---------- */
+    .hero { padding: 76px 0 64px; display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 60px; align-items: center; position: relative; }
+    .hero::before {
+      content: ''; position: absolute; top: -140px; left: -220px; width: 520px; height: 520px;
+      border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle, rgba(217,164,65,0.10) 0%, transparent 62%);
+    }
     .kicker {
       display: flex; align-items: center; gap: 14px;
-      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--accent); font-weight: 600; margin-bottom: 30px;
+      font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--aqua); font-weight: 600; margin-bottom: 30px;
     }
-    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--gold); }
     h1 {
-      font-family: 'Fraunces', serif; font-weight: 600;
-      font-size: clamp(42px, 5vw, 64px); line-height: 1.05; letter-spacing: -0.015em; margin-bottom: 28px;
+      font-family: 'Fraunces', serif; font-weight: 500;
+      font-size: clamp(44px, 5.4vw, 72px); line-height: 1.04; letter-spacing: -0.015em; margin-bottom: 26px;
     }
-    h1 em, h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
-    .sub { font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 48ch; margin-bottom: 36px; }
-    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 48px; }
+    h1 em, h2 em { font-style: italic; color: var(--aqua); }
+    .sub { font-size: 17px; line-height: 1.72; color: var(--muted); max-width: 47ch; margin-bottom: 34px; }
+    .sub strong { color: var(--ink); font-weight: 600; }
+    .cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-bottom: 40px; }
     .btn-primary {
-      display: inline-block; font-size: 16px; font-weight: 600; color: #fff;
-      background: var(--ink); text-decoration: none; padding: 17px 36px; border-radius: 8px;
+      display: inline-block; font-size: 16px; font-weight: 600; color: var(--paper);
+      background: var(--ink); text-decoration: none; padding: 17px 38px; border-radius: 999px;
+      box-shadow: 0 14px 30px rgba(12,46,47,0.22);
     }
-    .cta-hint { font-size: 13px; color: var(--muted); max-width: 22ch; line-height: 1.5; }
+    .cta-hint { font-size: 13px; color: var(--muted); max-width: 24ch; line-height: 1.5; }
+    .trust-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      font-size: 12.5px; font-weight: 500; color: var(--ink);
+      border: 1px solid var(--line); background: rgba(255,255,255,0.6);
+      border-radius: 999px; padding: 7px 16px;
+    }
+    .chip b { color: var(--aqua); font-weight: 600; }
 
-    .stats { display: flex; border-top: 1px solid var(--line); }
+    .wellscape { position: relative; display: flex; justify-content: center; }
+    .ripples { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+    .ripple { position: absolute; border-radius: 50%; border: 1px solid rgba(14,124,113,0.28); }
+    .r1 { width: 112%; aspect-ratio: 1; animation: ripple 7s ease-out infinite; }
+    .r2 { width: 126%; aspect-ratio: 1; border-color: rgba(14,124,113,0.16); animation: ripple 7s ease-out 1.4s infinite; }
+    .r3 { width: 140%; aspect-ratio: 1; border-color: rgba(217,164,65,0.20); animation: ripple 7s ease-out 2.8s infinite; }
+    @keyframes ripple { 0% { transform: scale(0.94); opacity: 0; } 18% { opacity: 1; } 100% { transform: scale(1.06); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .ripple { animation: none; opacity: 0.6; } }
+    .well-frame {
+      position: relative; width: min(400px, 82%); aspect-ratio: 1; border-radius: 50%;
+      overflow: hidden; box-shadow: 0 34px 70px rgba(12,46,47,0.26), inset 0 0 0 10px rgba(245,242,234,0.9);
+    }
+    .well-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .well-caption {
+      position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink); background: var(--paper); border: 1px solid var(--line);
+      border-radius: 999px; padding: 7px 16px; white-space: nowrap;
+    }
+
+    /* ---------- marquee ---------- */
+    .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 15px 0; overflow: hidden; white-space: nowrap; }
+    .marquee-inner { font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--muted); letter-spacing: 0.04em; }
+    .marquee-inner b { color: var(--gold); font-weight: 400; margin: 0 18px; }
+
+    /* ---------- sections ---------- */
+    section { padding: 92px 0; }
+    .section-kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--aqua); font-weight: 600; margin-bottom: 24px;
+    }
+    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--gold); }
+    h2 {
+      font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(30px, 3.6vw, 46px);
+      line-height: 1.12; margin-bottom: 18px; max-width: 24ch;
+    }
+    .section-sub { font-size: 16px; line-height: 1.72; color: var(--muted); max-width: 58ch; margin-bottom: 48px; }
+
+    .stats { display: flex; border-top: 1px solid var(--line); margin-top: 8px; }
     .stat { flex: 1; padding: 22px 24px 0 0; }
     .stat + .stat { border-left: 1px solid var(--line); padding-left: 24px; }
     .stat-num { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
-    .stat-num em { font-style: italic; color: var(--accent); font-size: 16px; }
-    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; line-height: 1.5; }
-
-    .side { display: flex; flex-direction: column; gap: 20px; }
-    .feature-card { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px rgba(33,29,26,0.12); }
-    .feature-card img { display: block; width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; }
-    .feature-tag {
-      position: absolute; top: 14px; left: 14px;
-      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--ink); background: rgba(247,244,239,0.92); padding: 6px 12px; border-radius: 999px;
-    }
-    .proof-card {
-      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-      overflow: hidden; box-shadow: 0 16px 32px rgba(33,29,26,0.08);
-    }
-    .proof-card img { display: block; width: 100%; }
-    .proof-meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--line); }
-    .proof-label { font-size: 12px; color: var(--muted); }
-    .proof-tag {
-      font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
-    }
-
-    .marquee {
-      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
-      padding: 16px 0; overflow: hidden; white-space: nowrap;
-    }
-    .marquee-inner {
-      font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--muted); letter-spacing: 0.04em;
-    }
-    .marquee-inner b { color: var(--accent); font-weight: 400; margin: 0 18px; }
-
-    section { padding: 88px 0; }
-    .section-kicker {
-      display: flex; align-items: center; gap: 14px;
-      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--accent); font-weight: 600; margin-bottom: 24px;
-    }
-    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
-    h2 {
-      font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(30px, 3.6vw, 46px);
-      line-height: 1.1; margin-bottom: 18px; max-width: 24ch;
-    }
-    .section-sub { font-size: 16px; line-height: 1.7; color: var(--muted); max-width: 58ch; margin-bottom: 48px; }
+    .stat-num em { font-style: italic; color: var(--aqua); font-size: 16px; }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; line-height: 1.55; }
 
     .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); }
     .why-col { padding: 32px 28px 0 0; }
     .why-col + .why-col { border-left: 1px solid var(--line); padding-left: 28px; }
-    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--gold); margin-bottom: 12px; }
     .why-col h3 { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
-    .why-col p { font-size: 14.5px; line-height: 1.65; color: var(--muted); }
+    .why-col p { font-size: 14.5px; line-height: 1.68; color: var(--muted); }
 
-    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-    .brand-card { display: flex; flex-direction: column; gap: 0; }
-    .brand-img { border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; box-shadow: 0 16px 36px rgba(33,29,26,0.10); }
-    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 18px 0 4px; }
-    .brand-card h3 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-    .brand-card p { font-size: 14.5px; line-height: 1.65; color: var(--muted); }
-
-    .pullquote { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; }
-    .pullquote blockquote {
-      font-family: 'Fraunces', serif; font-style: italic; font-size: clamp(24px, 3vw, 34px);
-      line-height: 1.4; max-width: 26ch; margin: 0 auto 18px;
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    .brand-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .brand-well {
+      width: min(280px, 90%); aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+      box-shadow: 0 22px 48px rgba(12,46,47,0.20), inset 0 0 0 8px rgba(255,255,255,0.85);
+      margin-bottom: 6px;
     }
-    .pullquote cite { font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .brand-well img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 20px 0 4px; }
+    .brand-card h3 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .brand-card p { font-size: 14.5px; line-height: 1.68; color: var(--muted); max-width: 34ch; }
+
+    /* deep sections (inside the well) */
+    .deep { background: var(--ink); color: #EDF2EF; border-radius: 18px; padding: 84px 64px; position: relative; overflow: hidden; }
+    .deep::before {
+      content: ''; position: absolute; top: -160px; right: -160px; width: 480px; height: 480px;
+      border-radius: 50%; background: radial-gradient(circle, var(--deep-glow) 0%, transparent 65%); pointer-events: none;
+    }
+    .deep > * { position: relative; }
+    .deep .section-kicker { color: var(--aqua-bright); }
+    .deep .section-kicker::after { background: var(--gold); }
+    .deep h2 { color: #fff; }
+    .deep h2 em { color: var(--aqua-bright); }
+    .deep .section-sub { color: rgba(237,242,239,0.72); }
+
+    .proof-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 52px; align-items: center; }
+    .proof-card { background: rgba(245,242,234,0.06); border: 1px solid rgba(237,242,239,0.18); border-radius: 12px; overflow: hidden; }
+    .proof-card img { display: block; width: 100%; }
+    .proof-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-top: 1px solid rgba(237,242,239,0.18); }
+    .proof-label { font-size: 12px; color: rgba(237,242,239,0.65); }
+    .proof-tag {
+      flex: 0 0 auto; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--ink); background: var(--aqua-bright); padding: 4px 10px; border-radius: 999px;
+    }
+    .deep-list { display: flex; flex-direction: column; gap: 14px; }
+    .deep-item {
+      display: flex; gap: 12px; font-size: 15px; line-height: 1.64; color: rgba(237,242,239,0.85);
+      border: 1px solid rgba(237,242,239,0.2); border-radius: 10px; padding: 14px 18px;
+    }
+    .deep-item::before { content: '◦'; color: var(--aqua-bright); font-weight: 700; }
+    .deep-item strong { color: #fff; font-weight: 600; }
 
     .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
-    .step { border-top: 2px solid var(--ink); padding-top: 20px; }
-    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--accent); margin-bottom: 10px; }
+    .step { border-top: 2px solid var(--aqua); padding-top: 20px; }
+    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--gold); margin-bottom: 10px; }
     .step h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
-    .step p { font-size: 14px; line-height: 1.6; color: var(--muted); }
-
-    .consent { background: var(--ink); color: #F3EFE9; border-radius: 16px; padding: 72px 64px; }
-    .consent .section-kicker { color: var(--accent); }
-    .consent h2 { color: #fff; }
-    .consent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
-    .consent p.lead { font-size: 16px; line-height: 1.7; color: rgba(243,239,233,0.75); }
-    .consent-list { display: flex; flex-direction: column; gap: 14px; }
-    .consent-item {
-      display: flex; gap: 12px; font-size: 15px; line-height: 1.6; color: rgba(243,239,233,0.85);
-      border: 1px solid rgba(243,239,233,0.2); border-radius: 10px; padding: 14px 18px;
-    }
-    .consent-item::before { content: '—'; color: var(--accent); font-weight: 600; }
+    .step p { font-size: 14px; line-height: 1.64; color: var(--muted); }
 
     .faq-list { max-width: 760px; }
     details { border-bottom: 1px solid var(--line); }
@@ -153,12 +185,12 @@
       font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; padding: 22px 0;
     }
     summary::-webkit-details-marker { display: none; }
-    summary::after { content: '+'; color: var(--accent); font-size: 24px; font-weight: 300; }
+    summary::after { content: '+'; color: var(--aqua); font-size: 24px; font-weight: 300; }
     details[open] summary::after { content: '–'; }
-    details p { font-size: 15px; line-height: 1.7; color: var(--muted); padding: 0 0 24px; max-width: 60ch; }
+    details p { font-size: 15px; line-height: 1.72; color: var(--muted); padding: 0 0 24px; max-width: 60ch; }
 
-    .final { text-align: center; border-top: 1px solid var(--line); padding: 110px 0; }
-    .final h2 { margin-left: auto; margin-right: auto; max-width: 20ch; }
+    .final { text-align: center; border-top: 1px solid var(--line); padding: 116px 0; position: relative; }
+    .final h2 { margin-left: auto; margin-right: auto; max-width: 22ch; }
     .final .cta-row { justify-content: center; margin-bottom: 0; margin-top: 36px; }
     footer {
       border-top: 1px solid var(--line); padding: 28px 0; display: flex;
@@ -166,7 +198,8 @@
     }
 
     @media (max-width: 920px) {
-      .hero, .consent-grid { grid-template-columns: 1fr; }
+      .hero, .proof-grid { grid-template-columns: 1fr; }
+      .wellscape { margin-top: 12px; }
       .why-grid { grid-template-columns: 1fr; }
       .why-col + .why-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 24px; padding-top: 24px; }
       .brand-grid { grid-template-columns: 1fr; }
@@ -174,11 +207,11 @@
       .stats { flex-direction: column; }
       .stat { padding-right: 0; }
       .stat + .stat { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 20px; padding-top: 20px; }
-      .consent { padding: 56px 28px; }
+      .deep { padding: 60px 28px; }
     }
     @media (max-width: 480px) {
-      h1 { font-size: 36px; }
-      h2 { font-size: 27px; }
+      h1 { font-size: 40px; }
+      h2 { font-size: 28px; }
       .wrap { padding-left: 24px; padding-right: 24px; }
       section { padding: 64px 0; }
     }
@@ -187,119 +220,154 @@
 <body>
   <div class="wrap">
     <nav class="nav">
-      <div class="logo">bri<span>well</span></div>
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="13" fill="none" stroke="#0E7C71" stroke-width="2.5"/>
+          <circle cx="16" cy="16" r="6" fill="#2FD0BC"/>
+        </svg>
+        bri<em>well</em>
+      </div>
       <a class="nav-cta" href="#aplicar">Aplicar</a>
     </nav>
 
     <section class="hero">
       <div>
-        <div class="kicker">K-beauty · México · Perú · Ecuador</div>
-        <h1>Tu contenido.<br>Nuestra K-beauty.<br><em>Comisión real.</em></h1>
-        <p class="sub">Briwell conecta creadores de skincare en Latinoamérica con cosmética
-          coreana auténtica. Sin promesas vagas: código exclusivo, seguimiento de cada venta
-          y un sistema que puedes ver funcionando.</p>
+        <div class="kicker">Puente + pozo · Seúl → Latinoamérica</div>
+        <h1>Que tu contenido <em>rebose.</em></h1>
+        <p class="sub"><strong>Briwell</strong> significa puente y pozo: traemos la K-beauty más pura
+          de Seúl y la hacemos fluir a Latinoamérica a través de creadores como tú. Primero te
+          llenamos — <strong>productos auténticos, tu código exclusivo, comisión clara</strong> —
+          porque un pozo lleno siempre rebosa.</p>
         <div class="cta-row">
           <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
-          <span class="cta-hint">Formulario de 3 minutos.</span>
+          <span class="cta-hint">Formulario de 3 minutos, sin compromiso.</span>
         </div>
-        <div class="stats">
-          <div class="stat">
-            <div class="stat-num">3 <em>países</em></div>
-            <div class="stat-label">México, Perú y Ecuador en la primera etapa</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">1 <em>código</em></div>
-            <div class="stat-label">exclusivo tuyo, con comisión por cada venta</div>
-          </div>
-          <div class="stat">
-            <div class="stat-num">0 <em>spam</em></div>
-            <div class="stat-label">colaboración con consentimiento, sin DMs masivos</div>
-          </div>
+        <div class="trust-chips">
+          <span class="chip"><b>Sistema real</b> — no promesas</span>
+          <span class="chip"><b>Consentimiento</b> primero</span>
+          <span class="chip"><b>Sin</b> exclusividad</span>
         </div>
       </div>
-      <div class="side">
-        <div class="feature-card">
-          <span class="feature-tag">Seúl → LATAM</span>
-          <img src="assets/img/products/ami-essenherb-stone.jpg" alt="Essenherb — botánica coreana de AMI Cosmetic">
+      <div class="wellscape">
+        <div class="ripples" aria-hidden="true">
+          <div class="ripple r1"></div>
+          <div class="ripple r2"></div>
+          <div class="ripple r3"></div>
         </div>
-        <div class="proof-card">
-          <img src="assets/img/07_candidates_intelligence.png" alt="Panel real de operaciones de Briwell">
-          <div class="proof-meta">
-            <span class="proof-label">Nuestro panel de operaciones — no es un mockup</span>
-            <span class="proof-tag">Sistema real</span>
-          </div>
+        <div class="well-frame">
+          <img src="assets/img/products/dermal-mask-model.jpg" alt="El ritual K-beauty — mascarilla coreana">
         </div>
+        <span class="well-caption">Agua viva de Seúl</span>
       </div>
     </section>
   </div>
 
   <div class="marquee">
     <div class="marquee-inner">
-      Skincare coreano auténtico <b>·</b> Comisiones transparentes <b>·</b> Código exclusivo
-      <b>·</b> Consentimiento primero <b>·</b> Skincare coreano auténtico <b>·</b> Comisiones transparentes
+      Agua viva de Seúl <b>◦</b> Comisión que fluye <b>◦</b> Sin permiso, ni una gota
+      <b>◦</b> Puente Seúl–LATAM <b>◦</b> Agua viva de Seúl <b>◦</b> Comisión que fluye <b>◦</b> Código exclusivo
     </div>
   </div>
 
   <div class="wrap">
     <section>
-      <div class="section-kicker">Por qué Briwell</div>
-      <h2>Un puente directo, <em>no una agencia más</em></h2>
+      <div class="section-kicker">El puente</div>
+      <h2>No somos otra agencia. Somos <em>puente y pozo.</em></h2>
+      <p class="section-sub">Un equipo de Seúl que distribuye las marcas que verás abajo,
+        conectado directo con creadores de México, Perú y Ecuador. Sin intermediarios de intermediarios.</p>
       <div class="why-grid">
         <div class="why-col">
           <div class="why-no">i.</div>
-          <h3>Te elegimos en serio</h3>
-          <p>No mandamos mil DMs iguales. Estudiamos tu contenido y te proponemos una colaboración
-            con sentido para tu audiencia.</p>
+          <h3>Un puente directo</h3>
+          <p>Trabajamos con las casas coreanas cuyos productos nosotros mismos distribuimos.
+            Producto original, cadena corta, de Seúl a tu puerta.</p>
         </div>
         <div class="why-col">
           <div class="why-no">ii.</div>
-          <h3>Todo queda registrado</h3>
-          <p>Código, ventas, comisión: cada paso vive en nuestro panel de operaciones.
-            Lo que ves tú es lo que vemos nosotros.</p>
+          <h3>Primero te llenamos</h3>
+          <p>Código exclusivo con tu nombre, comisión por cada venta y acuerdos claros antes de
+            empezar. Cuando el pozo está lleno, el contenido rebosa solo.</p>
         </div>
         <div class="why-col">
           <div class="why-no">iii.</div>
-          <h3>Marcas que distribuimos</h3>
-          <p>Trabajamos directamente con las casas coreanas cuyos productos manejamos.
-            Producto original, cadena corta.</p>
+          <h3>Nunca extraemos</h3>
+          <p>Ni DMs masivos, ni datos sin permiso, ni exclusividad forzada. Colaboras a tu ritmo
+            y puedes salir cuando quieras.</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num">3 <em>países</em></div>
+          <div class="stat-label">México, Perú y Ecuador — un solo puente desde Seúl</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">1 <em>código</em></div>
+          <div class="stat-label">exclusivo tuyo — cada venta registrada, comisión que fluye</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">0 <em>spam</em></div>
+          <div class="stat-label">sin tu permiso, ni una gota de tus datos</div>
         </div>
       </div>
     </section>
 
     <section>
-      <div class="section-kicker">Las marcas</div>
-      <h2>Lo que vas a tener <em>en tus manos</em></h2>
-      <p class="section-sub">Tres casas coreanas, una curaduría: piel sensible, protección y ritual.</p>
+      <div class="section-kicker">Del pozo de Seúl</div>
+      <h2>Lo que sacamos del pozo, <em>para ti.</em></h2>
+      <p class="section-sub">Tres casas coreanas, una curaduría: piel sensible, botánica de laboratorio
+        y el ritual más fácil de compartir.</p>
       <div class="brand-grid">
         <div class="brand-card">
-          <div class="brand-img"><img src="assets/img/products/parnell-cleanser.jpg" alt="Parnell Apple Vinegar Pore Deep Cleanser"></div>
+          <div class="brand-well"><img src="assets/img/products/parnell-pad.jpg" alt="Parnell Cicamanu Cotton Clear Pad"></div>
           <div class="brand-co">Eleven Corporation</div>
           <h3>Parnell</h3>
           <p>Derma coreana de alta eficacia: centella, manuka y la línea Cicamanu para piel sensible.</p>
         </div>
         <div class="brand-card">
-          <div class="brand-img"><img src="assets/img/products/ami-rosemary.jpg" alt="Essenherb Rosemary de AMI Cosmetic"></div>
+          <div class="brand-well"><img src="assets/img/products/ami-essenherb-stone.jpg" alt="Essenherb de AMI Cosmetic"></div>
           <div class="brand-co">AMI Cosmetic</div>
           <h3>Essenherb &amp; BRTC</h3>
           <p>Botánica y derma-cosmética de laboratorio: del tea tree al escudo solar Active Max.</p>
         </div>
         <div class="brand-card">
-          <div class="brand-img"><img src="assets/img/products/dermal-mask-model.jpg" alt="Mascarilla facial Dermal"></div>
+          <div class="brand-well"><img src="assets/img/products/dermal-mask-model2.jpg" alt="Mascarilla facial Dermal"></div>
           <div class="brand-co">Dermal Korea</div>
           <h3>Dermal</h3>
-          <p>Las mascarillas coreanas con millones de unidades vendidas en el mundo. El ritual más fácil de compartir.</p>
+          <p>Las mascarillas coreanas con millones de unidades vendidas en el mundo.</p>
         </div>
       </div>
     </section>
 
-    <section class="pullquote">
-      <blockquote>"No buscamos mil creadores. Buscamos a los correctos — y los tratamos en serio."</blockquote>
-      <cite>— Equipo Briwell, Seúl</cite>
+    <section>
+      <div class="deep">
+        <div class="proof-grid">
+          <div>
+            <div class="section-kicker">El sistema</div>
+            <h2>Un puente se sostiene con <em>ingeniería.</em></h2>
+            <p class="section-sub" style="margin-bottom: 28px">Detrás del programa hay una plataforma real
+              que gestiona cada colaboración — no un chat improvisado.</p>
+            <div class="deep-list">
+              <div class="deep-item"><span><strong>Todo queda registrado:</strong> código, ventas y comisión viven en nuestro panel de operaciones.</span></div>
+              <div class="deep-item"><span><strong>Lo que ves tú es lo que vemos nosotros.</strong> Sin cajas negras.</span></div>
+              <div class="deep-item"><span><strong>Cada contacto pasa por una persona.</strong> La aprobación humana está forzada en el código.</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="proof-card">
+              <img src="assets/img/07_candidates_intelligence.png" alt="Panel real de operaciones de Briwell">
+              <div class="proof-meta">
+                <span class="proof-label">Nuestro panel de operaciones — no es un mockup</span>
+                <span class="proof-tag">Sistema real</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section>
-      <div class="section-kicker">Cómo funciona</div>
-      <h2>De hola a <em>comisión</em> en cuatro pasos</h2>
+      <div class="section-kicker">Cómo fluye</div>
+      <h2>De hola a comisión, <em>como agua.</em></h2>
       <div class="steps-grid">
         <div class="step">
           <div class="step-no">i.</div>
@@ -318,24 +386,27 @@
         </div>
         <div class="step">
           <div class="step-no">iv.</div>
-          <h3>Ganas</h3>
+          <h3>Rebosas</h3>
           <p>Cada venta con tu código queda registrada y genera tu comisión, con seguimiento visible.</p>
         </div>
       </div>
     </section>
 
-    <section class="consent">
-      <div class="consent-grid">
-        <div>
-          <div class="section-kicker">Consentimiento</div>
-          <h2>Si no diste permiso, el sistema <em>lo rechaza</em></h2>
-          <p class="lead">No es un eslogan: nuestra plataforma valida el consentimiento antes de aceptar
-            cualquier dato de creador. Es un control técnico, no una promesa.</p>
-        </div>
-        <div class="consent-list">
-          <div class="consent-item"><span>Tus datos entran a nuestro sistema solo si tú los diste.</span></div>
-          <div class="consent-item"><span>Cada contacto es revisado y enviado por una persona — cero bots.</span></div>
-          <div class="consent-item"><span>Sin exclusividad. Puedes pausar o salir cuando quieras.</span></div>
+    <section>
+      <div class="deep">
+        <div class="proof-grid">
+          <div>
+            <div class="section-kicker">Consentimiento</div>
+            <h2>Sin tu permiso, <em>ni una gota.</em></h2>
+            <p class="section-sub" style="margin-bottom: 0">No es un eslogan: nuestra plataforma valida
+              el consentimiento antes de aceptar cualquier dato de creador. Si no diste permiso,
+              el sistema lo rechaza. Es un control técnico, no una promesa.</p>
+          </div>
+          <div class="deep-list">
+            <div class="deep-item"><span>Tus datos entran a nuestro sistema solo si tú los diste.</span></div>
+            <div class="deep-item"><span>Cada contacto es revisado y enviado por una persona — cero bots.</span></div>
+            <div class="deep-item"><span>Sin exclusividad. Puedes pausar o salir cuando quieras.</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -369,17 +440,17 @@
 
     <section class="final" id="aplicar">
       <div class="section-kicker" style="justify-content:center">¿Creas contenido de skincare en español?</div>
-      <h2>Hablemos. <em>En serio.</em></h2>
+      <h2>El agua está lista. <em>¿Hablamos?</em></h2>
       <div class="cta-row">
         <!-- TODO: conectar URL del formulario al publicar -->
         <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
-        <span class="cta-hint">Formulario de 3 minutos.</span>
+        <span class="cta-hint">Formulario de 3 minutos, sin compromiso.</span>
       </div>
     </section>
 
     <footer>
       <span>© 2026 Briwell · Seúl, Corea del Sur</span>
-      <span>Programa de creadores · MX · PE · EC</span>
+      <span>Puente + pozo · MX · PE · EC</span>
     </footer>
   </div>
 </body>
