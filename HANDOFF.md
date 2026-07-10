@@ -11,6 +11,13 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state (re-run 2026-07-10):** backend `368 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-4. Brand decisions + dashboard PWA + mobile roadmap (briefing 0.0.16): official notation
+   "Briwell", tagline "Bridge + Well", faith kept internal-only (scripture removed from the
+   public KO page), logo/cards deferred (13 mark directions + 7 wordmark type candidates in
+   work/briwell_brand/). Native apps deliberately deferred on a trigger-based roadmap; the
+   operator dashboard is now an installable PWA (manifest + sw.js + icons, smoke passing,
+   375px verified). Landing pages audited responsive-clean at 360-1024px. Creator portal
+   (tokenized personal links) designed, implementation next session.
 -3. Brand-identity redesign "The Well" (briefing 0.0.15): David revealed the brand core —
    Briwell = Bridge + Well (Isaiah 12:3 wells of salvation, Isaac's wells, living water;
    one deep well filling other wells, Korea ↔ LATAM). Both landing pages rebuilt in the

@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Briwell Creator Commerce Intelligence</title>
+  <meta name="theme-color" content="#0C2E2F">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
   <link rel="stylesheet" href="./styles.css?v=20260708d">
 </head>
 <body>
@@ -830,5 +834,13 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="./api-client.js?v=20260708c"></script>
   <script src="./app.js?v=20260708f"></script>
+  <script>
+    // PWA: register the app-shell service worker (no-op where unsupported).
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function () {});
+      });
+    }
+  </script>
 </body>
 </html>
