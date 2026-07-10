@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concepto A — Sistema / Operador · Briwell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; scroll-behavior: smooth; }
+    :root {
+      --bg: #0B0E14;
+      --bg-soft: #121722;
+      --bg-card: #161C29;
+      --ink: #EDF1F7;
+      --muted: #8B95A7;
+      --accent: #4FE3C1;
+      --accent-dim: rgba(79, 227, 193, 0.12);
+      --line: rgba(139, 149, 167, 0.18);
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    .concept-badge {
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      font-family: 'Space Grotesk', monospace; font-size: 11px; letter-spacing: 0.12em;
+      color: var(--bg); background: var(--accent); padding: 6px 12px; border-radius: 999px;
+      font-weight: 700;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding-top: 28px; }
+    .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+    .logo span { color: var(--accent); }
+    .nav-cta {
+      font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700;
+      color: var(--accent); text-decoration: none; border: 1px solid var(--line);
+      padding: 8px 18px; border-radius: 999px;
+    }
+
+    .hero {
+      padding: 72px 0 88px; display: grid; grid-template-columns: 1.05fr 0.95fr;
+      gap: 56px; align-items: center; position: relative;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -120px; right: -180px;
+      width: 560px; height: 560px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(79,227,193,0.10) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent);
+      border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px;
+      background: var(--accent-dim); margin-bottom: 28px;
+    }
+    .eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif; font-size: clamp(38px, 4.6vw, 58px);
+      line-height: 1.06; letter-spacing: -0.03em; font-weight: 700; margin-bottom: 24px;
+    }
+    h1 em, h2 em { font-style: normal; color: var(--accent); }
+    .sub { font-size: 17px; line-height: 1.65; color: var(--muted); max-width: 46ch; margin-bottom: 36px; }
+    .sub strong { color: var(--ink); font-weight: 600; }
+    .cta-row { display: flex; align-items: center; gap: 20px; margin-bottom: 44px; }
+    .btn-primary {
+      display: inline-block; font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+      font-size: 16px; color: var(--bg); background: var(--accent); text-decoration: none;
+      padding: 16px 32px; border-radius: 10px; letter-spacing: -0.01em;
+      box-shadow: 0 0 32px rgba(79,227,193,0.25);
+    }
+    .cta-hint { font-size: 13px; color: var(--muted); }
+    .trust-row { display: flex; border-top: 1px solid var(--line); }
+    .trust-item { padding: 20px 24px 0 0; margin-right: 24px; }
+    .trust-item + .trust-item { border-left: 1px solid var(--line); padding-left: 24px; }
+    .trust-num { font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+    .trust-label { font-size: 12px; color: var(--muted); letter-spacing: 0.04em; }
+
+    .browser-frame {
+      background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px;
+      overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); transform: rotate(1.2deg);
+    }
+    .browser-bar { display: flex; align-items: center; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(139,149,167,0.35); }
+    .browser-url {
+      margin-left: 12px; font-size: 11px; color: var(--muted);
+      background: rgba(139,149,167,0.1); border-radius: 6px; padding: 4px 12px;
+      font-family: 'Space Grotesk', monospace;
+    }
+    .browser-frame img { display: block; width: 100%; }
+    .proof-caption { margin-top: 18px; font-size: 13px; color: var(--muted); text-align: center; }
+    .proof-caption strong { color: var(--accent); font-weight: 600; }
+
+    section { padding: 88px 0; }
+    .section-kicker {
+      font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+    }
+    h2 {
+      font-family: 'Space Grotesk', sans-serif; font-size: clamp(28px, 3.4vw, 42px);
+      line-height: 1.12; letter-spacing: -0.02em; font-weight: 700; margin-bottom: 18px;
+      max-width: 24ch;
+    }
+    .section-sub { font-size: 16px; line-height: 1.65; color: var(--muted); max-width: 58ch; margin-bottom: 48px; }
+
+    .why { border-top: 1px solid var(--line); }
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .why-card { background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; padding: 28px; }
+    .why-tag {
+      font-family: 'Space Grotesk', monospace; font-size: 11px; color: var(--accent);
+      letter-spacing: 0.14em; margin-bottom: 16px;
+    }
+    .why-card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 19px; margin-bottom: 10px; }
+    .why-card p { font-size: 14px; line-height: 1.65; color: var(--muted); }
+
+    .brands { border-top: 1px solid var(--line); }
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .brand-card {
+      background: var(--bg-card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .brand-img { aspect-ratio: 1 / 1; overflow: hidden; }
+    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-body { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .brand-co {
+      font-family: 'Space Grotesk', monospace; font-size: 10px; color: var(--muted);
+      letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .brand-body h3 { font-family: 'Space Grotesk', sans-serif; font-size: 20px; }
+    .brand-body p { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+    .steps { border-top: 1px solid var(--line); }
+    .step-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; counter-reset: step; }
+    .step { border-top: 2px solid var(--accent); padding-top: 20px; }
+    .step-no { font-family: 'Space Grotesk', monospace; font-size: 12px; color: var(--accent); letter-spacing: 0.14em; margin-bottom: 12px; }
+    .step h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; margin-bottom: 8px; }
+    .step p { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+    .consent {
+      border-top: 1px solid var(--line); background: var(--bg-soft);
+    }
+    .consent-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .consent-list { display: flex; flex-direction: column; gap: 16px; }
+    .consent-item {
+      display: flex; gap: 14px; font-size: 15px; line-height: 1.6; color: var(--muted);
+      background: var(--bg-card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px;
+    }
+    .consent-item::before { content: '✓'; color: var(--accent); font-weight: 700; }
+    .consent-item strong { color: var(--ink); font-weight: 600; }
+
+    .faq { border-top: 1px solid var(--line); }
+    .faq-list { max-width: 760px; }
+    details { border-bottom: 1px solid var(--line); }
+    summary {
+      cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 500; padding: 22px 0;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--accent); font-size: 22px; font-weight: 400; }
+    details[open] summary::after { content: '–'; }
+    details p { font-size: 15px; line-height: 1.7; color: var(--muted); padding: 0 0 24px; max-width: 62ch; }
+
+    .final { text-align: center; border-top: 1px solid var(--line); padding: 110px 0; }
+    .final h2 { margin-left: auto; margin-right: auto; }
+    .final .cta-row { justify-content: center; margin-top: 36px; margin-bottom: 0; }
+    footer {
+      border-top: 1px solid var(--line); padding: 28px 0; display: flex;
+      justify-content: space-between; font-size: 12px; color: var(--muted);
+    }
+
+    @media (max-width: 900px) {
+      .hero, .consent-inner { grid-template-columns: 1fr; }
+      .why-grid, .brand-grid { grid-template-columns: 1fr; }
+      .step-grid { grid-template-columns: 1fr 1fr; }
+      .trust-row { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="concept-badge">CONCEPTO A</div>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="logo">bri<span>well</span></div>
+      <a class="nav-cta" href="#aplicar">Aplicar</a>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">México · Perú · Ecuador</div>
+        <h1>Una colaboración <em>seria</em>, no otro DM.</h1>
+        <p class="sub">Briwell trae K-beauty auténtica a Latinoamérica. Tú creas el contenido;
+          nuestro sistema se encarga del resto: <strong>código exclusivo, seguimiento de ventas
+          y comisiones claras</strong> — todo visible, nada de promesas vagas.</p>
+        <div class="cta-row">
+          <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
+          <span class="cta-hint">Formulario de 3 minutos · respuesta en 72 h</span>
+        </div>
+        <div class="trust-row">
+          <div class="trust-item">
+            <div class="trust-num">Comisión por venta</div>
+            <div class="trust-label">con tu código exclusivo</div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-num">Panel transparente</div>
+            <div class="trust-label">ves lo mismo que nosotros</div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-num">Consentimiento primero</div>
+            <div class="trust-label">tus datos, tus reglas</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="browser-url">briwell · operaciones en vivo</span>
+          </div>
+          <img src="../assets/img/01_command_overview.png" alt="Panel de operaciones de Briwell">
+        </div>
+        <p class="proof-caption">No es un mockup: <strong>este es el sistema real</strong> que gestiona cada colaboración.</p>
+      </div>
+    </section>
+
+    <section class="why">
+      <div class="section-kicker">Por qué Briwell</div>
+      <h2>Operamos como un <em>sistema</em>, no como una bandeja de spam</h2>
+      <p class="section-sub">Somos un equipo de Seúl construyendo el puente directo entre marcas coreanas
+        y creadores latinoamericanos. Sin intermediarios de intermediarios.</p>
+      <div class="why-grid">
+        <div class="why-card">
+          <div class="why-tag">[ 01 · SELECCIÓN ]</div>
+          <h3>Te elegimos en serio</h3>
+          <p>No mandamos mil DMs iguales. Estudiamos tu contenido y te proponemos una colaboración
+            que tiene sentido para tu audiencia.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-tag">[ 02 · REGISTRO ]</div>
+          <h3>Todo queda registrado</h3>
+          <p>Código, ventas, comisión: cada paso vive en nuestro panel de operaciones.
+            Lo que ves tú es lo que vemos nosotros.</p>
+        </div>
+        <div class="why-card">
+          <div class="why-tag">[ 03 · DIRECTO ]</div>
+          <h3>Marcas que distribuimos</h3>
+          <p>Trabajamos directamente con las marcas coreanas cuyos productos manejamos.
+            Producto original, cadena corta.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="brands">
+      <div class="section-kicker">Las marcas</div>
+      <h2>Lo que vas a tener <em>en tus manos</em></h2>
+      <p class="section-sub">Skincare coreano real, de las líneas que nosotros mismos distribuimos hacia Latinoamérica.</p>
+      <div class="brand-grid">
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/parnell-pad.jpg" alt="Parnell Cicamanu Cotton Clear Pad"></div>
+          <div class="brand-body">
+            <div class="brand-co">Eleven Corporation · Seúl</div>
+            <h3>Parnell</h3>
+            <p>Derma-cosmética de alta eficacia. Su línea Cicamanu combina centella y miel de manuka
+              para calmar piel sensible.</p>
+          </div>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/ami-brtc-sun.jpg" alt="BRTC Active Max Shield Sun Cream"></div>
+          <div class="brand-body">
+            <div class="brand-co">AMI Cosmetic · Seúl</div>
+            <h3>BRTC &amp; Essenherb</h3>
+            <p>Del laboratorio derma coreano: protección solar Active Max y botánica
+              de tea tree para piel que reacciona.</p>
+          </div>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/dermal-mask-model-sm.jpg" alt="Mascarilla facial Dermal"></div>
+          <div class="brand-body">
+            <div class="brand-co">Dermal Korea · Seúl</div>
+            <h3>Dermal</h3>
+            <p>Las mascarillas coreanas con millones de unidades vendidas en el mundo.
+              El ritual K-beauty más fácil de compartir.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="steps">
+      <div class="section-kicker">Cómo funciona</div>
+      <h2>De hola a <em>comisión</em> en cuatro pasos</h2>
+      <div class="step-grid">
+        <div class="step">
+          <div class="step-no">PASO 01</div>
+          <h3>Aplica</h3>
+          <p>Un formulario de 3 minutos: quién eres, tu cuenta, tu país. Sin compromiso.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">PASO 02</div>
+          <h3>Nos conocemos</h3>
+          <p>Revisamos tu contenido — solo con tu consentimiento — y te respondemos en 72 horas.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">PASO 03</div>
+          <h3>Colaboras</h3>
+          <p>Recibes productos para crear y activamos tu código exclusivo de descuento.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">PASO 04</div>
+          <h3>Ganas</h3>
+          <p>Cada venta con tu código queda registrada y genera tu comisión. Seguimiento visible.</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="consent">
+    <div class="wrap consent-inner">
+      <div>
+        <div class="section-kicker">Consentimiento</div>
+        <h2>Si no diste permiso, el sistema <em>lo rechaza</em></h2>
+        <p class="section-sub" style="margin-bottom:0">No es un eslogan: nuestra plataforma valida el consentimiento
+          antes de aceptar cualquier dato de creador. Es un control técnico, no una promesa.</p>
+      </div>
+      <div class="consent-list">
+        <div class="consent-item"><span><strong>Tus datos entran solo si tú los diste.</strong> Los registros sin consentimiento se rechazan automáticamente.</span></div>
+        <div class="consent-item"><span><strong>Nada de DMs masivos ni bots.</strong> Cada contacto es revisado y enviado por una persona.</span></div>
+        <div class="consent-item"><span><strong>Puedes salir cuando quieras.</strong> Sin exclusividad, sin letra pequeña.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="faq">
+      <div class="section-kicker">Preguntas</div>
+      <h2>Lo que nos preguntan <em>antes de decir sí</em></h2>
+      <div class="faq-list">
+        <details>
+          <summary>¿Necesito muchos seguidores?</summary>
+          <p>No fijamos un mínimo. Nos importa la calidad de tu contenido y la afinidad de tu audiencia
+            con el skincare. Revisamos tus publicaciones recientes — con tu permiso — antes de decidir.</p>
+        </details>
+        <details>
+          <summary>¿Cómo funciona la comisión?</summary>
+          <p>Recibes un código exclusivo con tu nombre. Cada venta hecha con tu código queda registrada
+            en nuestro sistema y genera tu comisión. Los detalles se acuerdan contigo antes de empezar.</p>
+        </details>
+        <details>
+          <summary>¿Tengo que firmar exclusividad?</summary>
+          <p>No. Colaboras a tu ritmo, con las marcas que te hagan sentido, y puedes pausar o salir
+            del programa cuando quieras.</p>
+        </details>
+        <details>
+          <summary>¿Qué productos son?</summary>
+          <p>Skincare coreano original que nosotros distribuimos: Parnell (Eleven Corporation),
+            BRTC y Essenherb (AMI Cosmetic) y mascarillas Dermal. Directo de Corea, sin imitaciones.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="final" id="aplicar">
+      <div class="section-kicker">¿Creas contenido de skincare en español?</div>
+      <h2>Hablemos <em>en serio</em>.</h2>
+      <div class="cta-row">
+        <!-- TODO: conectar URL del formulario al publicar -->
+        <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
+        <span class="cta-hint">Formulario de 3 minutos · respuesta en 72 h</span>
+      </div>
+    </section>
+
+    <footer>
+      <span>© 2026 Briwell · Seúl, Corea del Sur</span>
+      <span>Programa de creadores · MX · PE · EC</span>
+    </footer>
+  </div>
+</body>
+</html>

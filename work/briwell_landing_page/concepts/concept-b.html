@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concepto B — Clean K-Beauty · Briwell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; scroll-behavior: smooth; }
+    :root {
+      --bg: #FBF7F3;
+      --bg-soft: #F5EAE3;
+      --ink: #40303B;
+      --muted: #8C7A85;
+      --blush: #E8B4B8;
+      --blush-deep: #C98A90;
+      --gold: #C9A96E;
+      --line: rgba(64, 48, 59, 0.12);
+      --card: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    .concept-badge {
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      font-size: 11px; letter-spacing: 0.12em; font-weight: 600;
+      color: #fff; background: var(--blush-deep); padding: 6px 12px; border-radius: 999px;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding-top: 30px; position: relative; z-index: 3; }
+    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; }
+    .logo span { color: var(--blush-deep); font-style: italic; }
+    .nav-cta {
+      font-size: 13px; font-weight: 600; color: var(--blush-deep); text-decoration: none;
+      border: 1px solid var(--blush); padding: 8px 20px; border-radius: 999px;
+    }
+
+    .hero { position: relative; padding: 84px 0 40px; text-align: center; }
+    .orb { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(2px); }
+    .orb-1 { width: 420px; height: 420px; top: -80px; left: -160px;
+      background: radial-gradient(circle at 35% 30%, rgba(232,180,184,0.5), rgba(232,180,184,0.05) 70%); }
+    .orb-2 { width: 320px; height: 320px; top: 40px; right: -120px;
+      background: radial-gradient(circle at 40% 35%, rgba(201,169,110,0.28), rgba(201,169,110,0.04) 70%); }
+    .hero-inner { position: relative; z-index: 2; }
+    .eyebrow {
+      display: inline-block; font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--blush-deep); font-weight: 600; margin-bottom: 30px;
+    }
+    h1 {
+      font-family: 'Fraunces', serif; font-weight: 500;
+      font-size: clamp(44px, 5.4vw, 68px); line-height: 1.08;
+      max-width: 18ch; margin: 0 auto 26px; text-wrap: balance;
+    }
+    h1 em, h2 em { font-style: italic; color: var(--blush-deep); }
+    .sub { font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 52ch; margin: 0 auto 40px; }
+    .btn-primary {
+      display: inline-block; font-size: 16px; font-weight: 600; color: #fff;
+      background: linear-gradient(135deg, var(--blush-deep), var(--blush));
+      text-decoration: none; padding: 18px 44px; border-radius: 999px;
+      box-shadow: 0 14px 32px rgba(201,138,144,0.35);
+    }
+    .cta-hint { display: block; margin-top: 16px; font-size: 13px; color: var(--muted); }
+
+    .polaroids {
+      position: relative; z-index: 2; display: flex; justify-content: center;
+      gap: 32px; padding: 64px 0 20px; align-items: flex-start;
+    }
+    .polaroid {
+      background: var(--card); border-radius: 14px; padding: 12px 12px 16px;
+      box-shadow: 0 24px 48px rgba(64,48,59,0.14); width: 300px; flex: 0 0 auto;
+    }
+    .polaroid img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 8px; display: block; }
+    .polaroid figcaption {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 14px;
+      color: var(--muted); text-align: center; padding-top: 12px;
+    }
+    .tilt-l { transform: rotate(-2.4deg); margin-top: 26px; }
+    .tilt-r { transform: rotate(2.2deg); margin-top: 26px; }
+
+    section { padding: 88px 0; }
+    .section-eyebrow {
+      font-size: 12px; letter-spacing: 0.24em; text-transform: uppercase;
+      color: var(--blush-deep); font-weight: 600; margin-bottom: 18px; text-align: center;
+    }
+    h2 {
+      font-family: 'Fraunces', serif; font-weight: 500; font-size: clamp(30px, 3.6vw, 46px);
+      line-height: 1.15; text-align: center; max-width: 22ch; margin: 0 auto 18px; text-wrap: balance;
+    }
+    .section-sub { font-size: 16px; line-height: 1.7; color: var(--muted); max-width: 56ch; margin: 0 auto 52px; text-align: center; }
+
+    .ritual-row { display: flex; justify-content: center; gap: 56px; }
+    .ritual { display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 230px; }
+    .ritual-icon {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(145deg, #fff, var(--bg-soft));
+      box-shadow: 0 8px 20px rgba(64,48,59,0.08), inset 0 1px 0 #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--blush-deep);
+    }
+    .ritual-title { font-size: 15px; font-weight: 600; }
+    .ritual-text { font-size: 13.5px; color: var(--muted); line-height: 1.6; text-align: center; }
+
+    .brands { background: var(--bg-soft); border-radius: 28px; }
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .brand-card { background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: 0 16px 36px rgba(64,48,59,0.08); }
+    .brand-img { aspect-ratio: 1 / 1; overflow: hidden; }
+    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-body { padding: 22px 26px 28px; text-align: center; }
+    .brand-co { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .brand-body h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 22px; margin-bottom: 8px; }
+    .brand-body p { font-size: 14px; line-height: 1.65; color: var(--muted); }
+
+    .steps-list { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: grid; grid-template-columns: 64px 1fr; gap: 24px; padding: 28px 0;
+      border-bottom: 1px solid var(--line); align-items: start;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-no {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 26px; color: var(--blush-deep);
+      width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(145deg, #fff, var(--bg-soft)); box-shadow: 0 8px 20px rgba(64,48,59,0.08);
+    }
+    .step h3 { font-family: 'Fraunces', serif; font-weight: 600; font-size: 20px; margin-bottom: 6px; }
+    .step p { font-size: 15px; line-height: 1.65; color: var(--muted); }
+
+    .consent {
+      position: relative; border-radius: 28px; overflow: hidden;
+      background: var(--ink); color: #F6EDEF; padding: 88px 64px;
+    }
+    .consent::before {
+      content: ''; position: absolute; inset: 0;
+      background: url('../assets/img/products/parnell-texture.jpg') center/cover;
+      opacity: 0.12;
+    }
+    .consent > * { position: relative; }
+    .consent .section-eyebrow { color: var(--blush); }
+    .consent h2 { color: #fff; }
+    .consent .section-sub { color: rgba(246,237,239,0.75); margin-bottom: 36px; }
+    .consent-chips { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+    .consent-chip {
+      font-size: 14px; padding: 12px 22px; border-radius: 999px;
+      border: 1px solid rgba(232,180,184,0.4); background: rgba(232,180,184,0.1);
+    }
+
+    .faq-list { max-width: 720px; margin: 0 auto; }
+    details { border-bottom: 1px solid var(--line); }
+    summary {
+      cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Fraunces', serif; font-size: 18px; font-weight: 500; padding: 22px 0;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--blush-deep); font-size: 24px; font-weight: 300; }
+    details[open] summary::after { content: '–'; }
+    details p { font-size: 15px; line-height: 1.7; color: var(--muted); padding: 0 0 24px; max-width: 60ch; }
+
+    .final { text-align: center; padding: 110px 0; }
+    footer {
+      border-top: 1px solid var(--line); padding: 28px 0; display: flex;
+      justify-content: space-between; font-size: 12px; color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      .polaroids { flex-wrap: wrap; }
+      .ritual-row { flex-direction: column; align-items: center; gap: 32px; }
+      .brand-grid { grid-template-columns: 1fr; }
+      .consent { padding: 64px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="concept-badge">CONCEPTO B</div>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="logo">bri<span>well</span></div>
+      <a class="nav-cta" href="#aplicar">Aplicar</a>
+    </nav>
+
+    <section class="hero">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="hero-inner">
+        <div class="eyebrow">Programa de creadores · MX · PE · EC</div>
+        <h1>El glow coreano,<br>contado <em>por ti.</em></h1>
+        <p class="sub">Únete al programa de creadores de Briwell: skincare auténtico de Corea,
+          comisiones claras por cada venta y una colaboración que cuida tu piel, tu audiencia
+          y tu marca personal.</p>
+        <a class="btn-primary" href="#aplicar">Quiero aplicar</a>
+        <span class="cta-hint">Formulario de 3 minutos — sin compromiso</span>
+      </div>
+      <div class="polaroids">
+        <figure class="polaroid tilt-l">
+          <img src="../assets/img/products/ami-essenherb-pad.jpg" alt="Essenherb Tea Tree Mild Clear Pad">
+          <figcaption>essenherb · tea tree</figcaption>
+        </figure>
+        <figure class="polaroid">
+          <img src="../assets/img/products/dermal-mask-model.jpg" alt="Ritual de mascarilla Dermal">
+          <figcaption>el ritual de 15 minutos</figcaption>
+        </figure>
+        <figure class="polaroid tilt-r">
+          <img src="../assets/img/products/parnell-pad.jpg" alt="Parnell Cicamanu Cotton Clear Pad">
+          <figcaption>Parnell · cicamanu</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-eyebrow">Por qué Briwell</div>
+      <h2>Una colaboración que se siente <em>como skincare</em></h2>
+      <p class="section-sub">Suave con tu marca personal, constante con tus resultados.
+        Somos un equipo de Seúl que trae las marcas que distribuimos, directo a tu comunidad.</p>
+      <div class="ritual-row">
+        <div class="ritual">
+          <div class="ritual-icon">a</div>
+          <div class="ritual-title">Productos reales</div>
+          <p class="ritual-text">K-beauty original importada de Seúl — de las líneas que nosotros mismos distribuimos.</p>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon">b</div>
+          <div class="ritual-title">Tu código, tu comisión</div>
+          <p class="ritual-text">Un código exclusivo con tu nombre. Cada venta queda registrada y genera tu comisión.</p>
+        </div>
+        <div class="ritual">
+          <div class="ritual-icon">c</div>
+          <div class="ritual-title">Cuidamos la relación</div>
+          <p class="ritual-text">Nada de spam ni presión: colaboración con consentimiento, a tu ritmo, sin exclusividad.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="brands">
+      <div style="padding: 0 40px">
+        <div class="section-eyebrow">Las marcas</div>
+        <h2>Lo que vas a tener <em>en tus manos</em></h2>
+        <p class="section-sub">Tres casas coreanas, una curaduría: piel sensible, protección y ritual.</p>
+        <div class="brand-grid">
+          <div class="brand-card">
+            <div class="brand-img"><img src="../assets/img/products/parnell-cleanser.jpg" alt="Parnell Apple Vinegar Pore Deep Cleanser"></div>
+            <div class="brand-body">
+              <div class="brand-co">Eleven Corporation</div>
+              <h3>Parnell</h3>
+              <p>Derma coreana de alta eficacia: centella, manuka y la línea Cicamanu para piel sensible.</p>
+            </div>
+          </div>
+          <div class="brand-card">
+            <div class="brand-img"><img src="../assets/img/products/ami-essenherb-stone.jpg" alt="Essenherb de AMI Cosmetic"></div>
+            <div class="brand-body">
+              <div class="brand-co">AMI Cosmetic</div>
+              <h3>Essenherb &amp; BRTC</h3>
+              <p>Botánica y derma-cosmética de laboratorio: del tea tree al escudo solar Active Max.</p>
+            </div>
+          </div>
+          <div class="brand-card">
+            <div class="brand-img"><img src="../assets/img/products/dermal-mask-model2.jpg" alt="Mascarilla facial Dermal"></div>
+            <div class="brand-body">
+              <div class="brand-co">Dermal Korea</div>
+              <h3>Dermal</h3>
+              <p>Las mascarillas coreanas con millones de unidades vendidas en el mundo. El ritual más fácil de compartir.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-eyebrow">Cómo funciona</div>
+      <h2>Tu rutina <em>de cuatro pasos</em></h2>
+      <div class="steps-list">
+        <div class="step">
+          <div class="step-no">1</div>
+          <div>
+            <h3>Aplica</h3>
+            <p>Un formulario de 3 minutos: quién eres, tu cuenta, tu país. Sin compromiso.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">2</div>
+          <div>
+            <h3>Nos conocemos</h3>
+            <p>Revisamos tu contenido — solo con tu consentimiento — y te respondemos en 72 horas.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">3</div>
+          <div>
+            <h3>Colaboras</h3>
+            <p>Recibes productos para crear y activamos tu código exclusivo de descuento.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-no">4</div>
+          <div>
+            <h3>Ganas</h3>
+            <p>Cada venta con tu código queda registrada y genera tu comisión, con seguimiento visible.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="consent">
+      <div class="section-eyebrow">Nuestro compromiso</div>
+      <h2>Si no diste permiso,<br>nuestro sistema <em>lo rechaza</em></h2>
+      <p class="section-sub">No es un eslogan: la plataforma que opera este programa valida tu consentimiento
+        antes de aceptar cualquier dato. Es un control técnico, no una promesa.</p>
+      <div class="consent-chips">
+        <span class="consent-chip">Consentimiento primero</span>
+        <span class="consent-chip">Cero DMs masivos</span>
+        <span class="consent-chip">Sin exclusividad</span>
+        <span class="consent-chip">Sales cuando quieras</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-eyebrow">Preguntas</div>
+      <h2>Antes de <em>decir sí</em></h2>
+      <div class="faq-list">
+        <details>
+          <summary>¿Necesito muchos seguidores?</summary>
+          <p>No fijamos un mínimo. Nos importa la calidad de tu contenido y la afinidad de tu audiencia
+            con el skincare. Revisamos tus publicaciones recientes — con tu permiso — antes de decidir.</p>
+        </details>
+        <details>
+          <summary>¿Cómo funciona la comisión?</summary>
+          <p>Recibes un código exclusivo con tu nombre. Cada venta hecha con tu código queda registrada
+            en nuestro sistema y genera tu comisión. Los detalles se acuerdan contigo antes de empezar.</p>
+        </details>
+        <details>
+          <summary>¿Tengo que firmar exclusividad?</summary>
+          <p>No. Colaboras a tu ritmo, con las marcas que te hagan sentido, y puedes pausar o salir
+            del programa cuando quieras.</p>
+        </details>
+        <details>
+          <summary>¿Qué productos son?</summary>
+          <p>Skincare coreano original que nosotros distribuimos: Parnell (Eleven Corporation),
+            Essenherb y BRTC (AMI Cosmetic) y mascarillas Dermal. Directo de Corea, sin imitaciones.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="final" id="aplicar">
+      <div class="section-eyebrow">¿Creas contenido de skincare en español?</div>
+      <h2>Tu glow también puede <em>pagar</em>.</h2>
+      <div style="margin-top: 36px">
+        <!-- TODO: conectar URL del formulario al publicar -->
+        <a class="btn-primary" href="#aplicar">Quiero aplicar</a>
+        <span class="cta-hint">Formulario de 3 minutos — sin compromiso</span>
+      </div>
+    </section>
+
+    <footer>
+      <span>© 2026 Briwell · Seúl, Corea del Sur</span>
+      <span>Programa de creadores · MX · PE · EC</span>
+    </footer>
+  </div>
+</body>
+</html>

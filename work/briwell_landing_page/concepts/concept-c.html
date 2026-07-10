@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concepto C — Editorial Híbrido · Briwell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { overflow-x: hidden; scroll-behavior: smooth; }
+    :root {
+      --bg: #F7F4EF;
+      --ink: #211D1A;
+      --muted: #7A736B;
+      --accent: #D96C47;
+      --accent-soft: rgba(217,108,71,0.10);
+      --line: rgba(33,29,26,0.14);
+      --card: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased; overflow-x: hidden;
+    }
+    .concept-badge {
+      position: fixed; top: 16px; right: 16px; z-index: 50;
+      font-size: 11px; letter-spacing: 0.12em; font-weight: 600;
+      color: #fff; background: var(--accent); padding: 6px 12px; border-radius: 999px;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 28px 0; border-bottom: 1px solid var(--line);
+    }
+    .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 21px; }
+    .logo span { color: var(--accent); font-style: italic; }
+    .nav-cta {
+      font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none;
+      border: 1px solid var(--ink); padding: 8px 20px; border-radius: 999px;
+    }
+
+    .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1.12fr 0.88fr; gap: 64px; align-items: start; }
+    .kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 30px;
+    }
+    .kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    h1 {
+      font-family: 'Fraunces', serif; font-weight: 600;
+      font-size: clamp(42px, 5vw, 64px); line-height: 1.05; letter-spacing: -0.015em; margin-bottom: 28px;
+    }
+    h1 em, h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
+    .sub { font-size: 17px; line-height: 1.7; color: var(--muted); max-width: 48ch; margin-bottom: 36px; }
+    .cta-row { display: flex; align-items: center; gap: 22px; margin-bottom: 48px; }
+    .btn-primary {
+      display: inline-block; font-size: 16px; font-weight: 600; color: #fff;
+      background: var(--ink); text-decoration: none; padding: 17px 36px; border-radius: 8px;
+    }
+    .cta-hint { font-size: 13px; color: var(--muted); max-width: 22ch; line-height: 1.5; }
+
+    .stats { display: flex; border-top: 1px solid var(--line); }
+    .stat { flex: 1; padding: 22px 24px 0 0; }
+    .stat + .stat { border-left: 1px solid var(--line); padding-left: 24px; }
+    .stat-num { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+    .stat-num em { font-style: italic; color: var(--accent); font-size: 16px; }
+    .stat-label { font-size: 12px; color: var(--muted); letter-spacing: 0.03em; line-height: 1.5; }
+
+    .side { display: flex; flex-direction: column; gap: 20px; }
+    .feature-card { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 48px rgba(33,29,26,0.12); }
+    .feature-card img { display: block; width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; }
+    .feature-tag {
+      position: absolute; top: 14px; left: 14px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--ink); background: rgba(247,244,239,0.92); padding: 6px 12px; border-radius: 999px;
+    }
+    .proof-card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      overflow: hidden; box-shadow: 0 16px 32px rgba(33,29,26,0.08);
+    }
+    .proof-card img { display: block; width: 100%; }
+    .proof-meta { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--line); }
+    .proof-label { font-size: 12px; color: var(--muted); }
+    .proof-tag {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px;
+    }
+
+    .marquee {
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      padding: 16px 0; overflow: hidden; white-space: nowrap;
+    }
+    .marquee-inner {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--muted); letter-spacing: 0.04em;
+    }
+    .marquee-inner b { color: var(--accent); font-weight: 400; margin: 0 18px; }
+
+    section { padding: 88px 0; }
+    .section-kicker {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); font-weight: 600; margin-bottom: 24px;
+    }
+    .section-kicker::after { content: ''; flex: 0 0 48px; height: 1px; background: var(--accent); }
+    h2 {
+      font-family: 'Fraunces', serif; font-weight: 600; font-size: clamp(30px, 3.6vw, 46px);
+      line-height: 1.1; margin-bottom: 18px; max-width: 24ch;
+    }
+    .section-sub { font-size: 16px; line-height: 1.7; color: var(--muted); max-width: 58ch; margin-bottom: 48px; }
+
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--line); }
+    .why-col { padding: 32px 28px 0 0; }
+    .why-col + .why-col { border-left: 1px solid var(--line); padding-left: 28px; }
+    .why-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+    .why-col h3 { font-family: 'Fraunces', serif; font-size: 21px; font-weight: 600; margin-bottom: 10px; }
+    .why-col p { font-size: 14.5px; line-height: 1.65; color: var(--muted); }
+
+    .brand-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+    .brand-card { display: flex; flex-direction: column; gap: 0; }
+    .brand-img { border-radius: 12px; overflow: hidden; aspect-ratio: 1 / 1; box-shadow: 0 16px 36px rgba(33,29,26,0.10); }
+    .brand-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand-co { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin: 18px 0 4px; }
+    .brand-card h3 { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+    .brand-card p { font-size: 14.5px; line-height: 1.65; color: var(--muted); }
+
+    .pullquote { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); text-align: center; }
+    .pullquote blockquote {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: clamp(24px, 3vw, 34px);
+      line-height: 1.4; max-width: 26ch; margin: 0 auto 18px;
+    }
+    .pullquote cite { font-style: normal; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+    .step { border-top: 2px solid var(--ink); padding-top: 20px; }
+    .step-no { font-family: 'Fraunces', serif; font-style: italic; font-size: 18px; color: var(--accent); margin-bottom: 10px; }
+    .step h3 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+    .step p { font-size: 14px; line-height: 1.6; color: var(--muted); }
+
+    .consent { background: var(--ink); color: #F3EFE9; border-radius: 16px; padding: 72px 64px; }
+    .consent .section-kicker { color: var(--accent); }
+    .consent h2 { color: #fff; }
+    .consent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .consent p.lead { font-size: 16px; line-height: 1.7; color: rgba(243,239,233,0.75); }
+    .consent-list { display: flex; flex-direction: column; gap: 14px; }
+    .consent-item {
+      display: flex; gap: 12px; font-size: 15px; line-height: 1.6; color: rgba(243,239,233,0.85);
+      border: 1px solid rgba(243,239,233,0.2); border-radius: 10px; padding: 14px 18px;
+    }
+    .consent-item::before { content: '—'; color: var(--accent); font-weight: 600; }
+
+    .faq-list { max-width: 760px; }
+    details { border-bottom: 1px solid var(--line); }
+    summary {
+      cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center;
+      font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; padding: 22px 0;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: '+'; color: var(--accent); font-size: 24px; font-weight: 300; }
+    details[open] summary::after { content: '–'; }
+    details p { font-size: 15px; line-height: 1.7; color: var(--muted); padding: 0 0 24px; max-width: 60ch; }
+
+    .final { text-align: center; border-top: 1px solid var(--line); padding: 110px 0; }
+    .final h2 { margin-left: auto; margin-right: auto; max-width: 20ch; }
+    .final .cta-row { justify-content: center; margin-bottom: 0; margin-top: 36px; }
+    footer {
+      border-top: 1px solid var(--line); padding: 28px 0; display: flex;
+      justify-content: space-between; font-size: 12px; color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      .hero, .consent-grid { grid-template-columns: 1fr; }
+      .why-grid { grid-template-columns: 1fr; }
+      .why-col + .why-col { border-left: none; border-top: 1px solid var(--line); padding-left: 0; margin-top: 24px; padding-top: 24px; }
+      .brand-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .stats { flex-wrap: wrap; }
+      .consent { padding: 56px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="concept-badge">CONCEPTO C</div>
+  <div class="wrap">
+    <nav class="nav">
+      <div class="logo">bri<span>well</span></div>
+      <a class="nav-cta" href="#aplicar">Aplicar</a>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="kicker">K-beauty · México · Perú · Ecuador</div>
+        <h1>Tu contenido.<br>Nuestra K-beauty.<br><em>Comisión real.</em></h1>
+        <p class="sub">Briwell conecta creadores de skincare en Latinoamérica con cosmética
+          coreana auténtica. Sin promesas vagas: código exclusivo, seguimiento de cada venta
+          y un sistema que puedes ver funcionando.</p>
+        <div class="cta-row">
+          <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
+          <span class="cta-hint">Formulario de 3 minutos.</span>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-num">3 <em>países</em></div>
+            <div class="stat-label">México, Perú y Ecuador en la primera etapa</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">1 <em>código</em></div>
+            <div class="stat-label">exclusivo tuyo, con comisión por cada venta</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">0 <em>spam</em></div>
+            <div class="stat-label">colaboración con consentimiento, sin DMs masivos</div>
+          </div>
+        </div>
+      </div>
+      <div class="side">
+        <div class="feature-card">
+          <span class="feature-tag">Seúl → LATAM</span>
+          <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="Essenherb — botánica coreana de AMI Cosmetic">
+        </div>
+        <div class="proof-card">
+          <img src="../assets/img/07_candidates_intelligence.png" alt="Panel real de operaciones de Briwell">
+          <div class="proof-meta">
+            <span class="proof-label">Nuestro panel de operaciones — no es un mockup</span>
+            <span class="proof-tag">Sistema real</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="marquee">
+    <div class="marquee-inner">
+      Skincare coreano auténtico <b>·</b> Comisiones transparentes <b>·</b> Código exclusivo
+      <b>·</b> Consentimiento primero <b>·</b> Skincare coreano auténtico <b>·</b> Comisiones transparentes
+    </div>
+  </div>
+
+  <div class="wrap">
+    <section>
+      <div class="section-kicker">Por qué Briwell</div>
+      <h2>Un puente directo, <em>no una agencia más</em></h2>
+      <div class="why-grid">
+        <div class="why-col">
+          <div class="why-no">i.</div>
+          <h3>Te elegimos en serio</h3>
+          <p>No mandamos mil DMs iguales. Estudiamos tu contenido y te proponemos una colaboración
+            con sentido para tu audiencia.</p>
+        </div>
+        <div class="why-col">
+          <div class="why-no">ii.</div>
+          <h3>Todo queda registrado</h3>
+          <p>Código, ventas, comisión: cada paso vive en nuestro panel de operaciones.
+            Lo que ves tú es lo que vemos nosotros.</p>
+        </div>
+        <div class="why-col">
+          <div class="why-no">iii.</div>
+          <h3>Marcas que distribuimos</h3>
+          <p>Trabajamos directamente con las casas coreanas cuyos productos manejamos.
+            Producto original, cadena corta.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-kicker">Las marcas</div>
+      <h2>Lo que vas a tener <em>en tus manos</em></h2>
+      <p class="section-sub">Tres casas coreanas, una curaduría: piel sensible, protección y ritual.</p>
+      <div class="brand-grid">
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/parnell-cleanser.jpg" alt="Parnell Apple Vinegar Pore Deep Cleanser"></div>
+          <div class="brand-co">Eleven Corporation</div>
+          <h3>Parnell</h3>
+          <p>Derma coreana de alta eficacia: centella, manuka y la línea Cicamanu para piel sensible.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/ami-rosemary.jpg" alt="Essenherb Rosemary de AMI Cosmetic"></div>
+          <div class="brand-co">AMI Cosmetic</div>
+          <h3>Essenherb &amp; BRTC</h3>
+          <p>Botánica y derma-cosmética de laboratorio: del tea tree al escudo solar Active Max.</p>
+        </div>
+        <div class="brand-card">
+          <div class="brand-img"><img src="../assets/img/products/dermal-mask-model.jpg" alt="Mascarilla facial Dermal"></div>
+          <div class="brand-co">Dermal Korea</div>
+          <h3>Dermal</h3>
+          <p>Las mascarillas coreanas con millones de unidades vendidas en el mundo. El ritual más fácil de compartir.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="pullquote">
+      <blockquote>"No buscamos mil creadores. Buscamos a los correctos — y los tratamos en serio."</blockquote>
+      <cite>— Equipo Briwell, Seúl</cite>
+    </section>
+
+    <section>
+      <div class="section-kicker">Cómo funciona</div>
+      <h2>De hola a <em>comisión</em> en cuatro pasos</h2>
+      <div class="steps-grid">
+        <div class="step">
+          <div class="step-no">i.</div>
+          <h3>Aplica</h3>
+          <p>Un formulario de 3 minutos: quién eres, tu cuenta, tu país. Sin compromiso.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">ii.</div>
+          <h3>Nos conocemos</h3>
+          <p>Revisamos tu contenido — solo con tu consentimiento — y te contactamos si tu perfil encaja.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">iii.</div>
+          <h3>Colaboras</h3>
+          <p>Acordamos los detalles contigo y activamos tu código exclusivo de descuento.</p>
+        </div>
+        <div class="step">
+          <div class="step-no">iv.</div>
+          <h3>Ganas</h3>
+          <p>Cada venta con tu código queda registrada y genera tu comisión, con seguimiento visible.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="consent">
+      <div class="consent-grid">
+        <div>
+          <div class="section-kicker">Consentimiento</div>
+          <h2>Si no diste permiso, el sistema <em>lo rechaza</em></h2>
+          <p class="lead">No es un eslogan: nuestra plataforma valida el consentimiento antes de aceptar
+            cualquier dato de creador. Es un control técnico, no una promesa.</p>
+        </div>
+        <div class="consent-list">
+          <div class="consent-item"><span>Tus datos entran a nuestro sistema solo si tú los diste.</span></div>
+          <div class="consent-item"><span>Cada contacto es revisado y enviado por una persona — cero bots.</span></div>
+          <div class="consent-item"><span>Sin exclusividad. Puedes pausar o salir cuando quieras.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-kicker">Preguntas</div>
+      <h2>Lo que nos preguntan <em>antes de decir sí</em></h2>
+      <div class="faq-list">
+        <details>
+          <summary>¿Necesito muchos seguidores?</summary>
+          <p>No fijamos un mínimo. Nos importa la calidad de tu contenido y la afinidad de tu audiencia
+            con el skincare. Revisamos tus publicaciones recientes — con tu permiso — antes de decidir.</p>
+        </details>
+        <details>
+          <summary>¿Cómo funciona la comisión?</summary>
+          <p>Recibes un código exclusivo con tu nombre. Cada venta hecha con tu código queda registrada
+            en nuestro sistema y genera tu comisión. Los detalles se acuerdan contigo antes de empezar.</p>
+        </details>
+        <details>
+          <summary>¿Tengo que firmar exclusividad?</summary>
+          <p>No. Colaboras a tu ritmo, con las marcas que te hagan sentido, y puedes pausar o salir
+            del programa cuando quieras.</p>
+        </details>
+        <details>
+          <summary>¿Qué productos son?</summary>
+          <p>Skincare coreano original que nosotros distribuimos: Parnell (Eleven Corporation),
+            Essenherb y BRTC (AMI Cosmetic) y mascarillas Dermal. Directo de Corea, sin imitaciones.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="final" id="aplicar">
+      <div class="section-kicker" style="justify-content:center">¿Creas contenido de skincare en español?</div>
+      <h2>Hablemos. <em>En serio.</em></h2>
+      <div class="cta-row">
+        <!-- TODO: conectar URL del formulario al publicar -->
+        <a class="btn-primary" href="#aplicar">Aplicar al programa</a>
+        <span class="cta-hint">Formulario de 3 minutos.</span>
+      </div>
+    </section>
+
+    <footer>
+      <span>© 2026 Briwell · Seúl, Corea del Sur</span>
+      <span>Programa de creadores · MX · PE · EC</span>
+    </footer>
+  </div>
+</body>
+</html>
