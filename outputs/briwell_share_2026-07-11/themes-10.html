@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — 이종 테마 10안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=Baloo+2:wght@500;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Unbounded:wght@500;700&family=Lilita+One&family=Karla:wght@300;400;600&family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#EDECE8; color:#1A1917; font-family:Inter,'Noto Sans KR',sans-serif; -webkit-font-smoothing:antialiased; }
+  .gal { max-width:1200px; margin:0 auto; padding:56px 28px 90px; }
+  .gal-head h1 { font-size:34px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px; }
+  .gal-head p { color:#6B6963; max-width:78ch; line-height:1.65; margin-bottom:10px; word-break:keep-all; }
+  .theme { background:#fff; border:1px solid rgba(26,25,23,0.1); border-radius:18px; padding:30px; margin-top:34px; }
+  .t-head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:4px; }
+  .t-no { font-family:'JetBrains Mono',monospace; font-size:13px; color:#fff; background:#1A1917; border-radius:8px; padding:3px 10px; }
+  .t-head h2 { font-size:22px; font-weight:700; }
+  .t-bench { font-size:12.5px; color:#8A877F; }
+  .t-desc { font-size:13.5px; color:#6B6963; line-height:1.6; margin:6px 0 22px; max-width:88ch; word-break:keep-all; }
+  .mock-row { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .desk-outer { width:614px; height:365px; overflow:hidden; border-radius:12px; box-shadow:0 14px 34px rgba(0,0,0,0.16); flex:0 0 auto; }
+  .desk { width:1280px; height:760px; transform:scale(0.48); transform-origin:top left; overflow:hidden; position:relative; }
+  .phone-outer { width:198px; height:362px; overflow:hidden; border-radius:22px; box-shadow:0 14px 34px rgba(0,0,0,0.2); border:5px solid #17171a; flex:0 0 auto; }
+  .phone { width:375px; height:702px; transform:scale(0.501); transform-origin:top left; overflow:hidden; position:relative; }
+  .brand-col { flex:1 1 200px; min-width:200px; max-width:250px; display:flex; flex-direction:column; gap:14px; }
+  .logo-box { border:1px solid rgba(26,25,23,0.12); border-radius:12px; min-height:112px; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .bizrow { display:flex; flex-direction:column; gap:12px; }
+  .biz { width:100%; aspect-ratio:9/5; border-radius:10px; overflow:hidden; position:relative; box-shadow:0 8px 20px rgba(0,0,0,0.14); }
+  .biz-tag { font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:#8A877F; margin-top:-6px; }
+  .m-nav { display:flex; justify-content:space-between; align-items:center; }
+  .m-cta { display:inline-block; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="gal">
+  <div class="gal-head">
+    <h1>Briwell — 서로 다른 세계관 10안</h1>
+    <p>기존 The Well(청록·아쿠아·골드 에디토리얼)과 겹치지 않는 10개 테마. 각 테마 = 홈페이지 히어로(데스크톱)
+      + 모바일 + 로고 + 명함(앞 KO/뒤 ES). 벤치마크는 각 테마에 명시. 픽 후 해당 테마로 전체 페이지·브랜드
+      시스템을 완성합니다. 2026-07-11.</p>
+  </div>
+
+  <!-- ═══════════ T1 SEOUL NEON ═══════════ -->
+  <style>
+    .t1-bg { background:#0A0A14; color:#fff; font-family:'Archivo Black','Noto Sans KR',sans-serif; }
+    .t1-grad { background:linear-gradient(93deg,#FF2E88,#8A2EFF 55%,#2ED6FF); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .t1-pad { padding:44px 64px; position:relative; height:100%; }
+    .t1-nav span { font-size:22px; letter-spacing:0.02em; }
+    .t1-nav small { font-family:Inter; font-weight:600; font-size:14px; color:#8f8fa8; letter-spacing:0.2em; }
+    .t1-h1 { font-size:92px; line-height:0.98; margin-top:84px; text-transform:uppercase; }
+    .t1-sub { font-family:Inter,'Noto Sans KR'; font-weight:500; font-size:19px; color:#B9B7CC; margin-top:26px; max-width:34ch; line-height:1.6; }
+    .t1-cta { font-family:Inter; font-weight:700; font-size:17px; color:#0A0A14; background:linear-gradient(93deg,#FF2E88,#8A2EFF 55%,#2ED6FF); padding:17px 38px; border-radius:999px; margin-top:34px; box-shadow:0 0 42px rgba(255,46,136,0.45); }
+    .t1-img { position:absolute; right:64px; top:120px; width:400px; height:480px; object-fit:cover; border-radius:200px 200px 24px 24px; border:2px solid rgba(255,46,136,0.7); box-shadow:0 0 60px rgba(138,46,255,0.5); }
+    .t1-glow { position:absolute; width:520px; height:520px; border-radius:50%; background:radial-gradient(circle,rgba(138,46,255,0.35),transparent 65%); right:-40px; top:60px; pointer-events:none; }
+    .t1-p-h1 { font-size:52px; line-height:1.0; margin-top:46px; text-transform:uppercase; }
+    .t1-p-pad { padding:26px 24px; height:100%; position:relative; }
+    .t1-p-img { width:100%; height:250px; object-fit:cover; border-radius:130px 130px 18px 18px; border:2px solid rgba(255,46,136,0.7); margin-top:26px; box-shadow:0 0 40px rgba(138,46,255,0.5); }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">01</span><h2>서울 네온 — Seoul Neon</h2><span class="t-bench">벤치마크: Fenty 볼드 · K-pop 팬덤 플랫폼 · 2026 새추레이티드 맥시멀리즘</span></div>
+    <p class="t-desc">밤의 서울. 네온 그라디언트(핫핑크→바이올렛→시안)와 초대형 블랙 타이포. 크리에이터를 "무대의 주인공"으로
+      세우는 세계관 — 틱톡 세대 임팩트 최상, 뷰티 감성보다 에너지 우선.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t1-bg">
+        <div class="t1-pad">
+          <div class="t1-glow"></div>
+          <div class="m-nav t1-nav"><span>BW<span class="t1-grad">★</span></span><small>PROGRAMA · MX PE EC</small></div>
+          <div class="t1-h1">Tu glow,<br><span class="t1-grad">tu escenario.</span></div>
+          <div class="t1-sub">K-beauty auténtica de Seúl. Código propio, comisión clara — y el foco sobre ti.</div>
+          <a class="m-cta t1-cta">Súbete al escenario</a>
+          <img class="t1-img" src="../briwell_landing_page/assets/img/products/dermal-mask-model.jpg" alt="">
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t1-bg">
+        <div class="t1-p-pad">
+          <div class="m-nav t1-nav"><span style="font-size:18px">BW<span class="t1-grad">★</span></span><small style="font-size:10px">MX PE EC</small></div>
+          <div class="t1-p-h1">Tu glow,<br><span class="t1-grad">tu escenario.</span></div>
+          <img class="t1-p-img" src="../briwell_landing_page/assets/img/products/dermal-mask-model.jpg" alt="">
+          <div style="text-align:center; margin-top:24px"><a class="m-cta t1-cta" style="font-size:14px; padding:13px 28px">Súbete al escenario</a></div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t1-bg" style="border:none"><div style="text-align:center"><span style="font-family:'Archivo Black'; font-size:34px">BW<span class="t1-grad">★</span></span><div style="font-family:Inter; font-size:10px; letter-spacing:0.3em; color:#8f8fa8; margin-top:4px">BRIWELL · SEOUL</div></div></div>
+        <div class="bizrow">
+          <div class="biz t1-bg"><div style="padding:16px 18px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-family:'Archivo Black'; font-size:15px">BW<span class="t1-grad">★</span></span><div style="font-family:Inter"><div style="font-weight:700; font-size:14px">데이비드 <span style="color:#8f8fa8; font-weight:500; font-size:10px">대표</span></div><div style="font-size:9.5px; color:#8f8fa8; margin-top:3px">briwell.co · david@briwell.co</div></div></div><div style="position:absolute; right:-24px; top:-24px; width:110px; height:110px; border-radius:50%; background:radial-gradient(circle,rgba(255,46,136,0.5),transparent 70%)"></div></div>
+          <div class="biz" style="background:linear-gradient(93deg,#FF2E88,#8A2EFF 55%,#2ED6FF)"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px"><span style="font-family:'Archivo Black'; font-size:20px; color:#0A0A14">BW★</span><span style="font-family:Inter; font-weight:600; font-size:10px; color:rgba(10,10,20,0.75); letter-spacing:0.12em">DE SEÚL A TU ESCENARIO</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T2 LAB CLINICAL ═══════════ -->
+  <style>
+    .t2-bg { background:#FFFFFF; color:#111; font-family:Inter,'Noto Sans KR',sans-serif; }
+    .t2-pad { padding:40px 64px; height:100%; position:relative; }
+    .t2-mono { font-family:'IBM Plex Mono',monospace; }
+    .t2-h1 { font-size:88px; font-weight:700; letter-spacing:-0.045em; line-height:1.0; margin-top:70px; }
+    .t2-blue { color:#1440FF; }
+    .t2-row { border-top:1px solid #111; display:grid; grid-template-columns:120px 1fr 160px; padding:12px 0; font-size:15px; }
+    .t2-cta { font-weight:600; font-size:16px; color:#fff; background:#111; padding:15px 32px; margin-top:30px; }
+    .t2-p-pad { padding:24px; height:100%; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">02</span><h2>랩 클리니컬 — The Formula</h2><span class="t-bench">벤치마크: The Ordinary·DECIEM · 2026 타입 주도 브랜딩</span></div>
+    <p class="t-desc">화이트+블랙+클리니컬 블루 단 하나. 장식 전무, 성분·수치·포뮬러 넘버(BW-01)가 곧 디자인.
+      "정직한 숫자"라는 우리 자산과 정합이 가장 좋고, 신뢰가 곧 미학인 안.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t2-bg">
+        <div class="t2-pad">
+          <div class="m-nav"><span style="font-weight:700; font-size:20px; letter-spacing:-0.03em">Briwell<sup style="font-size:11px">®</sup></span><span class="t2-mono" style="font-size:13px; color:#666">creator-commerce lab. — MX/PE/EC</span></div>
+          <div class="t2-h1">Fórmulas coreanas.<br><span class="t2-blue">Datos claros.</span></div>
+          <div style="margin-top:56px">
+            <div class="t2-row"><span class="t2-mono">BW-01</span><span>Parnell Cicamanu Serum — Centella + Manuka</span><span class="t2-mono" style="text-align:right">piel sensible</span></div>
+            <div class="t2-row"><span class="t2-mono">BW-02</span><span>Essenherb Tea Tree Pad — 70 pads</span><span class="t2-mono" style="text-align:right">calmante</span></div>
+            <div class="t2-row" style="border-bottom:1px solid #111"><span class="t2-mono">BW-03</span><span>Dermal Collagen Mask — ritual 15 min</span><span class="t2-mono" style="text-align:right">hidratación</span></div>
+          </div>
+          <a class="m-cta t2-cta">Aplicar al programa →</a>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t2-bg">
+        <div class="t2-p-pad">
+          <div class="m-nav"><span style="font-weight:700; font-size:17px">Briwell<sup style="font-size:9px">®</sup></span><span class="t2-mono" style="font-size:10px; color:#666">lab.</span></div>
+          <div style="font-size:44px; font-weight:700; letter-spacing:-0.04em; line-height:1.02; margin-top:44px">Fórmulas coreanas.<br><span class="t2-blue">Datos claros.</span></div>
+          <div style="margin-top:36px">
+            <div style="border-top:1px solid #111; padding:10px 0; display:flex; justify-content:space-between; font-size:12px"><span class="t2-mono">BW-01</span><span>Cicamanu Serum</span></div>
+            <div style="border-top:1px solid #111; padding:10px 0; display:flex; justify-content:space-between; font-size:12px"><span class="t2-mono">BW-02</span><span>Tea Tree Pad</span></div>
+            <div style="border-top:1px solid #111; border-bottom:1px solid #111; padding:10px 0; display:flex; justify-content:space-between; font-size:12px"><span class="t2-mono">BW-03</span><span>Collagen Mask</span></div>
+          </div>
+          <a class="m-cta t2-cta" style="font-size:13px; padding:12px 22px">Aplicar →</a>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t2-bg"><div style="text-align:center"><div style="font-weight:700; font-size:30px; letter-spacing:-0.03em">Briwell<sup style="font-size:14px">®</sup></div><div class="t2-mono" style="font-size:10px; color:#666; margin-top:4px">creator-commerce lab.</div></div></div>
+        <div class="bizrow">
+          <div class="biz t2-bg" style="border:1px solid #111"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><div style="display:flex; justify-content:space-between"><span style="font-weight:700; font-size:14px">Briwell<sup style="font-size:8px">®</sup></span><span class="t2-mono" style="font-size:9px" class2="t2-blue">SEOUL→LATAM</span></div><div><div style="font-weight:600; font-size:13px">데이비드 — 대표</div><div class="t2-mono" style="font-size:9px; color:#666; margin-top:3px">david@briwell.co / +82 10-0000-0000</div></div></div><div style="position:absolute; left:0; bottom:0; width:100%; height:4px; background:#1440FF"></div></div>
+          <div class="biz" style="background:#111"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px"><span style="font-weight:700; font-size:18px; color:#fff">Briwell<sup style="font-size:9px">®</sup></span><span class="t2-mono" style="font-size:9.5px; color:#1440FF">fórmulas coreanas — datos claros</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T3 GLOW POP ═══════════ -->
+  <style>
+    .t3-bg { background:linear-gradient(140deg,#FFE3D2 0%,#FFB7C5 48%,#FFD98E 100%); color:#5A2B3D; font-family:'Baloo 2','Noto Sans KR',sans-serif; }
+    .t3-pad { padding:40px 64px; height:100%; position:relative; }
+    .t3-h1 { font-size:96px; font-weight:800; line-height:0.98; margin-top:64px; color:#7A2140; }
+    .t3-h1 em { font-style:normal; color:#FF5C7A; }
+    .t3-cta { font-weight:700; font-size:18px; color:#fff; background:#FF5C7A; padding:17px 40px; border-radius:999px; margin-top:32px; box-shadow:0 12px 26px rgba(255,92,122,0.4); }
+    .t3-blob { position:absolute; border-radius:50%; opacity:0.75; }
+    .t3-imgwrap { position:absolute; right:76px; top:120px; width:400px; height:400px; border-radius:50%; overflow:hidden; border:10px solid rgba(255,255,255,0.8); box-shadow:0 22px 50px rgba(122,33,64,0.25); }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">03</span><h2>글로우 팝 — Juicy Glow</h2><span class="t-bench">벤치마크: Glow Recipe · Tower 28 · 틱톡 뷰티 커머스</span></div>
+    <p class="t-desc">피치→수박→망고 주스 그라디언트, 통통한 라운드 타이포, 과즙 광. 틱톡 LATAM에서 가장 "먹히는" 문법 —
+      밝고 달고 공유하고 싶은 무드. 크리에이터 모집 전환 최적화형.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t3-bg">
+        <div class="t3-pad">
+          <div class="t3-blob" style="width:300px;height:300px;background:#FFF3B0;left:-80px;bottom:-90px"></div>
+          <div class="m-nav"><span style="font-weight:800; font-size:24px; color:#7A2140">briwell<span style="color:#FF5C7A">.</span></span><span style="font-weight:700; font-size:14px; color:#A05468">MX · PE · EC</span></div>
+          <div class="t3-h1">Jugoso.<br>Coreano.<br><em>Tuyo.</em></div>
+          <a class="m-cta t3-cta">Quiero brillar ✨</a>
+          <div class="t3-imgwrap"><img src="../briwell_landing_page/assets/img/products/parnell-pad.jpg" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t3-bg">
+        <div style="padding:26px 24px; height:100%; position:relative">
+          <div class="m-nav"><span style="font-weight:800; font-size:19px; color:#7A2140">briwell<span style="color:#FF5C7A">.</span></span></div>
+          <div style="font-family:'Baloo 2'; font-size:56px; font-weight:800; line-height:1.0; margin-top:40px; color:#7A2140">Jugoso.<br>Coreano.<br><span style="color:#FF5C7A">Tuyo.</span></div>
+          <div style="width:230px; height:230px; border-radius:50%; overflow:hidden; border:8px solid rgba(255,255,255,0.8); margin:30px auto 0; box-shadow:0 18px 40px rgba(122,33,64,0.25)"><img src="../briwell_landing_page/assets/img/products/parnell-pad.jpg" style="width:100%;height:100%;object-fit:cover" alt=""></div>
+          <div style="text-align:center; margin-top:22px"><a class="m-cta t3-cta" style="font-size:15px; padding:13px 30px">Quiero brillar ✨</a></div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box" style="background:linear-gradient(140deg,#FFE3D2,#FFB7C5)"><div style="text-align:center"><svg width="34" height="42" viewBox="0 0 24 32" style="vertical-align:middle"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#FF5C7A"/><circle cx="14.5" cy="17" r="2.6" fill="#FFF3B0"/></svg><span style="font-family:'Baloo 2'; font-weight:800; font-size:30px; color:#7A2140; margin-left:6px">briwell<span style="color:#FF5C7A">.</span></span></div></div>
+        <div class="bizrow">
+          <div class="biz" style="background:#FFF7EF"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-family:'Baloo 2'; font-weight:800; font-size:16px; color:#7A2140">briwell<span style="color:#FF5C7A">.</span></span><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px; color:#5A2B3D">데이비드 · 대표</div><div style="font-size:9.5px; color:#A05468; margin-top:3px">briwell.co · david@briwell.co</div></div></div><div style="position:absolute; right:-30px; bottom:-30px; width:120px; height:120px; border-radius:50%; background:linear-gradient(140deg,#FFB7C5,#FFD98E)"></div></div>
+          <div class="biz t3-bg"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px"><span style="font-family:'Baloo 2'; font-weight:800; font-size:19px; color:#7A2140">briwell<span style="color:#FF5C7A">.</span></span><span style="font-weight:700; font-size:10px; color:#A05468">jugoso · coreano · tuyo</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T4 HANBANG HERITAGE ═══════════ -->
+  <style>
+    .t4-bg { background:#F7F1E5; color:#2B2620; font-family:'Nanum Myeongjo','Noto Serif KR',serif; }
+    .t4-red { color:#B63B2E; }
+    .t4-pad { padding:40px 64px; height:100%; position:relative; }
+    .t4-h1 { font-size:74px; font-weight:800; line-height:1.24; margin-top:56px; letter-spacing:-0.01em; }
+    .t4-vert { position:absolute; right:200px; top:64px; writing-mode:vertical-rl; font-size:20px; letter-spacing:0.42em; color:#2C4770; border-right:1px solid rgba(43,38,32,0.25); padding-right:14px; height:420px; }
+    .t4-seal { width:76px; height:76px; background:#B63B2E; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#F7F1E5; font-size:34px; font-weight:800; box-shadow:0 6px 16px rgba(182,59,46,0.35); }
+    .t4-cta { font-family:'Noto Sans KR'; font-weight:700; font-size:16px; color:#F7F1E5; background:#2B2620; padding:15px 34px; margin-top:30px; }
+    .t4-jogakbo { position:absolute; right:64px; top:64px; width:110px; height:420px; display:grid; grid-template-rows:2fr 1fr 1.6fr; gap:8px; }
+    .t4-jogakbo div { border:1px solid rgba(43,38,32,0.3); }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">04</span><h2>한방 헤리티지 — 조선의 우물</h2><span class="t-bench">벤치마크: Beauty of Joseon · 설화수 — 한국 헤리티지 럭셔리</span></div>
+    <p class="t-desc">한지 바탕, 명조 세로쓰기, 단청 적·쪽빛, 도장(印) 로고, 조각보 그리드. "한국"이라는 원산지 자체를
+      럭셔리 자산으로 — Beauty of Joseon이 증명한 문법. 브랜드사 제품들의 K-헤리티지 서사와 시너지.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t4-bg">
+        <div class="t4-pad">
+          <div class="m-nav"><div style="display:flex; align-items:center; gap:12px"><div class="t4-seal" style="width:40px;height:40px;font-size:19px;border-radius:7px">브</div><span style="font-size:20px; font-weight:800">브리웰 <span style="font-family:Inter; font-size:12px; color:#8a8172; font-weight:500">BRIWELL</span></span></div><span style="font-family:'Noto Sans KR'; font-size:13px; color:#8a8172">서울 — 멕시코 · 페루 · 에콰도르</span></div>
+          <div class="t4-h1">오래 판 우물이<br><span class="t4-red">깊은 물</span>을 냅니다</div>
+          <div style="font-family:'Noto Sans KR'; font-size:17px; color:#6d6558; margin-top:22px; max-width:36ch; line-height:1.75">Sabiduría coreana para piel latina — 한국의 더마 코스메틱을 중남미의 크리에이터에게.</div>
+          <a class="m-cta t4-cta">파트너 문의</a>
+          <div class="t4-vert">기쁨으로 길어 올린 물</div>
+          <div class="t4-jogakbo"><div style="background:rgba(44,71,112,0.16)"></div><div style="background:rgba(182,59,46,0.2)"></div><div style="background:rgba(43,38,32,0.07)"></div></div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t4-bg">
+        <div style="padding:26px 24px; height:100%; position:relative">
+          <div class="m-nav"><div style="display:flex; align-items:center; gap:8px"><div class="t4-seal" style="width:30px;height:30px;font-size:15px;border-radius:6px">브</div><span style="font-size:16px; font-weight:800">브리웰</span></div></div>
+          <div style="font-size:40px; font-weight:800; line-height:1.3; margin-top:44px">오래 판 우물이<br><span class="t4-red">깊은 물</span>을<br>냅니다</div>
+          <div style="font-family:'Noto Sans KR'; font-size:13.5px; color:#6d6558; margin-top:18px; line-height:1.7">Sabiduría coreana<br>para piel latina.</div>
+          <div style="position:absolute; right:24px; top:150px; writing-mode:vertical-rl; font-size:14px; letter-spacing:0.4em; color:#2C4770; border-right:1px solid rgba(43,38,32,0.25); padding-right:10px; height:250px">기쁨으로 길어 올린 물</div>
+          <a class="m-cta t4-cta" style="font-size:13px; padding:12px 26px; position:absolute; bottom:40px; left:24px">파트너 문의</a>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t4-bg"><div style="display:flex; align-items:center; gap:14px"><div class="t4-seal">브</div><div><div style="font-size:24px; font-weight:800">브리웰</div><div style="font-family:Inter; font-size:10px; letter-spacing:0.24em; color:#8a8172">BRIWELL · SEOUL</div></div></div></div>
+        <div class="bizrow">
+          <div class="biz t4-bg"><div style="padding:14px 16px; height:100%; display:flex; justify-content:space-between"><div style="display:flex; flex-direction:column; justify-content:space-between"><span style="font-size:15px; font-weight:800">브리웰</span><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px">데이비드 · 대표</div><div style="font-size:9.5px; color:#8a8172; margin-top:3px">briwell.co · david@briwell.co</div></div></div><div class="t4-seal" style="width:34px;height:34px;font-size:16px;border-radius:6px; align-self:flex-start">브</div></div></div>
+          <div class="biz" style="background:#2B2620"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px"><div class="t4-seal" style="width:30px;height:30px;font-size:15px;border-radius:6px">브</div><span style="font-family:'Nanum Myeongjo'; font-size:13px; color:#F7F1E5; letter-spacing:0.18em">깊은 우물, 넓은 다리</span><span style="font-family:Inter; font-size:9px; color:#B63B2E; letter-spacing:0.2em">SEÚL → LATAM</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T5 EDITORIAL VOGUE ═══════════ -->
+  <style>
+    .t5-bg { background:#FFFFFF; color:#0B0B0B; font-family:'Bodoni Moda','Noto Serif KR',serif; }
+    .t5-pad { padding:34px 64px; height:100%; position:relative; }
+    .t5-mast { font-size:64px; font-weight:700; letter-spacing:0.05em; text-align:center; border-bottom:3px solid #0B0B0B; padding-bottom:12px; }
+    .t5-h1 { font-size:78px; line-height:1.04; margin-top:46px; max-width:14ch; }
+    .t5-h1 em { font-style:italic; color:#E0201B; }
+    .t5-img { position:absolute; right:64px; top:172px; width:380px; height:460px; object-fit:cover; filter:grayscale(1) contrast(1.08); }
+    .t5-cap { position:absolute; right:64px; top:642px; font-family:Inter; font-size:11px; letter-spacing:0.18em; color:#777; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">05</span><h2>에디토리얼 보그 — The Issue</h2><span class="t-bench">벤치마크: Vogue · Violet Grey — 하이패션 매거진 · 2026 타입 주도</span></div>
+    <p class="t-desc">보도니 마스트헤드, 흑백 사진, 레드 한 점. 랜딩을 "매거진 이슈"로 발행하는 세계관 — 캠페인마다
+      №2, №3으로 갱신. 프리미엄·아트 디렉션 지향, 브랜드 파트너에게 급이 달라 보이는 안.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t5-bg">
+        <div class="t5-pad">
+          <div class="t5-mast">BRIWELL</div>
+          <div style="display:flex; justify-content:space-between; font-family:Inter; font-size:12px; letter-spacing:0.22em; color:#555; padding-top:10px"><span>№1 — LATINOAMÉRICA</span><span>SEOUL, 2026</span></div>
+          <div class="t5-h1">The K-Beauty <em>Issue.</em></div>
+          <div style="font-family:Inter; font-size:16px; color:#555; max-width:30ch; line-height:1.7; margin-top:24px">Creadoras, fórmulas de Seúl y comisiones claras — editorial abierto para México, Perú y Ecuador.</div>
+          <a class="m-cta" style="font-family:Inter; font-weight:600; font-size:14px; letter-spacing:0.16em; color:#0B0B0B; border-bottom:2px solid #E0201B; padding-bottom:4px; margin-top:30px; display:inline-block">APLICAR AL PROGRAMA</a>
+          <img class="t5-img" src="../briwell_landing_page/assets/img/products/parnell-model.jpg" alt="">
+          <div class="t5-cap">PH. SEOUL STUDIO — CICAMANU STORY</div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t5-bg">
+        <div style="padding:24px; height:100%; position:relative">
+          <div style="font-size:34px; font-weight:700; letter-spacing:0.05em; text-align:center; border-bottom:2.5px solid #0B0B0B; padding-bottom:8px">BRIWELL</div>
+          <div style="display:flex; justify-content:space-between; font-family:Inter; font-size:9px; letter-spacing:0.18em; color:#555; padding-top:8px"><span>№1 — LATAM</span><span>SEOUL 2026</span></div>
+          <img src="../briwell_landing_page/assets/img/products/parnell-model.jpg" style="width:100%; height:300px; object-fit:cover; filter:grayscale(1) contrast(1.08); margin-top:22px" alt="">
+          <div style="font-size:40px; line-height:1.08; margin-top:22px">The K-Beauty <em style="color:#E0201B">Issue.</em></div>
+          <a class="m-cta" style="font-family:Inter; font-weight:600; font-size:12px; letter-spacing:0.14em; color:#0B0B0B; border-bottom:2px solid #E0201B; padding-bottom:3px; margin-top:18px; display:inline-block">APLICAR</a>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t5-bg" style="border:1px solid #0B0B0B"><div style="text-align:center"><div style="font-family:'Bodoni Moda'; font-size:30px; font-weight:700; letter-spacing:0.06em">BRIWELL</div><div style="font-family:Inter; font-size:9px; letter-spacing:0.3em; color:#777; margin-top:4px">SEOUL — LATAM · EST. 2026</div></div></div>
+        <div class="bizrow">
+          <div class="biz t5-bg" style="border:1px solid #0B0B0B"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><div style="font-family:'Bodoni Moda'; font-weight:700; font-size:16px; letter-spacing:0.05em">BRIWELL</div><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px">데이비드 — 대표</div><div style="font-family:Inter; font-size:9px; color:#777; letter-spacing:0.08em; margin-top:3px">DAVID@BRIWELL.CO — SEOUL</div></div></div><div style="position:absolute; right:16px; bottom:14px; width:26px; height:2px; background:#E0201B"></div></div>
+          <div class="biz" style="background:#0B0B0B"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px"><span style="font-family:'Bodoni Moda'; font-weight:700; font-size:19px; color:#fff; letter-spacing:0.08em">BRIWELL</span><span style="font-family:Inter; font-size:8.5px; color:#999; letter-spacing:0.26em">THE K-BEAUTY ISSUE — LATAM</span><div style="width:22px; height:2px; background:#E0201B"></div></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T6 Y2K CHROME ═══════════ -->
+  <style>
+    .t6-bg { background:linear-gradient(150deg,#DCD8FF 0%,#C4E8FF 55%,#FFE1F2 100%); color:#2A2440; font-family:'Unbounded','Noto Sans KR',sans-serif; }
+    .t6-chrome { background:linear-gradient(180deg,#FDFDFF 8%,#9AA3B8 38%,#E8ECF5 52%,#5F6B85 70%,#D9DEEA 100%); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 2px 0 rgba(255,255,255,0.4); }
+    .t6-pad { padding:40px 64px; height:100%; position:relative; }
+    .t6-h1 { font-size:84px; font-weight:700; line-height:1.04; margin-top:70px; }
+    .t6-cta { font-weight:700; font-size:15px; color:#2A2440; background:rgba(255,255,255,0.65); border:1.5px solid #fff; backdrop-filter:blur(6px); padding:16px 36px; border-radius:999px; margin-top:34px; box-shadow:0 10px 26px rgba(95,107,133,0.3); }
+    .t6-star { position:absolute; font-size:44px; color:#fff; text-shadow:0 0 18px rgba(255,255,255,0.9); }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">06</span><h2>Y2K 크롬 — shine 2 the future</h2><span class="t-bench">벤치마크: Isamaya · Depop 코어 — Gen Z 레트로 퓨처</span></div>
+    <p class="t-desc">리퀴드 크롬 타이포, 홀로그램 라일락·베이비블루, 스파클(✦). 2000년대를 미래로 재해석한
+      Gen Z 문법 — 가장 트렌드-포워드, 가장 빨리 낡을 수도 있는 하이리스크 하이임팩트 안.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t6-bg">
+        <div class="t6-pad">
+          <span class="t6-star" style="right:120px; top:60px">✦</span>
+          <span class="t6-star" style="right:340px; bottom:110px; font-size:28px">✦</span>
+          <span class="t6-star" style="left:520px; top:120px; font-size:22px">✦</span>
+          <div class="m-nav"><span style="font-size:20px; font-weight:700" class="t6-chrome">briwell✦</span><span style="font-family:Inter; font-weight:600; font-size:12px; color:#6E6595; letter-spacing:0.2em">MX·PE·EC</span></div>
+          <div class="t6-h1"><span class="t6-chrome">shine 2</span><br><span class="t6-chrome">the future</span></div>
+          <div style="font-family:Inter,'Noto Sans KR'; font-weight:500; font-size:17px; color:#5B5378; margin-top:24px; max-width:38ch; line-height:1.65">K-beauty de Seúl para la próxima generación de creadoras latinas.</div>
+          <a class="m-cta t6-cta">unirme ✦</a>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t6-bg">
+        <div style="padding:26px 24px; height:100%; position:relative">
+          <span class="t6-star" style="right:28px; top:80px; font-size:30px">✦</span>
+          <span class="t6-star" style="left:30px; bottom:150px; font-size:22px">✦</span>
+          <div class="m-nav"><span style="font-size:16px; font-weight:700" class="t6-chrome">briwell✦</span></div>
+          <div style="font-family:'Unbounded'; font-size:44px; font-weight:700; line-height:1.06; margin-top:60px"><span class="t6-chrome">shine 2</span><br><span class="t6-chrome">the future</span></div>
+          <div style="font-family:Inter; font-weight:500; font-size:14px; color:#5B5378; margin-top:20px; line-height:1.6">K-beauty de Seúl para<br>creadoras latinas.</div>
+          <div style="position:absolute; bottom:44px; left:24px"><a class="m-cta t6-cta" style="font-size:13px; padding:13px 28px">unirme ✦</a></div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t6-bg" style="border:none"><span style="font-family:'Unbounded'; font-size:27px; font-weight:700" class="t6-chrome">briwell✦</span></div>
+        <div class="bizrow">
+          <div class="biz t6-bg"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-family:'Unbounded'; font-size:14px; font-weight:700" class="t6-chrome">briwell✦</span><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px; color:#2A2440">데이비드 ✦ 대표</div><div style="font-family:Inter; font-size:9.5px; color:#6E6595; margin-top:3px">briwell.co · david@briwell.co</div></div></div></div>
+          <div class="biz" style="background:#2A2440"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px"><span style="font-family:'Unbounded'; font-size:16px; font-weight:700" class="t6-chrome">briwell✦</span><span style="font-family:Inter; font-size:9px; color:#B9B0E0; letter-spacing:0.22em">SEOUL 2 LATAM</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T7 MERCADO CALIDO ═══════════ -->
+  <style>
+    .t7-bg { background:#FBEEDB; color:#4A2E1D; font-family:'Lilita One','Noto Sans KR',sans-serif; }
+    .t7-pad { padding:40px 64px; height:100%; position:relative; }
+    .t7-h1 { font-size:88px; line-height:1.0; margin-top:66px; color:#C65A2E; text-shadow:3px 3px 0 #F2B12E; }
+    .t7-stripe { position:absolute; left:0; right:0; bottom:0; height:26px; background:repeating-linear-gradient(90deg,#C65A2E 0 46px,#F2B12E 46px 92px,#3E7D4E 92px 138px,#B63B5E 138px 184px); }
+    .t7-cta { font-family:'Noto Sans KR'; font-weight:700; font-size:16px; color:#FBEEDB; background:#3E7D4E; padding:16px 36px; border-radius:14px; margin-top:32px; box-shadow:4px 4px 0 #C65A2E; }
+    .t7-sun { position:absolute; right:100px; top:90px; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">07</span><h2>메르카도 칼리도 — 라탐의 온기</h2><span class="t-bench">벤치마크: LATAM 로컬 브랜드 감성 · 세라페/오토미 팔레트 · 2026 휴먼 스크리블</span></div>
+    <p class="t-desc">유일하게 "도착지"의 문화로 말하는 안 — 테라코타·태양 노랑·선인장 초록, 세라페 스트라이프,
+      손그림 태양. 한국 원산지 프리미엄 대신 라탐 크리에이터의 자기 세계로 들어가는 전략.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t7-bg">
+        <div class="t7-pad">
+          <div class="m-nav"><span style="font-size:24px; color:#C65A2E">briwell</span><span style="font-family:'Noto Sans KR'; font-weight:700; font-size:13px; color:#8a6a4a">멕시코 · 페루 · 에콰도르</span></div>
+          <div class="t7-h1">De Seúl,<br>con calor<br>latino.</div>
+          <a class="m-cta t7-cta">Únete al mercado</a>
+          <svg class="t7-sun" width="300" height="300" viewBox="0 0 100 100"><circle cx="50" cy="50" r="22" fill="#F2B12E" stroke="#C65A2E" stroke-width="2.5"/><g stroke="#C65A2E" stroke-width="3" stroke-linecap="round"><line x1="50" y1="14" x2="50" y2="24"/><line x1="50" y1="76" x2="50" y2="86"/><line x1="14" y1="50" x2="24" y2="50"/><line x1="76" y1="50" x2="86" y2="50"/><line x1="26" y1="26" x2="33" y2="33"/><line x1="67" y1="67" x2="74" y2="74"/><line x1="26" y1="74" x2="33" y2="67"/><line x1="67" y1="33" x2="74" y2="26"/></g><path d="M42 54 Q50 62 58 54" fill="none" stroke="#C65A2E" stroke-width="2.5" stroke-linecap="round"/><circle cx="43" cy="46" r="2.6" fill="#C65A2E"/><circle cx="57" cy="46" r="2.6" fill="#C65A2E"/></svg>
+          <div class="t7-stripe"></div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t7-bg">
+        <div style="padding:26px 24px; height:100%; position:relative">
+          <div class="m-nav"><span style="font-family:'Lilita One'; font-size:19px; color:#C65A2E">briwell</span></div>
+          <svg width="130" height="130" viewBox="0 0 100 100" style="display:block; margin:34px auto 0"><circle cx="50" cy="50" r="22" fill="#F2B12E" stroke="#C65A2E" stroke-width="2.5"/><g stroke="#C65A2E" stroke-width="3" stroke-linecap="round"><line x1="50" y1="14" x2="50" y2="24"/><line x1="50" y1="76" x2="50" y2="86"/><line x1="14" y1="50" x2="24" y2="50"/><line x1="76" y1="50" x2="86" y2="50"/><line x1="26" y1="26" x2="33" y2="33"/><line x1="67" y1="67" x2="74" y2="74"/><line x1="26" y1="74" x2="33" y2="67"/><line x1="67" y1="33" x2="74" y2="26"/></g><path d="M42 54 Q50 62 58 54" fill="none" stroke="#C65A2E" stroke-width="2.5" stroke-linecap="round"/><circle cx="43" cy="46" r="2.6" fill="#C65A2E"/><circle cx="57" cy="46" r="2.6" fill="#C65A2E"/></svg>
+          <div style="font-family:'Lilita One'; font-size:46px; line-height:1.02; margin-top:20px; color:#C65A2E; text-shadow:2px 2px 0 #F2B12E; text-align:center">De Seúl,<br>con calor<br>latino.</div>
+          <div style="text-align:center; margin-top:24px"><a class="m-cta t7-cta" style="font-size:14px; padding:13px 28px">Únete al mercado</a></div>
+          <div class="t7-stripe" style="height:18px"></div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t7-bg" style="border:none"><div style="display:flex; align-items:center; gap:10px"><svg width="44" height="44" viewBox="0 0 100 100"><circle cx="50" cy="50" r="22" fill="#F2B12E" stroke="#C65A2E" stroke-width="3"/><g stroke="#C65A2E" stroke-width="4" stroke-linecap="round"><line x1="50" y1="12" x2="50" y2="23"/><line x1="50" y1="77" x2="50" y2="88"/><line x1="12" y1="50" x2="23" y2="50"/><line x1="77" y1="50" x2="88" y2="50"/></g></svg><span style="font-family:'Lilita One'; font-size:28px; color:#C65A2E">briwell</span></div></div>
+        <div class="bizrow">
+          <div class="biz t7-bg"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-family:'Lilita One'; font-size:16px; color:#C65A2E">briwell</span><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px">데이비드 · 대표</div><div style="font-size:9.5px; color:#8a6a4a; margin-top:3px">briwell.co · david@briwell.co</div></div></div><div style="position:absolute; left:0; right:0; bottom:0; height:10px; background:repeating-linear-gradient(90deg,#C65A2E 0 24px,#F2B12E 24px 48px,#3E7D4E 48px 72px,#B63B5E 72px 96px)"></div></div>
+          <div class="biz" style="background:#C65A2E"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px"><span style="font-family:'Lilita One'; font-size:18px; color:#FBEEDB">briwell</span><span style="font-family:Inter; font-weight:600; font-size:9.5px; color:#F2B12E; letter-spacing:0.14em">DE SEÚL, CON CALOR LATINO</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T8 CALMA ═══════════ -->
+  <style>
+    .t8-bg { background:#EDE8E1; color:#4A443D; font-family:Karla,'Noto Sans KR',sans-serif; }
+    .t8-pad { padding:46px 64px; height:100%; position:relative; }
+    .t8-h1 { font-size:64px; font-weight:300; letter-spacing:0.01em; line-height:1.15; margin-top:110px; }
+    .t8-cta { font-weight:600; font-size:13px; letter-spacing:0.24em; text-transform:lowercase; color:#4A443D; border:1px solid #4A443D; padding:14px 34px; margin-top:40px; }
+    .t8-img { position:absolute; right:0; top:0; width:520px; height:100%; object-fit:cover; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">08</span><h2>칼마 — 조용한 럭셔리</h2><span class="t-bench">벤치마크: Aesop · Nécessaire — 콰이엇 럭셔리 미니멀</span></div>
+    <p class="t-desc">오트 그레이지 톤온톤, 라이트 웨이트 소문자, 마크로 텍스처 사진, 액센트 컬러 0. 말수를 줄여서
+      급을 올리는 안 — 시간이 지나도 낡지 않는 가장 안전한 럭셔리 문법.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t8-bg">
+        <img class="t8-img" src="../briwell_landing_page/assets/img/products/parnell-gel.jpg" alt="">
+        <div class="t8-pad">
+          <div class="m-nav" style="width:52%"><span style="font-weight:400; font-size:17px; letter-spacing:0.5em">b r i w e l l</span><span style="font-size:11px; letter-spacing:0.2em; color:#8d857a">seúl — latam</span></div>
+          <div class="t8-h1" style="max-width:9ch">piel<br>en calma.</div>
+          <div style="font-size:14px; color:#7d766c; margin-top:22px; max-width:30ch; line-height:1.8">skincare coreano, escogido despacio.<br>comisión clara, sin ruido.</div>
+          <a class="m-cta t8-cta">aplicar</a>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t8-bg">
+        <div style="height:100%; position:relative">
+          <img src="../briwell_landing_page/assets/img/products/parnell-gel.jpg" style="width:100%; height:270px; object-fit:cover" alt="">
+          <div style="padding:30px 26px">
+            <div style="font-weight:400; font-size:14px; letter-spacing:0.5em">b r i w e l l</div>
+            <div style="font-family:Karla; font-weight:300; font-size:42px; line-height:1.15; margin-top:40px">piel<br>en calma.</div>
+            <div style="font-size:12.5px; color:#7d766c; margin-top:16px; line-height:1.8">skincare coreano,<br>escogido despacio.</div>
+            <a class="m-cta t8-cta" style="font-size:11px; padding:11px 26px">aplicar</a>
+          </div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t8-bg" style="border:none"><div style="text-align:center"><div style="font-family:Karla; font-weight:400; font-size:21px; letter-spacing:0.55em; color:#4A443D">b r i w e l l</div><div style="font-size:9px; letter-spacing:0.3em; color:#8d857a; margin-top:6px">seúl — latam</div></div></div>
+        <div class="bizrow">
+          <div class="biz t8-bg"><div style="padding:16px 18px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-weight:400; font-size:12px; letter-spacing:0.45em">b r i w e l l</span><div style="font-family:'Noto Sans KR'"><div style="font-weight:500; font-size:12.5px">데이비드 — 대표</div><div style="font-family:Karla; font-size:9.5px; color:#8d857a; margin-top:3px; letter-spacing:0.06em">david@briwell.co</div></div></div></div>
+          <div class="biz" style="background:#4A443D"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px"><span style="font-family:Karla; font-weight:300; font-size:14px; letter-spacing:0.5em; color:#EDE8E1">b r i w e l l</span><span style="font-family:Karla; font-size:9px; letter-spacing:0.28em; color:#a89f92">piel en calma</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T9 PLAYGROUND ═══════════ -->
+  <style>
+    .t9-bg { background:#FFF9EE; color:#22201B; font-family:'Archivo Black','Noto Sans KR',sans-serif; }
+    .t9-pad { padding:40px 64px; height:100%; position:relative; }
+    .t9-h1 { font-size:84px; line-height:1.0; margin-top:64px; text-transform:uppercase; }
+    .t9-hl { background:#FFE24A; padding:0 10px; box-decoration-break:clone; }
+    .t9-scribble { font-family:Caveat; font-weight:700; color:#F04E3E; }
+    .t9-sticker { position:absolute; background:#fff; border:2px solid #22201B; border-radius:14px; padding:12px 18px; box-shadow:4px 4px 0 #22201B; font-family:Inter; font-weight:700; }
+    .t9-cta { font-family:Inter; font-weight:800; font-size:16px; color:#fff; background:#F04E3E; border:2.5px solid #22201B; padding:15px 34px; border-radius:999px; margin-top:32px; box-shadow:5px 5px 0 #22201B; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">09</span><h2>플레이그라운드 — 스티커 콜라주</h2><span class="t-bench">벤치마크: Linktree · Depop · 2026 휴먼 스크리블(손맛 낙서)</span></div>
+    <p class="t-desc">스티커·테이프·마커 낙서·형광 하이라이트. AI-매끈함에 반기를 드는 2026 "휴먼 스크리블" 트렌드의
+      정면 — 크리에이터 커뮤니티의 놀이터 에너지. 친근함 최상, 럭셔리 최소.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t9-bg">
+        <div class="t9-pad">
+          <div class="m-nav"><span style="font-size:22px">BRIWELL<span style="color:#F04E3E">!</span></span><span class="t9-scribble" style="font-size:22px">para creadoras ♥</span></div>
+          <div class="t9-h1">Creadoras<br><span class="t9-hl">al frente</span> ★</div>
+          <div style="font-family:Inter; font-weight:600; font-size:17px; color:#5d5950; margin-top:24px; max-width:36ch; line-height:1.65">K-beauty real de Seúl + tu código + comisión clara. Sin spam, lo prometemos <span class="t9-scribble" style="font-size:21px">(en serio!)</span></div>
+          <a class="m-cta t9-cta">APLICAR AHORA</a>
+          <div class="t9-sticker" style="right:120px; top:140px; transform:rotate(6deg)">SEOUL → MX·PE·EC ✈</div>
+          <div class="t9-sticker" style="right:200px; top:290px; transform:rotate(-5deg); background:#BDE3FF">comisión que fluye 💧</div>
+          <div class="t9-sticker" style="right:90px; top:430px; transform:rotate(3deg); background:#FFE24A">0% spam</div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t9-bg">
+        <div style="padding:26px 24px; height:100%; position:relative">
+          <div class="m-nav"><span style="font-size:17px">BRIWELL<span style="color:#F04E3E">!</span></span></div>
+          <div style="font-family:'Archivo Black'; font-size:46px; line-height:1.02; margin-top:46px; text-transform:uppercase">Creadoras<br><span class="t9-hl">al frente</span> ★</div>
+          <div class="t9-sticker" style="position:static; display:inline-block; transform:rotate(-3deg); margin-top:30px; font-size:13px">SEOUL → MX·PE·EC ✈</div>
+          <div class="t9-sticker" style="position:static; display:inline-block; transform:rotate(2deg); margin-top:12px; background:#BDE3FF; font-size:13px">comisión que fluye 💧</div>
+          <div style="margin-top:30px"><a class="m-cta t9-cta" style="font-size:14px; padding:13px 26px">APLICAR AHORA</a></div>
+          <div class="t9-scribble" style="font-size:24px; position:absolute; bottom:36px; right:26px; transform:rotate(-6deg)">en serio! ♥</div>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box t9-bg" style="border:2px solid #22201B; box-shadow:4px 4px 0 #22201B"><div style="background:#fff; border:2px solid #22201B; border-radius:999px; padding:10px 22px; transform:rotate(-2deg); box-shadow:3px 3px 0 #22201B"><span style="font-family:'Archivo Black'; font-size:21px">BRIWELL<span style="color:#F04E3E">!</span></span></div></div>
+        <div class="bizrow">
+          <div class="biz t9-bg" style="border:2px solid #22201B"><div style="padding:13px 15px; height:100%; display:flex; flex-direction:column; justify-content:space-between"><span style="font-family:'Archivo Black'; font-size:14px">BRIWELL<span style="color:#F04E3E">!</span></span><div style="font-family:'Noto Sans KR'"><div style="font-weight:700; font-size:13px">데이비드 · 대표 <span class="t9-scribble" style="font-size:15px">안녕!</span></div><div style="font-family:Inter; font-size:9.5px; color:#5d5950; margin-top:2px">briwell.co · david@briwell.co</div></div></div><div style="position:absolute; right:12px; top:10px; background:#FFE24A; border:1.5px solid #22201B; border-radius:8px; padding:3px 8px; font-family:Inter; font-weight:800; font-size:8.5px; transform:rotate(5deg)">HOLA ★</div></div>
+          <div class="biz" style="background:#F04E3E; border:2px solid #22201B"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px"><span style="font-family:'Archivo Black'; font-size:17px; color:#fff">BRIWELL<span style="color:#FFE24A">!</span></span><span class="t9-scribble" style="font-size:17px; color:#FFE24A">creadoras al frente ★</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ T10 OPS TERMINAL ═══════════ -->
+  <style>
+    .t10-bg { background:#0B0D10; color:#E6EAF0; font-family:'JetBrains Mono','Noto Sans KR',monospace; background-image:linear-gradient(rgba(230,234,240,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(230,234,240,0.045) 1px,transparent 1px); background-size:44px 44px; }
+    .t10-green { color:#3DFF88; }
+    .t10-pad { padding:40px 64px; height:100%; position:relative; }
+    .t10-h1 { font-size:66px; font-weight:600; line-height:1.12; margin-top:66px; letter-spacing:-0.02em; }
+    .t10-chip { display:inline-block; font-size:12px; border:1px solid rgba(61,255,136,0.4); color:#3DFF88; border-radius:6px; padding:5px 12px; margin-right:8px; }
+    .t10-cta { font-weight:600; font-size:15px; color:#0B0D10; background:#3DFF88; padding:14px 30px; border-radius:8px; margin-top:34px; }
+    .t10-panel { position:absolute; right:64px; top:150px; width:360px; background:#11151B; border:1px solid rgba(230,234,240,0.14); border-radius:10px; padding:20px; font-size:12.5px; line-height:2.0; }
+  </style>
+  <section class="theme">
+    <div class="t-head"><span class="t-no">10</span><h2>옵스 터미널 — briwell_ops</h2><span class="t-bench">벤치마크: Linear · Vercel — 다크 SaaS 엔지니어링</span></div>
+    <p class="t-desc">모노스페이스, 그리드 라인, 터미널 그린, 실시간 메트릭 패널. "크리에이터 커머스를 엔지니어링하는
+      회사"로 자리매김 — B2B 파트너·심사역에게 기술 신뢰 최상, 뷰티 감성 최소.</p>
+    <div class="mock-row">
+      <div class="desk-outer"><div class="desk t10-bg">
+        <div class="t10-pad">
+          <div class="m-nav"><span style="font-size:18px; font-weight:600">[bw_] <span style="color:#7B8494">briwell_ops</span></span><span style="font-size:12px; color:#7B8494">SEOUL→LATAM · v1.0</span></div>
+          <div style="margin-top:60px"><span class="t10-chip">● system: live</span><span class="t10-chip" style="border-color:rgba(230,234,240,0.2); color:#9AA3B0">tests: 368 ✓</span></div>
+          <div class="t10-h1">creator commerce,<br><span class="t10-green">engineered.</span></div>
+          <div style="font-family:Inter,'Noto Sans KR'; font-size:16px; color:#9AA3B0; margin-top:20px; max-width:40ch; line-height:1.7">발굴 → 검증 → 캠페인 → 어트리뷰션 → 정산. 전 구간이 코드로 강제되는 파이프라인.</div>
+          <a class="m-cta t10-cta">$ solicitar_demo</a>
+          <div class="t10-panel">
+            <div><span class="t10-green">➜</span> pipeline.status <span style="float:right" class="t10-green">RUNNING</span></div>
+            <div><span style="color:#7B8494">discovery</span> <span style="float:right">MX·PE·EC</span></div>
+            <div><span style="color:#7B8494">consent_gate</span> <span style="float:right" class="t10-green">fail-closed ✓</span></div>
+            <div><span style="color:#7B8494">attribution</span> <span style="float:right">webhook·live</span></div>
+            <div><span style="color:#7B8494">settlement</span> <span style="float:right">auto-calc</span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="phone-outer"><div class="phone t10-bg">
+        <div style="padding:26px 22px; height:100%; position:relative">
+          <div class="m-nav"><span style="font-size:14px; font-weight:600">[bw_]</span><span style="font-size:10px; color:#7B8494">v1.0</span></div>
+          <div style="margin-top:44px"><span class="t10-chip" style="font-size:10px">● live</span><span class="t10-chip" style="font-size:10px; border-color:rgba(230,234,240,0.2); color:#9AA3B0">368 ✓</span></div>
+          <div style="font-size:34px; font-weight:600; line-height:1.16; margin-top:18px">creator<br>commerce,<br><span class="t10-green">engineered.</span></div>
+          <div style="background:#11151B; border:1px solid rgba(230,234,240,0.14); border-radius:10px; padding:14px; font-size:10.5px; line-height:1.9; margin-top:26px">
+            <div><span class="t10-green">➜</span> pipeline.status <span style="float:right" class="t10-green">RUNNING</span></div>
+            <div><span style="color:#7B8494">consent_gate</span> <span style="float:right" class="t10-green">fail-closed ✓</span></div>
+            <div><span style="color:#7B8494">settlement</span> <span style="float:right">auto-calc</span></div>
+          </div>
+          <a class="m-cta t10-cta" style="font-size:12.5px; padding:11px 22px">$ solicitar_demo</a>
+        </div>
+      </div></div>
+      <div class="brand-col">
+        <div class="logo-box" style="background:#0B0D10"><div style="text-align:center"><span style="font-family:'JetBrains Mono'; font-size:26px; font-weight:600; color:#E6EAF0">[bw<span class="t10-green">_</span>]</span><div style="font-family:'JetBrains Mono'; font-size:10px; color:#7B8494; margin-top:5px">briwell_ops</div></div></div>
+        <div class="bizrow">
+          <div class="biz" style="background:#0B0D10"><div style="padding:14px 16px; height:100%; display:flex; flex-direction:column; justify-content:space-between; font-family:'JetBrains Mono'"><span style="font-size:13px; color:#E6EAF0">[bw<span class="t10-green">_</span>] briwell_ops</span><div><div style="font-family:'Noto Sans KR'; font-weight:700; font-size:12.5px; color:#E6EAF0">데이비드 — founder</div><div style="font-size:9px; color:#7B8494; margin-top:3px">david@briwell.co · seoul</div></div></div><div style="position:absolute; right:14px; top:12px; font-family:'JetBrains Mono'; font-size:8.5px; color:#3DFF88">● live</div></div>
+          <div class="biz" style="background:#11151B; border:1px solid rgba(61,255,136,0.35)"><div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; font-family:'JetBrains Mono'"><span style="font-size:15px; color:#E6EAF0">[bw<span class="t10-green">_</span>]</span><span style="font-size:9px; color:#3DFF88">creator commerce, engineered.</span><span style="font-size:8.5px; color:#7B8494">seoul → latam</span></div></div>
+        </div>
+        <div class="biz-tag">명함 앞(KO) / 뒤(ES)</div>
+      </div>
+    </div>
+  </section>
+
+  <p style="border-top:1px solid rgba(26,25,23,0.12); margin-top:36px; padding-top:22px; font-size:13.5px; color:#6B6963; line-height:1.75; word-break:keep-all">
+    <b style="color:#1A1917">픽 방법:</b> 테마 번호(01–10)로 최애·차선을 알려주세요. 조합도 가능합니다
+    (예: "08 칼마 베이스에 04의 도장 로고"). 기존 The Well은 11번째 후보로 그대로 살아 있습니다.
+    픽 후: 해당 테마로 ES/KO 전체 페이지 + 로고 정식 시스템 + 인쇄용 명함을 완성합니다.
+    벤치마크 출처: 2026 뷰티 브랜딩 트렌드(타입 주도·휴먼 스크리블·맥시멀리즘) — Selfnamed·Glimpse 트렌드 리포트.
+  </p>
+</div>
+</body>
+</html>
