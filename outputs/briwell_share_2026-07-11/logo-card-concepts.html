@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Briwell 로고·명함 시안 — The Well</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500;1,9..144,600&family=Noto+Serif+KR:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&family=Sora:wght@500;600&family=Manrope:wght@500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --paper: #F5F2EA;
+      --ink: #0C2E2F;
+      --muted: #5C6E6A;
+      --aqua: #0E7C71;
+      --aqua-bright: #2FD0BC;
+      --gold: #D9A441;
+      --line: rgba(12, 46, 47, 0.14);
+      --card: #FFFFFF;
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', system-ui, sans-serif;
+      background: var(--paper); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 32px 96px; }
+    .eyebrow {
+      font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--aqua); font-weight: 600; margin-bottom: 12px;
+    }
+    h1 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 38px; font-weight: 500; margin-bottom: 10px; }
+    h1 em { font-style: italic; color: var(--aqua); }
+    .lede { color: var(--muted); max-width: 70ch; margin-bottom: 56px; line-height: 1.7; word-break: keep-all; }
+
+    .direction { border-top: 1px solid var(--line); padding: 48px 0 64px; }
+    .dir-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+    .dir-tag {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 15px; color: var(--paper);
+      background: var(--aqua); border-radius: 999px; padding: 4px 16px;
+    }
+    .dir-head h2 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 26px; font-weight: 600; }
+    .dir-note { font-size: 14px; color: var(--muted); max-width: 72ch; margin-bottom: 32px; line-height: 1.7; word-break: keep-all; }
+
+    .logo-row { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .swatch {
+      border: 1px solid var(--line); border-radius: 14px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px; padding: 40px 24px; min-height: 220px;
+      position: relative;
+    }
+    .swatch-label {
+      position: absolute; top: 12px; left: 16px; font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .on-paper { background: var(--paper); }
+    .on-white { background: var(--card); }
+    .on-ink { background: var(--ink); }
+    .on-ink .swatch-label { color: rgba(245,242,234,0.5); }
+
+    .lockup { display: flex; align-items: center; gap: 14px; }
+    .lockup svg { display: block; }
+    .wordmark { font-family: 'Fraunces', serif; font-weight: 600; font-size: 40px; letter-spacing: -0.01em; color: var(--ink); }
+    .wordmark em { font-style: italic; font-weight: 500; color: var(--aqua); }
+    .on-ink .wordmark, .biz-back .wordmark { color: var(--paper); }
+    .on-ink .wordmark em, .biz-back .wordmark em { color: var(--aqua-bright); }
+    .wordmark-sm { font-size: 26px; }
+    .tagline { font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted); }
+    .on-ink .tagline { color: rgba(245,242,234,0.55); }
+
+    /* ------- business cards ------- */
+    .cards-row { display: flex; flex-wrap: wrap; gap: 28px; }
+    .biz {
+      width: 540px; height: 300px; border-radius: 14px; overflow: hidden; position: relative;
+      box-shadow: 0 22px 44px rgba(12,46,47,0.18); flex: 0 0 auto;
+    }
+    .biz-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin: 10px 0 0 4px; }
+    .biz-front { background: var(--paper); }
+    .biz-back { background: var(--ink); color: var(--paper); }
+    .biz-pad { position: absolute; inset: 0; padding: 34px 38px; display: flex; flex-direction: column; justify-content: space-between; }
+
+    .b-name { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 27px; font-weight: 600; line-height: 1.25; }
+    .b-name small { display: block; font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; margin-top: 5px; }
+    .b-contact { font-size: 12px; line-height: 1.85; color: var(--muted); }
+    .b-contact b { color: var(--ink); font-weight: 600; }
+    .biz-back .b-contact { color: rgba(245,242,234,0.65); }
+
+    .back-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; text-align: center; }
+    .back-tag-es { font-family: 'Fraunces', serif; font-style: italic; font-size: 16px; color: var(--aqua-bright); }
+    .back-tag-ko { font-size: 12px; letter-spacing: 0.3em; color: rgba(245,242,234,0.6); }
+    .gold-rule { width: 44px; height: 1px; background: var(--gold); }
+
+    /* card decorative motifs */
+    .motif { position: absolute; pointer-events: none; }
+
+    .print-note {
+      border-top: 1px solid var(--line); margin-top: 56px; padding-top: 24px;
+      font-size: 13.5px; color: var(--muted); line-height: 1.8; max-width: 76ch; word-break: keep-all;
+    }
+    .print-note strong { color: var(--ink); }
+
+    /* ------- exploration grid D–M ------- */
+    .explore-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .exp-card {
+      border: 1px solid var(--line); border-radius: 14px; background: var(--card);
+      padding: 26px 28px 24px;
+    }
+    .exp-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .exp-tag {
+      font-family: 'Fraunces', serif; font-style: italic; font-size: 13px; color: var(--paper);
+      background: var(--aqua); border-radius: 999px; padding: 2px 12px;
+    }
+    .exp-head h3 { font-family: 'Fraunces', 'Noto Serif KR', serif; font-size: 19px; font-weight: 600; }
+    .exp-desc { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 20px; min-height: 43px; word-break: keep-all; }
+    .exp-row { display: flex; align-items: center; gap: 22px; }
+    .exp-main { flex: 1; display: flex; align-items: center; gap: 14px; }
+    .exp-chip {
+      background: var(--ink); border-radius: 10px; width: 64px; height: 64px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .exp-tiny {
+      border: 1px solid var(--line); border-radius: 10px; width: 64px; height: 64px; flex: 0 0 auto;
+      display: flex; align-items: center; justify-content: center;
+    }
+    @media (max-width: 900px) { .explore-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="eyebrow">Briwell · The Well · 2026-07-11</div>
+    <h1>로고 + 명함 시안 — <em>세 방향</em></h1>
+    <p class="lede">모든 안은 The Well 팔레트(우물 잉크 · 생명수 아쿠아 · 햇빛 골드 · 석재 페이퍼)와
+      Fraunces 워드마크를 공유하고, 마크의 서사만 다릅니다. 명함은 세 안 모두
+      <b>앞면 한국어 ↔ 뒷면 스페인어</b> — 명함 자체가 다리(Bridge)가 되도록 했습니다.
+      연락처는 전부 플레이스홀더입니다.</p>
+
+    <!-- =============== DIRECTION A =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">A</span><h2>우물 마크 — 동심원</h2></div>
+      <p class="dir-note">우물을 수직으로 내려다본 형태. 바깥 링(우물 벽) · 중간 물결 · 아쿠아 수원(水源).
+        가장 미니멀하고 시스템적 — 파비콘·앱 아이콘·워터마크까지 축소 내성이 가장 좋습니다.</p>
+      <div class="logo-row">
+        <div class="swatch on-paper">
+          <span class="swatch-label">기본 락업</span>
+          <div class="lockup">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="25" fill="none" stroke="#0C2E2F" stroke-width="3.4"/>
+              <circle cx="32" cy="32" r="15.5" fill="none" stroke="#0E7C71" stroke-width="1.6" opacity="0.55"/>
+              <circle cx="32" cy="32" r="7.5" fill="#2FD0BC"/>
+            </svg>
+            <span class="wordmark">bri<em>well</em></span>
+          </div>
+          <span class="tagline">Bridge + Well</span>
+        </div>
+        <div class="swatch on-ink">
+          <span class="swatch-label">잉크 반전</span>
+          <div class="lockup">
+            <svg width="44" height="44" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="25" fill="none" stroke="#F5F2EA" stroke-width="3.4"/>
+              <circle cx="32" cy="32" r="15.5" fill="none" stroke="#2FD0BC" stroke-width="1.6" opacity="0.6"/>
+              <circle cx="32" cy="32" r="7.5" fill="#2FD0BC"/>
+            </svg>
+            <span class="wordmark wordmark-sm">bri<em>well</em></span>
+          </div>
+        </div>
+        <div class="swatch on-white">
+          <span class="swatch-label">마크 단독 · 축소</span>
+          <div class="lockup" style="gap: 22px">
+            <svg width="72" height="72" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="25" fill="none" stroke="#0C2E2F" stroke-width="3.4"/>
+              <circle cx="32" cy="32" r="15.5" fill="none" stroke="#0E7C71" stroke-width="1.6" opacity="0.55"/>
+              <circle cx="32" cy="32" r="7.5" fill="#2FD0BC"/>
+            </svg>
+            <svg width="28" height="28" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="25" fill="none" stroke="#0C2E2F" stroke-width="4.4"/>
+              <circle cx="32" cy="32" r="8.5" fill="#2FD0BC"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="cards-row">
+        <div>
+          <div class="biz biz-front">
+            <svg class="motif" style="right:-70px; top:-70px" width="300" height="300" viewBox="0 0 300 300">
+              <circle cx="150" cy="150" r="130" fill="none" stroke="#0E7C71" stroke-width="1.2" opacity="0.35"/>
+              <circle cx="150" cy="150" r="95" fill="none" stroke="#0E7C71" stroke-width="1" opacity="0.25"/>
+              <circle cx="150" cy="150" r="60" fill="none" stroke="#D9A441" stroke-width="1" opacity="0.5"/>
+            </svg>
+            <div class="biz-pad">
+              <div class="lockup">
+                <svg width="30" height="30" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="25" fill="none" stroke="#0C2E2F" stroke-width="3.6"/>
+                  <circle cx="32" cy="32" r="8" fill="#2FD0BC"/>
+                </svg>
+                <span class="wordmark" style="font-size:22px">bri<em>well</em></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end">
+                <div class="b-name">데이비드<small>대표 · Founder</small></div>
+                <div class="b-contact" style="text-align:right">
+                  <b>briwell.co</b><br>
+                  david@briwell.co<br>
+                  +82 10-0000-0000
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="biz-label">A · 앞면 (KO) — 우측 물결 모티프</div>
+        </div>
+        <div>
+          <div class="biz biz-back">
+            <div class="back-center">
+              <svg width="52" height="52" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="25" fill="none" stroke="#F5F2EA" stroke-width="3.4"/>
+                <circle cx="32" cy="32" r="15.5" fill="none" stroke="#2FD0BC" stroke-width="1.6" opacity="0.6"/>
+                <circle cx="32" cy="32" r="7.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark wordmark-sm">bri<em>well</em></span>
+              <div class="gold-rule"></div>
+              <span class="back-tag-es">Puente y pozo — de Seúl a Latinoamérica</span>
+              <span class="back-tag-ko">다리이자 우물</span>
+            </div>
+          </div>
+          <div class="biz-label">A · 뒷면 (ES) — 잉크 + 골드 룰</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== DIRECTION B =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">B</span><h2>다리와 우물 — 아치와 물결</h2></div>
+      <p class="dir-note">다리 아치가 물결 위를 건너고, 정점 위에 골드 점(사12:3의 "기쁨" — 물 위의 해).
+        Bridge + Well 서사를 마크 하나에 담은 안. 이야기가 가장 풍부하고, 수출·무역 파트너에게
+        "연결"이 즉시 읽힙니다.</p>
+      <div class="logo-row">
+        <div class="swatch on-paper">
+          <span class="swatch-label">기본 락업</span>
+          <div class="lockup">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="13" r="3.2" fill="#D9A441"/>
+              <path d="M 9 42 A 23 23 0 0 1 55 42" fill="none" stroke="#0C2E2F" stroke-width="3.6" stroke-linecap="round"/>
+              <path d="M 15 49 Q 32 43 49 49" fill="none" stroke="#0E7C71" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M 22 55 Q 32 51 42 55" fill="none" stroke="#2FD0BC" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+            </svg>
+            <span class="wordmark">bri<em>well</em></span>
+          </div>
+          <span class="tagline">Bridge + Well</span>
+        </div>
+        <div class="swatch on-ink">
+          <span class="swatch-label">잉크 반전</span>
+          <div class="lockup">
+            <svg width="44" height="44" viewBox="0 0 64 64">
+              <circle cx="32" cy="13" r="3.2" fill="#D9A441"/>
+              <path d="M 9 42 A 23 23 0 0 1 55 42" fill="none" stroke="#F5F2EA" stroke-width="3.6" stroke-linecap="round"/>
+              <path d="M 15 49 Q 32 43 49 49" fill="none" stroke="#2FD0BC" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M 22 55 Q 32 51 42 55" fill="none" stroke="#2FD0BC" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+            </svg>
+            <span class="wordmark wordmark-sm">bri<em>well</em></span>
+          </div>
+        </div>
+        <div class="swatch on-white">
+          <span class="swatch-label">마크 단독 · 축소</span>
+          <div class="lockup" style="gap: 22px">
+            <svg width="72" height="72" viewBox="0 0 64 64">
+              <circle cx="32" cy="13" r="3.2" fill="#D9A441"/>
+              <path d="M 9 42 A 23 23 0 0 1 55 42" fill="none" stroke="#0C2E2F" stroke-width="3.6" stroke-linecap="round"/>
+              <path d="M 15 49 Q 32 43 49 49" fill="none" stroke="#0E7C71" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M 22 55 Q 32 51 42 55" fill="none" stroke="#2FD0BC" stroke-width="1.8" stroke-linecap="round" opacity="0.75"/>
+            </svg>
+            <svg width="28" height="28" viewBox="0 0 64 64">
+              <circle cx="32" cy="12" r="4" fill="#D9A441"/>
+              <path d="M 8 42 A 24 24 0 0 1 56 42" fill="none" stroke="#0C2E2F" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 16 52 Q 32 45 48 52" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="cards-row">
+        <div>
+          <div class="biz biz-front">
+            <svg class="motif" style="left:0; right:0; bottom:-6px; width:100%" height="86" viewBox="0 0 540 86" preserveAspectRatio="none">
+              <path d="M -20 80 Q 135 30 290 68 Q 420 96 560 52" fill="none" stroke="#0E7C71" stroke-width="1.6" opacity="0.4"/>
+              <path d="M -20 92 Q 150 52 320 82 Q 440 100 560 70" fill="none" stroke="#D9A441" stroke-width="1.2" opacity="0.5"/>
+            </svg>
+            <div class="biz-pad">
+              <div class="lockup">
+                <svg width="32" height="32" viewBox="0 0 64 64">
+                  <circle cx="32" cy="13" r="3.2" fill="#D9A441"/>
+                  <path d="M 9 42 A 23 23 0 0 1 55 42" fill="none" stroke="#0C2E2F" stroke-width="3.8" stroke-linecap="round"/>
+                  <path d="M 15 49 Q 32 43 49 49" fill="none" stroke="#0E7C71" stroke-width="2.4" stroke-linecap="round"/>
+                </svg>
+                <span class="wordmark" style="font-size:22px">bri<em>well</em></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end">
+                <div class="b-name">데이비드<small>대표 · Founder</small></div>
+                <div class="b-contact" style="text-align:right">
+                  <b>briwell.co</b><br>
+                  david@briwell.co<br>
+                  +82 10-0000-0000
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="biz-label">B · 앞면 (KO) — 하단 물결 라인</div>
+        </div>
+        <div>
+          <div class="biz biz-back">
+            <div class="back-center">
+              <svg width="54" height="54" viewBox="0 0 64 64">
+                <circle cx="32" cy="13" r="3.2" fill="#D9A441"/>
+                <path d="M 9 42 A 23 23 0 0 1 55 42" fill="none" stroke="#F5F2EA" stroke-width="3.6" stroke-linecap="round"/>
+                <path d="M 15 49 Q 32 43 49 49" fill="none" stroke="#2FD0BC" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark wordmark-sm">bri<em>well</em></span>
+              <div class="gold-rule"></div>
+              <span class="back-tag-es">Puente y pozo — de Seúl a Latinoamérica</span>
+              <span class="back-tag-ko">다리이자 우물</span>
+            </div>
+          </div>
+          <div class="biz-label">B · 뒷면 (ES)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== DIRECTION C =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">C</span><h2>생명의 물방울 — 낙수와 파문</h2></div>
+      <p class="dir-note">우물로 떨어지는 한 방울과 퍼지는 파문. "하나의 우물이 다른 우물들을 채운다"를
+        동작으로 표현한 안. 가장 감성적이고 K-뷰티(수분·글로우)와의 접점이 가장 큽니다.
+        워드마크에는 well 아래 파문 언더라인.</p>
+      <div class="logo-row">
+        <div class="swatch on-paper">
+          <span class="swatch-label">기본 락업</span>
+          <div class="lockup">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <path d="M32 8 C 37 17 43 23 43 31 A 11 11 0 1 1 21 31 C 21 23 27 17 32 8 Z" fill="#0E7C71"/>
+              <circle cx="35.5" cy="30" r="3" fill="#F5F2EA" opacity="0.85"/>
+              <path d="M 14 52 Q 32 45 50 52" fill="none" stroke="#0C2E2F" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M 21 58 Q 32 53.5 43 58" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="wordmark" style="position:relative">bri<em>well</em><svg style="position:absolute; left:52%; bottom:-10px" width="86" height="12" viewBox="0 0 86 12"><path d="M 3 9 Q 43 1 83 9" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/></svg></span>
+          </div>
+          <span class="tagline">Bridge + Well</span>
+        </div>
+        <div class="swatch on-ink">
+          <span class="swatch-label">잉크 반전</span>
+          <div class="lockup">
+            <svg width="44" height="44" viewBox="0 0 64 64">
+              <path d="M32 8 C 37 17 43 23 43 31 A 11 11 0 1 1 21 31 C 21 23 27 17 32 8 Z" fill="#2FD0BC"/>
+              <circle cx="35.5" cy="30" r="3" fill="#0C2E2F" opacity="0.8"/>
+              <path d="M 14 52 Q 32 45 50 52" fill="none" stroke="#F5F2EA" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M 21 58 Q 32 53.5 43 58" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="wordmark wordmark-sm">bri<em>well</em></span>
+          </div>
+        </div>
+        <div class="swatch on-white">
+          <span class="swatch-label">마크 단독 · 축소</span>
+          <div class="lockup" style="gap: 22px">
+            <svg width="72" height="72" viewBox="0 0 64 64">
+              <path d="M32 8 C 37 17 43 23 43 31 A 11 11 0 1 1 21 31 C 21 23 27 17 32 8 Z" fill="#0E7C71"/>
+              <circle cx="35.5" cy="30" r="3" fill="#F5F2EA" opacity="0.85"/>
+              <path d="M 14 52 Q 32 45 50 52" fill="none" stroke="#0C2E2F" stroke-width="2.6" stroke-linecap="round"/>
+              <path d="M 21 58 Q 32 53.5 43 58" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg width="28" height="28" viewBox="0 0 64 64">
+              <path d="M32 6 C 38 16 45 23 45 32 A 13 13 0 1 1 19 32 C 19 23 26 16 32 6 Z" fill="#0E7C71"/>
+              <path d="M 14 54 Q 32 46 50 54" fill="none" stroke="#0C2E2F" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="cards-row">
+        <div>
+          <div class="biz biz-front">
+            <svg class="motif" style="right:22px; top:-14px" width="150" height="330" viewBox="0 0 150 330">
+              <path d="M75 20 C 88 42 104 57 104 78 A 29 29 0 1 1 46 78 C 46 57 62 42 75 20 Z" fill="#0E7C71" opacity="0.10"/>
+              <path d="M 20 210 Q 75 190 130 210" fill="none" stroke="#0E7C71" stroke-width="1.6" opacity="0.35"/>
+              <path d="M 34 240 Q 75 226 116 240" fill="none" stroke="#D9A441" stroke-width="1.2" opacity="0.5"/>
+              <path d="M 48 268 Q 75 258 102 268" fill="none" stroke="#0E7C71" stroke-width="1" opacity="0.25"/>
+            </svg>
+            <div class="biz-pad">
+              <div class="lockup">
+                <svg width="30" height="30" viewBox="0 0 64 64">
+                  <path d="M32 8 C 37 17 43 23 43 31 A 11 11 0 1 1 21 31 C 21 23 27 17 32 8 Z" fill="#0E7C71"/>
+                  <path d="M 14 52 Q 32 45 50 52" fill="none" stroke="#0C2E2F" stroke-width="2.8" stroke-linecap="round"/>
+                </svg>
+                <span class="wordmark" style="font-size:22px">bri<em>well</em></span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:flex-end">
+                <div class="b-name">데이비드<small>대표 · Founder</small></div>
+                <div class="b-contact" style="text-align:right">
+                  <b>briwell.co</b><br>
+                  david@briwell.co<br>
+                  +82 10-0000-0000
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="biz-label">C · 앞면 (KO) — 고스트 물방울 + 파문</div>
+        </div>
+        <div>
+          <div class="biz biz-back">
+            <div class="back-center">
+              <svg width="52" height="52" viewBox="0 0 64 64">
+                <path d="M32 8 C 37 17 43 23 43 31 A 11 11 0 1 1 21 31 C 21 23 27 17 32 8 Z" fill="#2FD0BC"/>
+                <circle cx="35.5" cy="30" r="3" fill="#0C2E2F" opacity="0.8"/>
+                <path d="M 14 52 Q 32 45 50 52" fill="none" stroke="#F5F2EA" stroke-width="2.6" stroke-linecap="round"/>
+                <path d="M 21 58 Q 32 53.5 43 58" fill="none" stroke="#D9A441" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark wordmark-sm">bri<em>well</em></span>
+              <div class="gold-rule"></div>
+              <span class="back-tag-es">Puente y pozo — de Seúl a Latinoamérica</span>
+              <span class="back-tag-ko">다리이자 우물</span>
+            </div>
+          </div>
+          <div class="biz-label">C · 뒷면 (ES)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =============== TYPE CANDIDATES =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">Type</span><h2>워드마크 서체 후보 — 7종</h2></div>
+      <p class="dir-note">같은 "briwell"을 일곱 서체로. 세리프 4(에디토리얼~클래식) + 산세리프 3(모던 MZ).
+        세리프는 bri 정체 + well 이탤릭 아쿠아, 산세리프는 이탤릭이 없어 컬러로만 구분합니다.
+        공식 문자 표기는 Briwell(대문자 B)이고, 워드마크의 소문자는 디자인 선택입니다.</p>
+      <div style="display:flex; flex-direction:column; gap:14px">
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Fraunces</b><span style="display:block; font-size:12px; color:var(--muted)">현재 안 · 부드러운 고대비, 물처럼 유연</span></div>
+          <div style="font-family:'Fraunces',serif; font-weight:600; font-size:44px; color:var(--ink)">bri<em style="font-style:italic; font-weight:500; color:var(--aqua)">well</em></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Fraunces',serif; font-weight:600; font-size:21px; color:var(--paper)">bri<em style="font-style:italic; color:var(--aqua-bright)">well</em></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Newsreader</b><span style="display:block; font-size:12px; color:var(--muted)">에디토리얼 · 지적이고 단정한 신문 세리프</span></div>
+          <div style="font-family:'Newsreader',serif; font-weight:600; font-size:44px; color:var(--ink)">bri<em style="font-style:italic; font-weight:500; color:var(--aqua)">well</em></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Newsreader',serif; font-weight:600; font-size:21px; color:var(--paper)">bri<em style="font-style:italic; color:var(--aqua-bright)">well</em></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Playfair Display</b><span style="display:block; font-size:12px; color:var(--muted)">패션·클래식 · 하이엔드 뷰티 무드</span></div>
+          <div style="font-family:'Playfair Display',serif; font-weight:600; font-size:44px; color:var(--ink)">bri<em style="font-style:italic; font-weight:500; color:var(--aqua)">well</em></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Playfair Display',serif; font-weight:600; font-size:21px; color:var(--paper)">bri<em style="font-style:italic; color:var(--aqua-bright)">well</em></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Cormorant Garamond</b><span style="display:block; font-size:12px; color:var(--muted)">우아·가벼움 · 향수·럭셔리 감성</span></div>
+          <div style="font-family:'Cormorant Garamond',serif; font-weight:600; font-size:48px; color:var(--ink)">bri<em style="font-style:italic; font-weight:500; color:var(--aqua)">well</em></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Cormorant Garamond',serif; font-weight:600; font-size:23px; color:var(--paper)">bri<em style="font-style:italic; color:var(--aqua-bright)">well</em></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Sora</b><span style="display:block; font-size:12px; color:var(--muted)">기하학 산세리프 · 테크·스타트업 모던</span></div>
+          <div style="font-family:'Sora',sans-serif; font-weight:600; font-size:40px; letter-spacing:-0.02em; color:var(--ink)">bri<span style="color:var(--aqua)">well</span></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Sora',sans-serif; font-weight:600; font-size:19px; color:var(--paper)">bri<span style="color:var(--aqua-bright)">well</span></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Manrope</b><span style="display:block; font-size:12px; color:var(--muted)">클린 산세리프 · 친근한 MZ 미니멀</span></div>
+          <div style="font-family:'Manrope',sans-serif; font-weight:700; font-size:40px; letter-spacing:-0.02em; color:var(--ink)">bri<span style="color:var(--aqua)">well</span></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Manrope',sans-serif; font-weight:700; font-size:19px; color:var(--paper)">bri<span style="color:var(--aqua-bright)">well</span></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 200px 1fr 120px; gap:20px; align-items:center; border:1px solid var(--line); border-radius:12px; background:var(--card); padding:20px 26px">
+          <div><b style="font-size:14px">Space Grotesk</b><span style="display:block; font-size:12px; color:var(--muted)">개성 산세리프 · 시스템·오퍼레이터 톤</span></div>
+          <div style="font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:40px; letter-spacing:-0.02em; color:var(--ink)">bri<span style="color:var(--aqua)">well</span></div>
+          <div style="background:var(--ink); border-radius:10px; padding:10px 14px; text-align:center; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:19px; color:var(--paper)">bri<span style="color:var(--aqua-bright)">well</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =============== EXPLORATION D–M =============== -->
+    <section class="direction">
+      <div class="dir-head"><span class="dir-tag">D–M</span><h2>확장 탐색 — 다양한 느낌 10안</h2></div>
+      <p class="dir-note">모노그램 · 헤리티지 · 기하학 · 한자 정(井) · 타이포 전용 · 인장까지 스펙트럼을
+        넓힌 탐색안. 각 카드: 기본 락업 / 잉크 반전 칩 / 축소 테스트. 명함은 기존 KO↔ES 양면 구조를
+        공유하고 마크만 교체됩니다 — 픽되면 그 마크로 명함 시안을 다시 떠 드립니다.</p>
+      <div class="explore-grid">
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">D</span><h3>모노그램 B</h3></div>
+          <p class="exp-desc">다리 아치 두 개가 글자 B가 되고, 아랫볼에 수원이 고입니다. 코퍼레이트·클래식 — 서류·인장·자수에 강한 레터마크.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="3.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="3.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M23 14 V50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M23 14 A 9 9 0 0 1 23 32" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M23 32 A 9 9 0 0 1 23 50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="28.5" cy="41" r="4.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">E</span><h3>두레박</h3></div>
+          <p class="exp-desc">"기쁨으로 물을 긷는" 그 도구를 그대로. 헤리티지·크래프트의 손맛 — 패키징·스티커에서 이야기가 삽니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#0C2E2F" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M26.5 33 Q32 29.5 37.5 33" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#F5F2EA" stroke-width="3" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#F5F2EA" stroke-width="2" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#F5F2EA" stroke-width="3" stroke-linejoin="round"/>
+                <path d="M26.5 33 Q32 29.5 37.5 33" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M25 8 H39" fill="none" stroke="#0C2E2F" stroke-width="4" stroke-linecap="round"/>
+                <path d="M32 8 V22" fill="none" stroke="#0C2E2F" stroke-width="3" stroke-linecap="round"/>
+                <path d="M21 22 H43 L40 41 Q32 45.5 24 41 Z" fill="none" stroke="#0C2E2F" stroke-width="4" stroke-linejoin="round"/>
+                <path d="M17 54 Q32 47.5 47 54" fill="none" stroke="#D9A441" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">F</span><h3>물결 링</h3></div>
+          <p class="exp-desc">링의 바닥이 물결로 열려 있습니다 — 닫힌 원이 아니라 흐르는 원. 가장 모던·테크, 앱 아이콘 감성.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#0E7C71" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#2FD0BC" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M 14 46 A 24 24 0 1 1 50 46" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M 14 46 Q 23 40.5 32 46 T 50 46" fill="none" stroke="#0E7C71" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">G</span><h3>우물 정(井)</h3></div>
+          <p class="exp-desc">우물틀을 위에서 본 모양이 곧 한자 井. 한국적 뿌리와 기하학이 동시에 — 격자 사이로 물이 들여다보입니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#0C2E2F" stroke-width="3.2" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="4.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#F5F2EA" stroke-width="3.2" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="4.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M14 25 H50 M14 39 H50 M25 14 V50 M39 14 V50" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <circle cx="32" cy="32" r="5.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">H</span><h3>넘치는 샘</h3></div>
+          <p class="exp-desc">차고 넘치는 그릇 — "채우면 넘친다"는 비전의 직역. 풍성함과 환대의 무드, 리테일·선물 패키지와 어울립니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#0C2E2F" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M21 27 Q32 22.5 43 27" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#0E7C71" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#0E7C71" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="2.6" fill="#D9A441"/>
+                <circle cx="24" cy="18" r="2" fill="#2FD0BC"/>
+                <circle cx="40" cy="18" r="2" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#F5F2EA" stroke-width="3.2" stroke-linecap="round"/>
+                <path d="M21 27 Q32 22.5 43 27" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#2FD0BC" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="2.6" fill="#D9A441"/>
+                <circle cx="24" cy="18" r="2" fill="#2FD0BC"/>
+                <circle cx="40" cy="18" r="2" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M17 27 A 15 15 0 0 0 47 27" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M17 27 C 15 33 13 37 11 43" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M47 27 C 49 33 51 37 53 43" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round"/>
+                <circle cx="32" cy="14" r="3.4" fill="#D9A441"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">I</span><h3>두 우물의 만남</h3></div>
+          <p class="exp-desc">두 원(한국·중남미)이 겹치는 자리에 금빛 한 점. 파트너십·수출입 서사가 가장 담백하게 읽히는 기하학.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#0E7C71" stroke-width="3"/>
+                <circle cx="32" cy="32" r="3.2" fill="#D9A441"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#F5F2EA" stroke-width="3"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#2FD0BC" stroke-width="3"/>
+                <circle cx="32" cy="32" r="3.2" fill="#D9A441"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <circle cx="24.5" cy="32" r="13.5" fill="none" stroke="#0C2E2F" stroke-width="4.2"/>
+                <circle cx="39.5" cy="32" r="13.5" fill="none" stroke="#0E7C71" stroke-width="4.2"/>
+                <circle cx="32" cy="32" r="4" fill="#D9A441"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">J</span><h3>시그니처 마침표</h3></div>
+          <p class="exp-desc">마크 없는 타이포 전용 — 워드마크 끝의 금빛 물방울 마침표와 파문 언더라인이 서명. 미니멀·에디토리얼.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <div style="display:flex; flex-direction:column; gap:7px">
+                <div style="display:flex; align-items:flex-end; gap:5px">
+                  <span class="wordmark" style="font-size:34px">bri<em>well</em></span>
+                  <svg width="15" height="20" viewBox="0 0 24 32" style="margin-bottom:6px"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+                </div>
+                <svg width="160" height="10" viewBox="0 0 160 10"><path d="M3 7 Q80 1 157 7" fill="none" stroke="#2FD0BC" stroke-width="2.2" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="exp-chip">
+              <svg width="24" height="32" viewBox="0 0 24 32"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="14" height="19" viewBox="0 0 24 32"><path d="M12 3 C 15 9 19 13 19 18 A 7 7 0 1 1 5 18 C 5 13 9 9 12 3 Z" fill="#D9A441"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">K</span><h3>다리와 반영</h3></div>
+          <p class="exp-desc">수면 위의 다리와 물에 비친 반영이 만나 비로소 원(우물)이 완성됩니다. 가장 시적인 안 — 절반은 현실, 절반은 물.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <path d="M7 32 H57" stroke="#D9A441" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#0C2E2F" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#0E7C71" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.85"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <path d="M7 32 H57" stroke="#D9A441" stroke-width="1.6" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#F5F2EA" stroke-width="3.4" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#2FD0BC" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.9"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <path d="M13 32 A 19 19 0 0 1 51 32" fill="none" stroke="#0C2E2F" stroke-width="4.5" stroke-linecap="round"/>
+                <path d="M13 32 A 19 19 0 0 0 51 32" fill="none" stroke="#0E7C71" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="5 5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">L</span><h3>물의 소용돌이</h3></div>
+          <p class="exp-desc">원 안을 가르는 S자 물길 — 태극의 기운을 물로 옮겼습니다. 한·중남미 두 문화가 한 우물 안에서 도는 그림.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="58" height="58" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#0E7C71" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="32" cy="20" r="3" fill="#D9A441"/>
+                <circle cx="32" cy="44" r="3" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="38" height="38" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#F5F2EA" stroke-width="3"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#2FD0BC" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="32" cy="20" r="3" fill="#D9A441"/>
+                <circle cx="32" cy="44" r="3" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="22" height="22" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="24" fill="none" stroke="#0C2E2F" stroke-width="4.2"/>
+                <path d="M32 8 A 12 12 0 0 1 32 32 A 12 12 0 0 0 32 56" fill="none" stroke="#0E7C71" stroke-width="4.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="exp-card">
+          <div class="exp-head"><span class="exp-tag">M</span><h3>씰 엠블럼</h3></div>
+          <p class="exp-desc">SEOUL → LATAM 원형 인장. 스탬프·뱃지 무드 — 박스 테이프, 패키지 실링, 보증 마크로 확장성이 가장 큽니다.</p>
+          <div class="exp-row">
+            <div class="exp-main">
+              <svg width="72" height="72" viewBox="0 0 64 64">
+                <defs>
+                  <path id="sealTextPath" d="M 32 32 m -21.5 0 a 21.5 21.5 0 1 1 43 0 a 21.5 21.5 0 1 1 -43 0"/>
+                </defs>
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#0C2E2F" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#0C2E2F" stroke-width="1.1" opacity="0.65"/>
+                <text font-family="Inter, sans-serif" font-size="6.1" font-weight="600" letter-spacing="1.7" fill="#0C2E2F">
+                  <textPath href="#sealTextPath">BRIWELL · SEOUL → LATAM ·</textPath>
+                </text>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#0C2E2F" stroke-width="2"/>
+                <circle cx="32" cy="32" r="2.5" fill="#2FD0BC"/>
+              </svg>
+              <span class="wordmark" style="font-size:26px">bri<em>well</em></span>
+            </div>
+            <div class="exp-chip">
+              <svg width="44" height="44" viewBox="0 0 64 64">
+                <defs>
+                  <path id="sealTextPathInv" d="M 32 32 m -21.5 0 a 21.5 21.5 0 1 1 43 0 a 21.5 21.5 0 1 1 -43 0"/>
+                </defs>
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#F5F2EA" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#F5F2EA" stroke-width="1.1" opacity="0.65"/>
+                <text font-family="Inter, sans-serif" font-size="6.1" font-weight="600" letter-spacing="1.7" fill="#F5F2EA">
+                  <textPath href="#sealTextPathInv">BRIWELL · SEOUL → LATAM ·</textPath>
+                </text>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#F5F2EA" stroke-width="2"/>
+                <circle cx="32" cy="32" r="2.5" fill="#2FD0BC"/>
+              </svg>
+            </div>
+            <div class="exp-tiny">
+              <svg width="26" height="26" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="27" fill="none" stroke="#0C2E2F" stroke-width="3"/>
+                <circle cx="32" cy="32" r="16" fill="none" stroke="#0C2E2F" stroke-width="1.4" opacity="0.65"/>
+                <circle cx="32" cy="32" r="6.5" fill="none" stroke="#0C2E2F" stroke-width="2.4"/>
+                <circle cx="32" cy="32" r="2.8" fill="#2FD0BC"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <p class="print-note"><strong>인쇄 스펙 (픽 이후 최종 파일에 적용):</strong> 명함 90×50mm + 도련 3mm,
+      300dpi. 잉크 딥그린·아쿠아는 CMYK 변환 필요, 골드는 <strong>별색 박(foil) 옵션</strong> 권장 —
+      뒷면 골드 룰과 마크의 골드 점이 박으로 찍히면 "물 위의 빛"이 실물로 삽니다. 용지는 코튼·텍스처
+      페이퍼(반누보 계열) 제안. 로고 최종 파일은 픽 이후 워드마크를 아웃라인(패스화)해서
+      SVG/AI/PNG 세트로 만들어 드립니다. 연락처·직함·이름은 전부 플레이스홀더입니다.</p>
+  </div>
+</body>
+</html>
