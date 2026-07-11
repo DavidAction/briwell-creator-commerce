@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — Tu glow también paga</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --vio:#7A1FD0; --deep:#2A1044; --lav:#8b6ab0; --pale:#F6F0FC; --green:#12A54F; }
+  body { background:#fff; color:var(--deep); font-family:Manrope,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; }
+  .logo { font-weight:800; font-size:22px; color:var(--vio); letter-spacing:-0.02em; }
+  .nav-cta { font-weight:800; font-size:13.5px; color:#fff; background:var(--vio); text-decoration:none; padding:11px 26px; border-radius:999px; }
+  .hero { background:var(--vio); color:#fff; border-radius:0 0 44px 44px; }
+  .hero-in { display:grid; grid-template-columns:1.05fr 0.95fr; gap:52px; align-items:center; padding:76px 0 84px; }
+  h1 { font-size:clamp(42px,5.4vw,74px); font-weight:800; letter-spacing:-0.035em; line-height:1.0; }
+  .sub { font-size:17px; font-weight:500; color:#DCC4F7; max-width:40ch; line-height:1.65; margin:22px 0 30px; }
+  .cta { display:inline-block; font-weight:800; font-size:16px; color:var(--vio); background:#fff; padding:16px 38px; border-radius:999px; text-decoration:none; }
+  .appcard { background:#fff; color:var(--deep); border-radius:24px; padding:26px; box-shadow:0 26px 56px rgba(20,4,40,0.4); max-width:360px; justify-self:center; width:100%; }
+  .appcard small { font-size:12px; font-weight:800; color:var(--lav); letter-spacing:0.06em; }
+  .bal { font-size:38px; font-weight:800; letter-spacing:-0.02em; margin:4px 0 10px; }
+  .mov { border-top:1.5px solid #EFE6FA; padding:11px 0; font-size:13.5px; font-weight:700; display:flex; justify-content:space-between; }
+  .mov span:last-child { color:var(--green); }
+  .panelbtn { margin-top:14px; background:var(--vio); color:#fff; border-radius:14px; text-align:center; font-weight:800; font-size:14px; padding:13px; }
+  section { padding:88px 0; }
+  .kicker { font-size:12.5px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--vio); margin-bottom:12px; }
+  h2 { font-size:clamp(30px,3.8vw,46px); font-weight:800; letter-spacing:-0.03em; line-height:1.06; margin-bottom:12px; }
+  .ssub { font-size:15.5px; font-weight:500; color:#6d5a86; max-width:56ch; line-height:1.65; margin-bottom:40px; }
+  /* alternating feature rows */
+  .feat { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center; padding:34px 0; }
+  .feat .ui { background:var(--pale); border-radius:26px; padding:30px; }
+  .uiline { background:#fff; border-radius:14px; padding:14px 18px; font-size:13.5px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:10px; box-shadow:0 6px 16px rgba(42,16,68,0.08); }
+  .uiline span:last-child { color:var(--lav); }
+  .feat h3 { font-size:24px; font-weight:800; letter-spacing:-0.02em; margin-bottom:10px; }
+  .feat p { font-size:15px; font-weight:500; color:#6d5a86; line-height:1.7; }
+  /* fees table */
+  .fees { background:var(--deep); color:#fff; border-radius:32px; padding:64px 56px; }
+  .fees h2 { color:#fff; } .fees .ssub { color:#C9B8E8; }
+  .fee-row { display:flex; justify-content:space-between; gap:20px; border-top:1.5px solid rgba(255,255,255,0.15); padding:16px 0; font-size:15px; font-weight:700; flex-wrap:wrap; }
+  .fee-row span:last-child { color:#3DDC84; }
+  /* security */
+  .sec { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .s { background:var(--pale); border-radius:20px; padding:28px; }
+  .s b { display:flex; width:44px; height:44px; border-radius:14px; background:var(--vio); color:#fff; align-items:center; justify-content:center; font-size:19px; margin-bottom:14px; }
+  .s h3 { font-size:17px; font-weight:800; margin-bottom:6px; }
+  .s p { font-size:13.5px; font-weight:500; color:#6d5a86; line-height:1.6; }
+  .final { text-align:center; padding:100px 0; }
+  footer { border-top:1.5px solid #EFE6FA; padding:26px 0; display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--lav); }
+  @media (max-width:920px) { .hero-in { grid-template-columns:1fr; } .feat { grid-template-columns:1fr; gap:26px; } .sec { grid-template-columns:1fr; } .fees { padding:44px 28px; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:58px 0; } }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="wrap">
+    <nav class="nav"><span class="logo" style="color:#fff">bw.</span><a class="nav-cta" href="#empezar" style="background:#fff; color:var(--vio)">Empezar</a></nav>
+    <div class="hero-in">
+      <div>
+        <h1>Tu glow<br>también paga.</h1>
+        <p class="sub">K-beauty de Seúl, código propio y comisión que llega — clara, puntual,
+          visible. Como una buena app de dinero, pero de glow.</p>
+        <a class="cta" href="#empezar">Empezar →</a>
+      </div>
+      <div class="appcard">
+        <small>TU COMISIÓN — JULIO</small>
+        <div class="bal">$4,820 <span style="font-size:16px; color:var(--lav)">MXN</span></div>
+        <div class="mov"><span>venta · código GLOW10</span><span>+$240</span></div>
+        <div class="mov"><span>venta · código GLOW10</span><span>+$180</span></div>
+        <div class="mov"><span>venta · código GLOW10</span><span>+$310</span></div>
+        <div class="panelbtn">Ver mi panel</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section>
+    <div class="kicker">Cómo funciona</div>
+    <h2>Simple como debería ser</h2>
+    <div class="feat">
+      <div>
+        <h3>1 · Aplica en 3 minutos</h3>
+        <p>Tu cuenta, tu país. Revisamos tu contenido solo con tu consentimiento y te contactamos
+          si tu perfil encaja. Sin DMs masivos, sin letra chiquita.</p>
+      </div>
+      <div class="ui">
+        <div class="uiline"><span>solicitud enviada</span><span>hoy</span></div>
+        <div class="uiline"><span>revisión con permiso</span><span>en curso</span></div>
+        <div class="uiline"><span>respuesta</span><span>pendiente</span></div>
+      </div>
+    </div>
+    <div class="feat">
+      <div class="ui">
+        <div class="uiline"><span>código GLOW10</span><span style="color:var(--green)">activo</span></div>
+        <div class="uiline"><span>kit K-beauty</span><span>acordado</span></div>
+        <div class="uiline"><span>panel creadora</span><span>abierto</span></div>
+      </div>
+      <div>
+        <h3>2 · Se activa tu código</h3>
+        <p>Acordamos los detalles contigo y tu código exclusivo queda vivo. Productos de Parnell,
+          Essenherb·BRTC y Dermal — las marcas que nosotros distribuimos.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <div>
+        <h3>3 · La comisión fluye</h3>
+        <p>Cada venta con tu código queda registrada al momento. Tu balance crece a la vista,
+          sin cajas negras — el mismo panel que vemos nosotros.</p>
+      </div>
+      <div class="ui">
+        <div class="uiline"><span>+ $240 MXN</span><span style="color:var(--green)">registrada</span></div>
+        <div class="uiline"><span>+ $180 MXN</span><span style="color:var(--green)">registrada</span></div>
+        <div class="uiline"><span>balance julio</span><span>$4,820</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="fees">
+      <div class="kicker" style="color:#B98AF0">Sin letras chiquitas</div>
+      <h2>Lo que cuesta: nada raro</h2>
+      <p class="ssub">Las condiciones se acuerdan contigo antes de empezar — y quedan escritas.</p>
+      <div class="fee-row"><span>Aplicar al programa</span><span>$0</span></div>
+      <div class="fee-row"><span>Exclusividad obligatoria</span><span>no existe</span></div>
+      <div class="fee-row"><span>Penalización por salir</span><span>$0 — sales cuando quieras</span></div>
+      <div class="fee-row"><span>Tu comisión por venta</span><span>acordada contigo, por escrito</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Seguridad</div>
+    <h2>Nivel banco, actitud glow</h2>
+    <div class="sec" style="margin-top:34px">
+      <div class="s"><b>🔒</b><h3>Consentimiento primero</h3><p>Tus datos entran a nuestro sistema solo si tú los diste. Sin permiso, el registro falla.</p></div>
+      <div class="s"><b>👤</b><h3>Personas, no bots</h3><p>Cada contacto es revisado y enviado por una persona. Cero automatización de DMs.</p></div>
+      <div class="s"><b>📊</b><h3>Todo registrado</h3><p>Código, ventas y comisión viven en un panel de operaciones real y auditable.</p></div>
+    </div>
+  </section>
+
+  <section class="final" id="empezar">
+    <div class="kicker">Listo en 3 minutos</div>
+    <h2>Abre tu cuenta de glow.</h2>
+    <p class="ssub" style="margin:10px auto 28px">Formulario corto, sin compromiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#empezar" style="background:var(--vio); color:#fff">Empezar →</a>
+  </section>
+
+  <footer><span>© 2026 Briwell · Seúl</span><span>Tu glow también paga · MX PE EC</span></footer>
+</div>
+</body>
+</html>

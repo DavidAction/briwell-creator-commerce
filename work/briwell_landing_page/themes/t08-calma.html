@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>briwell — piel en calma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --bg:#EDE8E1; --ink:#4A443D; --mut:#8d857a; }
+  body { background:var(--bg); color:var(--ink); font-family:Karla,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:980px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:30px 0; }
+  .logo { font-weight:400; font-size:15px; letter-spacing:0.5em; }
+  .nav a { font-size:11px; letter-spacing:0.24em; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:3px; text-transform:lowercase; }
+  .hero { padding:110px 0 90px; }
+  h1 { font-weight:300; font-size:clamp(40px,5.6vw,68px); letter-spacing:0.01em; line-height:1.15; }
+  .sub { font-size:14.5px; color:#7d766c; max-width:34ch; line-height:1.9; margin:26px 0 40px; }
+  .cta { display:inline-block; font-weight:600; font-size:12px; letter-spacing:0.26em; color:var(--ink); border:1px solid var(--ink); padding:14px 36px; text-decoration:none; text-transform:lowercase; }
+  .bleed { width:100%; height:52vh; min-height:340px; object-fit:cover; display:block; }
+  section { padding:96px 0; text-align:center; }
+  section p.quiet { font-weight:300; font-size:clamp(22px,3vw,32px); line-height:1.6; max-width:26ch; margin:0 auto; }
+  section p.note { font-size:13px; color:var(--mut); max-width:44ch; margin:22px auto 0; line-height:1.9; }
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:2px; }
+  .pair img { width:100%; height:420px; object-fit:cover; display:block; }
+  .caption { font-size:10.5px; letter-spacing:0.3em; color:var(--mut); text-transform:lowercase; margin-top:14px; }
+  .list { max-width:520px; margin:0 auto; text-align:left; }
+  .li { display:flex; justify-content:space-between; gap:20px; border-bottom:1px solid rgba(74,68,61,0.25); padding:16px 2px; font-size:13.5px; }
+  .li span:last-child { color:var(--mut); }
+  footer { border-top:1px solid rgba(74,68,61,0.25); padding:26px 0; display:flex; justify-content:space-between; font-size:10.5px; letter-spacing:0.2em; color:var(--mut); text-transform:lowercase; }
+  @media (max-width:920px) { .pair { grid-template-columns:1fr; } .pair img { height:300px; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:64px 0; } .hero { padding:80px 0 60px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">b r i w e l l</span><a href="#aplicar">aplicar</a></nav>
+  <section class="hero" style="text-align:left; padding-bottom:70px">
+    <h1>piel<br>en calma.</h1>
+    <p class="sub">skincare coreano, escogido despacio.<br>comisión clara, sin ruido.<br>méxico · perú · ecuador.</p>
+    <a class="cta" href="#aplicar">aplicar</a>
+  </section>
+</div>
+
+<img class="bleed" src="../assets/img/products/parnell-gel.jpg" alt="">
+
+<div class="wrap">
+  <section>
+    <p class="quiet">no gritamos.<br>elegimos bien y pagamos claro.</p>
+    <p class="note">briwell distribuye directamente las marcas que verás aquí. cada venta con tu
+      código queda registrada; tu comisión se acuerda por escrito, antes de empezar.</p>
+  </section>
+</div>
+
+<div class="pair">
+  <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="">
+  <img src="../assets/img/products/parnell-texture.jpg" alt="">
+</div>
+<div class="wrap"><div class="caption" style="text-align:center">essenherb · parnell — seúl</div></div>
+
+<div class="wrap">
+  <section>
+    <p class="quiet">tres cosas, nada más.</p>
+    <div class="list" style="margin-top:36px">
+      <div class="li"><span>aplicas</span><span>3 minutos, sin compromiso</span></div>
+      <div class="li"><span>acordamos</span><span>por escrito, con tu permiso</span></div>
+      <div class="li"><span>cobras</span><span>comisión visible, sin cajas negras</span></div>
+    </div>
+  </section>
+</div>
+
+<img class="bleed" src="../assets/img/products/dermal-mask-model.jpg" alt="" style="height:60vh">
+
+<div class="wrap">
+  <section id="aplicar">
+    <p class="quiet">cuando quieras.</p>
+    <p class="note" style="margin-bottom:34px">sin exclusividad. sin spam. sin una gota de tus datos sin permiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#aplicar">aplicar</a>
+  </section>
+  <footer><span>© 2026 briwell · seúl</span><span>piel en calma · mx pe ec</span></footer>
+</div>
+</body>
+</html>

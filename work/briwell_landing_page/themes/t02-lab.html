@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell® — Fórmulas coreanas, datos claros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --ink:#111; --blue:#1440FF; --mut:#666; --line:#111; }
+  body { background:#fff; color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .mono { font-family:'IBM Plex Mono',monospace; }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; border-bottom:1.5px solid var(--ink); }
+  .logo { font-weight:700; font-size:19px; letter-spacing:-0.03em; }
+  .nav span.mono { font-size:12px; color:var(--mut); }
+  .hero { padding:80px 0 66px; }
+  h1 { font-size:clamp(44px,6vw,84px); font-weight:700; letter-spacing:-0.045em; line-height:1.0; max-width:14ch; }
+  h1 em { font-style:normal; color:var(--blue); }
+  .sub { font-size:16px; color:#444; max-width:52ch; line-height:1.7; margin:24px 0 30px; }
+  .cta { display:inline-block; font-weight:600; font-size:15px; color:#fff; background:var(--ink); padding:15px 32px; text-decoration:none; }
+  section { padding:70px 0; }
+  .lbl { font-family:'IBM Plex Mono'; font-size:12px; color:var(--blue); letter-spacing:0.08em; margin-bottom:12px; }
+  h2 { font-size:clamp(28px,3.6vw,42px); font-weight:700; letter-spacing:-0.035em; line-height:1.05; margin-bottom:12px; }
+  .ssub { font-size:15px; color:var(--mut); max-width:58ch; line-height:1.7; margin-bottom:36px; }
+  /* formula table */
+  .frow { display:grid; grid-template-columns:110px 96px 1fr 170px; gap:16px; border-top:1px solid var(--ink); padding:16px 0; font-size:14.5px; align-items:center; }
+  .frow:last-of-type { border-bottom:1px solid var(--ink); }
+  .frow img { width:76px; height:76px; object-fit:cover; }
+  .frow .id { font-family:'IBM Plex Mono'; font-size:13px; }
+  .frow b { font-weight:600; display:block; }
+  .frow small { color:var(--mut); font-size:12.5px; }
+  .frow .use { font-family:'IBM Plex Mono'; font-size:12px; text-align:right; color:var(--mut); }
+  /* protocol */
+  .proto { border:1.5px solid var(--ink); }
+  .p-step { display:grid; grid-template-columns:130px 1fr 130px; gap:18px; padding:22px 26px; border-bottom:1px solid rgba(17,17,17,0.25); align-items:baseline; }
+  .p-step:last-child { border-bottom:none; }
+  .p-step .no { font-family:'IBM Plex Mono'; font-size:13px; color:var(--blue); }
+  .p-step h3 { font-size:16.5px; font-weight:600; margin-bottom:3px; }
+  .p-step p { font-size:13.5px; color:var(--mut); line-height:1.65; }
+  .p-step .t { font-family:'IBM Plex Mono'; font-size:12px; color:var(--mut); text-align:right; }
+  /* data */
+  .data { display:grid; grid-template-columns:repeat(4,1fr); gap:0; border:1.5px solid var(--ink); }
+  .d { padding:24px; border-right:1px solid rgba(17,17,17,0.25); }
+  .d:last-child { border-right:none; }
+  .d b { font-size:30px; font-weight:700; letter-spacing:-0.03em; display:block; }
+  .d span { font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--mut); line-height:1.5; display:block; margin-top:6px; }
+  .blue { color:var(--blue); }
+  .final { padding:96px 0; }
+  footer { border-top:1.5px solid var(--ink); padding:22px 0 30px; display:flex; justify-content:space-between; font-family:'IBM Plex Mono'; font-size:11px; color:var(--mut); }
+  @media (max-width:920px) { .frow { grid-template-columns:80px 1fr; } .frow .use { display:none; } .p-step { grid-template-columns:1fr; } .data { grid-template-columns:1fr 1fr; } .d { border-bottom:1px solid rgba(17,17,17,0.25); } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } .data { grid-template-columns:1fr; } section { padding:52px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">Briwell<sup style="font-size:10px">®</sup></span><span class="mono">creator-commerce lab. — MX/PE/EC</span></nav>
+
+  <section class="hero">
+    <div class="lbl">// programa de creadoras v1.0</div>
+    <h1>Fórmulas coreanas.<br><em>Datos claros.</em></h1>
+    <p class="sub">Sin adjetivos vacíos: skincare coreano original que nosotros distribuimos,
+      un código exclusivo con tu nombre y cada venta registrada en un sistema auditable.
+      Todo lo demás es decoración.</p>
+    <a class="cta" href="#aplicar">Aplicar al programa →</a>
+  </section>
+
+  <section>
+    <div class="lbl">TABLA 01 — CATÁLOGO</div>
+    <h2>Los compuestos</h2>
+    <p class="ssub">Identificador, fórmula y uso previsto. Marcas: Parnell (Eleven Corp), Essenherb·BRTC (AMI Cosmetic), Dermal Korea.</p>
+    <div>
+      <div class="frow"><span class="id">BW-01</span><img src="../assets/img/products/parnell-pad.jpg" alt=""><span><b>Parnell Cicamanu Pad</b><small>centella asiática + miel de manuka</small></span><span class="use">piel sensible</span></div>
+      <div class="frow"><span class="id">BW-02</span><img src="../assets/img/products/ami-essenherb-pad.jpg" alt=""><span><b>Essenherb Tea Tree Pad</b><small>70 pads · botánica calmante</small></span><span class="use">rojeces</span></div>
+      <div class="frow"><span class="id">BW-03</span><img src="../assets/img/products/ami-brtc-sun.jpg" alt=""><span><b>BRTC Active Max Sun</b><small>escudo solar de laboratorio</small></span><span class="use">spf diario</span></div>
+      <div class="frow"><span class="id">BW-04</span><img src="../assets/img/products/dermal-cream.jpg" alt=""><span><b>Dermal Mask</b><small>ritual de 15 minutos</small></span><span class="use">hidratación</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lbl">PROTOCOLO 02 — INCORPORACIÓN</div>
+    <h2>El procedimiento</h2>
+    <div class="proto" style="margin-top:30px">
+      <div class="p-step"><span class="no">PASO 01</span><span><h3>Solicitud</h3><p>Formulario de 3 minutos: cuenta, país, categoría de contenido.</p></span><span class="t">t = 3 min</span></div>
+      <div class="p-step"><span class="no">PASO 02</span><span><h3>Revisión con consentimiento</h3><p>Analizamos tus publicaciones recientes — únicamente con tu permiso explícito.</p></span><span class="t">fail-closed</span></div>
+      <div class="p-step"><span class="no">PASO 03</span><span><h3>Activación de código</h3><p>Condiciones acordadas por escrito; tu código exclusivo entra en producción.</p></span><span class="t">por escrito</span></div>
+      <div class="p-step"><span class="no">PASO 04</span><span><h3>Registro de ventas</h3><p>Cada transacción con tu código queda registrada; tu comisión es consultable.</p></span><span class="t">auditable</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lbl">TABLA 03 — CONDICIONES</div>
+    <h2>Los datos que importan</h2>
+    <div class="data" style="margin-top:30px">
+      <div class="d"><b class="blue">$0</b><span>costo de aplicar — y sin penalización por salir</span></div>
+      <div class="d"><b>0</b><span>DMs automáticos — cada contacto lo envía una persona</span></div>
+      <div class="d"><b class="blue">100%</b><span>ventas con tu código registradas en sistema</span></div>
+      <div class="d"><b>1</b><span>acuerdo por escrito antes de empezar</span></div>
+    </div>
+  </section>
+
+  <section class="final" id="aplicar">
+    <div class="lbl">// convocatoria abierta</div>
+    <h2>Aplica. Revisamos.<br><em style="font-style:normal" class="blue">Respondemos.</em></h2>
+    <p class="ssub" style="margin:16px 0 28px">Sin compromiso. Sin letra chiquita.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#aplicar">Aplicar al programa →</a>
+  </section>
+
+  <footer><span>BRIWELL® — SEOUL</span><span>LAB.BRIWELL.CO</span></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — De Seúl, con calor latino</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --sand:#FBEEDB; --ink:#4A2E1D; --terra:#C65A2E; --sun:#F2B12E; --cactus:#3E7D4E; --rosa:#B63B5E; }
+  body { background:var(--sand); color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .disp { font-family:'Lilita One',sans-serif; }
+  .wrap { max-width:1100px; margin:0 auto; padding:0 28px; }
+  .stripe { height:14px; background:repeating-linear-gradient(90deg,var(--terra) 0 46px,var(--sun) 46px 92px,var(--cactus) 92px 138px,var(--rosa) 138px 184px); }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; }
+  .logo { font-family:'Lilita One'; font-size:22px; color:var(--terra); }
+  .nav-cta { font-weight:700; font-size:13px; color:var(--sand); background:var(--cactus); text-decoration:none; padding:11px 24px; border-radius:12px; box-shadow:3px 3px 0 var(--terra); }
+  .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:40px; align-items:center; padding:64px 0 76px; }
+  h1 { font-family:'Lilita One'; font-size:clamp(46px,6vw,82px); line-height:1.0; color:var(--terra); text-shadow:3px 3px 0 var(--sun); }
+  .sub { font-size:16.5px; font-weight:500; color:#8a6a4a; max-width:42ch; line-height:1.7; margin:22px 0 30px; }
+  .cta { display:inline-block; font-weight:700; font-size:16px; color:var(--sand); background:var(--cactus); padding:16px 34px; border-radius:14px; text-decoration:none; box-shadow:4px 4px 0 var(--terra); }
+  section { padding:80px 0; }
+  .kicker { font-family:'Lilita One'; font-size:15px; letter-spacing:0.06em; color:var(--rosa); margin-bottom:8px; }
+  h2 { font-family:'Lilita One'; font-size:clamp(32px,4.2vw,52px); line-height:1.02; color:var(--ink); margin-bottom:12px; }
+  .ssub { font-size:15px; font-weight:500; color:#8a6a4a; max-width:56ch; line-height:1.7; margin-bottom:40px; }
+  /* market stalls */
+  .stalls { display:grid; grid-template-columns:repeat(3,1fr); gap:26px; }
+  .stall { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 30px rgba(74,46,29,0.16); }
+  .awning { height:34px; display:flex; }
+  .awning i { flex:1; border-radius:0 0 12px 12px; }
+  .stall img { width:100%; aspect-ratio:4/3; object-fit:cover; }
+  .stall div.body { padding:18px 20px 22px; }
+  .stall h3 { font-family:'Lilita One'; font-size:19px; color:var(--terra); margin-bottom:4px; }
+  .stall p { font-size:13px; color:#8a6a4a; line-height:1.6; }
+  /* hand steps */
+  .pasos { display:grid; grid-template-columns:repeat(3,1fr); gap:30px; }
+  .paso { text-align:center; }
+  .paso svg { display:block; margin:0 auto 14px; }
+  .paso h3 { font-family:'Lilita One'; font-size:19px; margin-bottom:6px; }
+  .paso p { font-size:13.5px; color:#8a6a4a; line-height:1.65; }
+  /* promesa banner */
+  .prom { background:var(--terra); color:var(--sand); border-radius:22px; padding:56px 48px; text-align:center; }
+  .prom h2 { color:#fff; text-shadow:2px 2px 0 rgba(74,46,29,0.4); }
+  .prom p { font-size:15px; color:rgba(251,238,219,0.85); max-width:52ch; margin:8px auto 0; line-height:1.75; }
+  .final { text-align:center; padding:100px 0; }
+  footer { padding:24px 0; display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#8a6a4a; }
+  @media (max-width:920px) { .hero { grid-template-columns:1fr; } .stalls, .pasos { grid-template-columns:1fr; } .prom { padding:40px 24px; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:56px 0; } }
+</style>
+</head>
+<body>
+<div class="stripe"></div>
+<div class="wrap">
+  <nav class="nav"><span class="logo">briwell</span><a class="nav-cta" href="#mercado">Únete</a></nav>
+  <section class="hero">
+    <div>
+      <h1>De Seúl,<br>con calor<br>latino.</h1>
+      <p class="sub">Traemos la K-beauty al mercado de tu barrio digital: productos coreanos
+        de verdad, trato de vecina y comisión clara por cada venta con tu código.</p>
+      <a class="cta" href="#mercado">Únete al mercado</a>
+    </div>
+    <svg width="100%" height="260" viewBox="0 0 100 100" style="max-width:280px; justify-self:center"><circle cx="50" cy="50" r="22" fill="#F2B12E" stroke="#C65A2E" stroke-width="2.5"/><g stroke="#C65A2E" stroke-width="3" stroke-linecap="round"><line x1="50" y1="14" x2="50" y2="24"/><line x1="50" y1="76" x2="50" y2="86"/><line x1="14" y1="50" x2="24" y2="50"/><line x1="76" y1="50" x2="86" y2="50"/><line x1="26" y1="26" x2="33" y2="33"/><line x1="67" y1="67" x2="74" y2="74"/><line x1="26" y1="74" x2="33" y2="67"/><line x1="67" y1="33" x2="74" y2="26"/></g><path d="M42 54 Q50 62 58 54" fill="none" stroke="#C65A2E" stroke-width="2.5" stroke-linecap="round"/><circle cx="43" cy="46" r="2.6" fill="#C65A2E"/><circle cx="57" cy="46" r="2.6" fill="#C65A2E"/></svg>
+  </section>
+</div>
+
+<div class="wrap">
+  <section>
+    <div class="kicker">los puestos</div>
+    <h2>El mercadito coreano</h2>
+    <p class="ssub">Tres puestos, tres casas de Seúl — todas distribuidas directamente por nosotros.</p>
+    <div class="stalls">
+      <div class="stall"><div class="awning"><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i></div><img src="../assets/img/products/parnell-pad.jpg" alt=""><div class="body"><h3>Puesto Parnell</h3><p>Cicamanu: centella + manuka, la calma para piel sensible.</p></div></div>
+      <div class="stall"><div class="awning"><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i></div><img src="../assets/img/products/ami-rosemary.jpg" alt=""><div class="body"><h3>Puesto Essenherb</h3><p>Botánica coreana de laboratorio — tea tree, romero y calma.</p></div></div>
+      <div class="stall"><div class="awning"><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i></div><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><div class="body"><h3>Puesto Dermal</h3><p>El ritual de 15 minutos que ya conquistó medio mundo.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">cómo funciona</div>
+    <h2>Como en el mercado:<br>de mano en mano</h2>
+    <div class="pasos" style="margin-top:36px">
+      <div class="paso"><svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="24" fill="none" stroke="#C65A2E" stroke-width="3" stroke-dasharray="4 5"/><text x="27" y="35" text-anchor="middle" font-family="Lilita One" font-size="22" fill="#C65A2E">1</text></svg><h3>Te presentas</h3><p>3 minutos: tu cuenta, tu país. Revisamos tu contenido solo con tu permiso.</p></div>
+      <div class="paso"><svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="24" fill="none" stroke="#3E7D4E" stroke-width="3" stroke-dasharray="4 5"/><text x="27" y="35" text-anchor="middle" font-family="Lilita One" font-size="22" fill="#3E7D4E">2</text></svg><h3>Cerramos trato</h3><p>Condiciones por escrito, como debe ser. Tu código se activa.</p></div>
+      <div class="paso"><svg width="54" height="54" viewBox="0 0 54 54"><circle cx="27" cy="27" r="24" fill="none" stroke="#B63B5E" stroke-width="3" stroke-dasharray="4 5"/><text x="27" y="35" text-anchor="middle" font-family="Lilita One" font-size="22" fill="#B63B5E">3</text></svg><h3>Caja clara</h3><p>Cada venta registrada, comisión visible. Cuentas claras, amistades largas.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="prom">
+      <div class="kicker" style="color:var(--sun)">palabra de mercado</div>
+      <h2>Sin trucos de feria</h2>
+      <p>Ni DMs masivos, ni datos sin permiso, ni exclusividad forzada. El trato se respeta:
+        lo que acordamos contigo, queda escrito y se cumple.</p>
+    </div>
+  </section>
+
+  <section class="final" id="mercado">
+    <h2>El puesto te espera.</h2>
+    <p class="ssub" style="margin:10px auto 30px">Formulario de 3 minutos — sin compromiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#mercado">Únete al mercado</a>
+  </section>
+</div>
+<div class="stripe"></div>
+<div class="wrap"><footer><span>© 2026 Briwell · Seúl</span><span>De Seúl, con calor latino · MX PE EC</span></footer></div>
+</body>
+</html>

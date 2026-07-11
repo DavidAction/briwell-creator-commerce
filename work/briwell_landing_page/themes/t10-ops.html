@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>briwell_ops — creator commerce, engineered</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --bg:#0B0D10; --panel:#11151B; --ink:#E6EAF0; --mut:#7B8494; --green:#3DFF88; --line:rgba(230,234,240,0.14); }
+  body { background:var(--bg); color:var(--ink); font-family:'JetBrains Mono',monospace; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+    background-image:linear-gradient(rgba(230,234,240,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(230,234,240,0.045) 1px,transparent 1px); background-size:44px 44px; }
+  .g { color:var(--green); }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:24px 0; border-bottom:1px solid var(--line); }
+  .logo { font-weight:600; font-size:16px; }
+  .nav span:last-child { font-size:11.5px; color:var(--mut); }
+  .hero { padding:78px 0 66px; }
+  .chip { display:inline-block; font-size:11.5px; border:1px solid rgba(61,255,136,0.4); color:var(--green); border-radius:6px; padding:5px 12px; margin:0 8px 10px 0; }
+  .chip.dim { border-color:var(--line); color:var(--mut); }
+  h1 { font-size:clamp(34px,4.8vw,62px); font-weight:600; letter-spacing:-0.02em; line-height:1.12; margin-top:14px; }
+  .sub { font-family:Inter; font-size:16px; color:#9AA3B0; max-width:52ch; line-height:1.7; margin:20px 0 30px; }
+  .cta { display:inline-block; font-weight:600; font-size:14.5px; color:var(--bg); background:var(--green); padding:14px 30px; border-radius:8px; text-decoration:none; }
+  section { padding:72px 0; }
+  .lbl { font-size:12px; color:var(--green); margin-bottom:12px; }
+  h2 { font-size:clamp(24px,3.2vw,38px); font-weight:600; letter-spacing:-0.02em; line-height:1.1; margin-bottom:10px; }
+  .ssub { font-family:Inter; font-size:14.5px; color:var(--mut); max-width:56ch; line-height:1.7; margin-bottom:34px; }
+  /* terminal */
+  .term { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .term-bar { display:flex; gap:6px; padding:12px 16px; border-bottom:1px solid var(--line); }
+  .dot { width:10px; height:10px; border-radius:50%; background:rgba(123,132,148,0.35); }
+  .term-body { padding:22px 24px; font-size:13.5px; line-height:2.1; }
+  .term-body .c { color:var(--mut); }
+  /* metrics */
+  .mx { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .m { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px; }
+  .m b { font-size:26px; font-weight:700; display:block; }
+  .m span { font-family:Inter; font-size:12px; color:var(--mut); line-height:1.5; display:block; margin-top:6px; }
+  /* endpoints */
+  .ep { border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .e { display:grid; grid-template-columns:96px 1fr; gap:18px; padding:18px 22px; border-bottom:1px solid var(--line); align-items:baseline; }
+  .e:last-child { border-bottom:none; }
+  .e b { font-size:12px; color:var(--green); }
+  .e h3 { font-size:15px; font-weight:600; margin-bottom:3px; }
+  .e p { font-family:Inter; font-size:13px; color:var(--mut); line-height:1.6; }
+  .final { padding:96px 0; }
+  footer { border-top:1px solid var(--line); padding:22px 0 30px; display:flex; justify-content:space-between; font-size:11px; color:var(--mut); }
+  @media (max-width:920px) { .mx { grid-template-columns:1fr 1fr; } .e { grid-template-columns:1fr; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:52px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">[bw<span class="g">_</span>] <span style="color:var(--mut)">briwell_ops</span></span><span>SEOUL→LATAM · v1.0</span></nav>
+
+  <section class="hero">
+    <div><span class="chip">● system: live</span><span class="chip dim">tests: 368 ✓</span><span class="chip dim">consent: fail-closed</span></div>
+    <h1>creator commerce,<br><span class="g">engineered.</span></h1>
+    <p class="sub">Programa de creadoras K-beauty operado por un pipeline real: descubrimiento,
+      verificación, campañas, atribución de ventas y liquidación de comisiones — todo forzado
+      por código, no por promesas.</p>
+    <a class="cta" href="#run">$ solicitar_acceso</a>
+  </section>
+
+  <section>
+    <div class="lbl">$ pipeline --run --creator=tú</div>
+    <h2>El pipeline, en vivo</h2>
+    <div class="term" style="margin-top:26px">
+      <div class="term-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="term-body">
+        <div><span class="g">➜</span> apply --time=3min --commitment=none <span class="c"># tu solicitud</span></div>
+        <div><span class="c">   consent_gate ......... </span><span class="g">PASSED (permiso explícito)</span></div>
+        <div><span class="g">➜</span> review --human=true --spam=false <span class="c"># te lee una persona</span></div>
+        <div><span class="c">   agreement ............ </span>WRITTEN <span class="c"># condiciones por escrito</span></div>
+        <div><span class="g">➜</span> code.activate("GLOW10") <span class="c"># tu código exclusivo</span></div>
+        <div><span class="c">   sale +$240 MXN ....... </span><span class="g">REGISTERED</span></div>
+        <div><span class="c">   sale +$180 MXN ....... </span><span class="g">REGISTERED</span></div>
+        <div><span class="g">➜</span> commission.settle() <span class="c"># visible en tu panel, siempre</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lbl">// métricas del sistema</div>
+    <h2>Números, no adjetivos</h2>
+    <div class="mx" style="margin-top:26px">
+      <div class="m"><b class="g">368</b><span>tests automáticos en cada cambio del sistema</span></div>
+      <div class="m"><b>100%</b><span>ventas con código registradas y auditables</span></div>
+      <div class="m"><b class="g">0</b><span>DMs automáticos — cada contacto lo envía una persona</span></div>
+      <div class="m"><b>3</b><span>países en producción: MX · PE · EC</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="lbl">GET /programa/beneficios</div>
+    <h2>La API del trato</h2>
+    <div class="ep" style="margin-top:26px">
+      <div class="e"><b>PRODUCTO</b><span><h3>K-beauty original de Seúl</h3><p>Parnell, Essenherb·BRTC y Dermal — marcas distribuidas directamente por Briwell.</p></span></div>
+      <div class="e"><b>CÓDIGO</b><span><h3>Exclusivo, con tu nombre</h3><p>Atribución por webhook de cada orden y reembolso. Sin ambigüedad.</p></span></div>
+      <div class="e"><b>COMISIÓN</b><span><h3>Acordada por escrito</h3><p>Se liquida sobre ventas registradas; el cálculo es consultable, no negociable a posteriori.</p></span></div>
+      <div class="e"><b>SALIDA</b><span><h3>exit(0) cuando quieras</h3><p>Sin exclusividad ni penalización. El programa es opt-in siempre.</p></span></div>
+    </div>
+  </section>
+
+  <section class="final" id="run">
+    <div class="lbl">$ ./aplicar.sh</div>
+    <h2>¿Corremos tu<br><span class="g">onboarding?</span></h2>
+    <p class="ssub" style="margin:14px 0 28px">Formulario de 3 minutos. stdin: tu cuenta. stdout: respuesta humana.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#run">$ solicitar_acceso</a>
+  </section>
+
+  <footer><span>[bw_] briwell_ops — seoul</span><span>creator commerce, engineered.</span></footer>
+</div>
+</body>
+</html>

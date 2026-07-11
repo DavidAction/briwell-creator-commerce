@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — shine 2 the future</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --ink:#2A2440; --mut:#6E6595; --chrome:linear-gradient(180deg,#FDFDFF 8%,#9AA3B8 38%,#E8ECF5 52%,#5F6B85 70%,#D9DEEA 100%); }
+  body { background:linear-gradient(150deg,#DCD8FF,#C4E8FF 55%,#FFE1F2); color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .chrome { background:var(--chrome); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:26px 0; }
+  .logo { font-family:Unbounded; font-weight:700; font-size:19px; }
+  .nav-cta { font-weight:700; font-size:13px; color:var(--ink); background:rgba(255,255,255,0.7); border:1.5px solid #fff; text-decoration:none; padding:10px 24px; border-radius:999px; backdrop-filter:blur(6px); }
+  .hero { text-align:center; padding:90px 0 70px; position:relative; }
+  .star { position:absolute; color:#fff; text-shadow:0 0 18px rgba(255,255,255,0.95); pointer-events:none; }
+  h1 { font-family:Unbounded; font-weight:700; font-size:clamp(44px,6.6vw,92px); line-height:1.02; }
+  .sub { font-size:16.5px; font-weight:500; color:#5B5378; max-width:44ch; margin:24px auto 32px; line-height:1.65; }
+  .cta { display:inline-block; font-weight:700; font-size:15px; color:var(--ink); background:rgba(255,255,255,0.7); border:1.5px solid #fff; padding:16px 38px; border-radius:999px; text-decoration:none; box-shadow:0 10px 26px rgba(95,107,133,0.3); backdrop-filter:blur(6px); }
+  .mq { border-top:1.5px solid rgba(255,255,255,0.8); border-bottom:1.5px solid rgba(255,255,255,0.8); padding:14px 0; overflow:hidden; white-space:nowrap; font-family:Unbounded; font-size:13px; letter-spacing:0.1em; color:#5B5378; }
+  .mq b { color:#fff; text-shadow:0 0 12px rgba(255,255,255,0.9); margin:0 14px; font-weight:500; }
+  section { padding:84px 0; }
+  .kicker { font-family:Unbounded; font-size:12px; letter-spacing:0.2em; text-transform:lowercase; color:#5B5378; margin-bottom:12px; }
+  h2 { font-family:Unbounded; font-weight:700; font-size:clamp(28px,3.8vw,46px); line-height:1.06; margin-bottom:12px; }
+  .ssub { font-size:15px; font-weight:500; color:#5B5378; max-width:54ch; line-height:1.65; margin-bottom:42px; }
+  /* wishlist grid */
+  .wish { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .w { background:rgba(255,255,255,0.55); border:1.5px solid #fff; border-radius:22px; padding:14px 14px 18px; backdrop-filter:blur(8px); box-shadow:0 14px 32px rgba(95,107,133,0.22); position:relative; }
+  .w img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:14px; }
+  .w h3 { font-family:Unbounded; font-size:14px; font-weight:500; margin:12px 4px 3px; }
+  .w p { font-size:12px; color:var(--mut); margin:0 4px; }
+  .w .heart { position:absolute; top:22px; right:22px; background:#fff; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 6px 14px rgba(95,107,133,0.3); }
+  /* manifesto */
+  .mani { text-align:center; padding:40px 0; }
+  .mani p { font-family:Unbounded; font-weight:500; font-size:clamp(20px,2.8vw,32px); line-height:1.5; max-width:30ch; margin:0 auto; }
+  .mani p b { font-weight:700; }
+  /* steps chips */
+  .chips { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+  .chip { background:rgba(255,255,255,0.6); border:1.5px solid #fff; border-radius:999px; padding:14px 26px; font-weight:700; font-size:14px; backdrop-filter:blur(6px); }
+  .chip b { font-family:Unbounded; margin-right:8px; }
+  .final { text-align:center; padding:104px 0; }
+  footer { border-top:1.5px solid rgba(255,255,255,0.8); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; color:var(--mut); }
+  @media (max-width:920px) { .wish { grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } .wish { grid-template-columns:1fr; } section { padding:56px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo chrome">briwell✦</span><a class="nav-cta" href="#unirme">unirme</a></nav>
+  <section class="hero">
+    <span class="star" style="right:12%; top:70px; font-size:42px">✦</span>
+    <span class="star" style="left:10%; top:220px; font-size:26px">✦</span>
+    <span class="star" style="right:26%; bottom:30px; font-size:20px">✦</span>
+    <h1><span class="chrome">shine 2</span><br><span class="chrome">the future</span></h1>
+    <p class="sub">K-beauty de Seúl para la próxima generación de creadoras latinas.
+      Código propio ✦ comisión clara ✦ cero spam.</p>
+    <a class="cta" href="#unirme">unirme ✦</a>
+  </section>
+</div>
+
+<div class="mq">SEOUL 2 LATAM <b>✦</b> GLOW 4EVER <b>✦</b> TU CÓDIGO TU COMISIÓN <b>✦</b> SIN PERMISO NI UNA GOTA <b>✦</b> SEOUL 2 LATAM <b>✦</b> GLOW 4EVER <b>✦</b> TU CÓDIGO TU COMISIÓN</div>
+
+<div class="wrap">
+  <section>
+    <div class="kicker">wishlist.exe</div>
+    <h2><span class="chrome">drops</span> que vas a querer</h2>
+    <p class="ssub">Skincare coreano original — de las marcas que nosotros distribuimos. Dale ♥ a tu favorito.</p>
+    <div class="wish">
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>cicamanu pad</h3><p>parnell · piel sensible</p></div>
+      <div class="w"><span class="heart">💜</span><img src="../assets/img/products/ami-essenherb-pad.jpg" alt=""><h3>tea tree pad</h3><p>essenherb · calmante</p></div>
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/ami-brtc-sun.jpg" alt=""><h3>active max sun</h3><p>brtc · spf sin rastro</p></div>
+      <div class="w"><span class="heart">💙</span><img src="../assets/img/products/parnell-cleanser.jpg" alt=""><h3>apple cleanser</h3><p>parnell · poros</p></div>
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/dermal-cream.jpg" alt=""><h3>dermal ritual</h3><p>mascarilla · 15 min</p></div>
+      <div class="w"><span class="heart">💗</span><img src="../assets/img/products/parnell-texture.jpg" alt=""><h3>texture check</h3><p>glow en cámara</p></div>
+    </div>
+  </section>
+
+  <section class="mani">
+    <span class="star" style="position:static; font-size:30px">✦</span>
+    <p>no vendemos humo:<br><b>cada venta con tu código<br>queda <span class="chrome">registrada</span></b><br>y tu comisión se acuerda<br>contigo, por escrito.</p>
+  </section>
+
+  <section>
+    <div class="kicker">how 2 join</div>
+    <h2>tres pasos <span class="chrome">✦</span></h2>
+    <div class="chips" style="margin-top:30px">
+      <span class="chip"><b>01</b>aplica en 3 min</span>
+      <span class="chip"><b>02</b>activa tu código</span>
+      <span class="chip"><b>03</b>cobra tu comisión</span>
+    </div>
+  </section>
+
+  <section class="final" id="unirme">
+    <h2><span class="chrome">ready 2 shine?</span></h2>
+    <p class="ssub" style="margin:14px auto 30px">sin exclusividad · sin compromiso · solo con tu permiso</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#unirme">unirme ✦</a>
+  </section>
+
+  <footer><span>© 2026 briwell · seoul</span><span>shine 2 the future · mx pe ec</span></footer>
+</div>
+</body>
+</html>

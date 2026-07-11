@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — Creadoras al frente ★</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --ink:#22201B; --red:#F04E3E; --yel:#FFE24A; --blue:#BDE3FF; --bg:#FFF9EE; }
+  body { background:var(--bg); color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .scb { font-family:Caveat; font-weight:700; color:var(--red); }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:26px 0; }
+  .logo { font-family:'Archivo Black'; font-size:20px; } .logo b { color:var(--red); }
+  .nav-cta { font-weight:800; font-size:13px; color:#fff; background:var(--red); border:2px solid var(--ink); text-decoration:none; padding:10px 22px; border-radius:999px; box-shadow:3px 3px 0 var(--ink); }
+  .hero { padding:66px 0 70px; position:relative; }
+  h1 { font-family:'Archivo Black'; font-size:clamp(46px,6.4vw,86px); line-height:1.0; text-transform:uppercase; max-width:14ch; }
+  .hl { background:var(--yel); padding:0 12px; box-decoration-break:clone; -webkit-box-decoration-break:clone; }
+  .sub { font-size:17px; font-weight:600; color:#5d5950; max-width:44ch; line-height:1.65; margin:24px 0 30px; }
+  .cta { display:inline-block; font-weight:800; font-size:16px; color:#fff; background:var(--red); border:2.5px solid var(--ink); padding:15px 34px; border-radius:999px; text-decoration:none; box-shadow:5px 5px 0 var(--ink); }
+  .arrow { font-family:Caveat; font-weight:700; font-size:26px; color:var(--red); display:inline-block; margin-left:16px; transform:rotate(-4deg); }
+  section { padding:80px 0; }
+  .kicker { font-family:'Archivo Black'; font-size:13px; letter-spacing:0.16em; text-transform:uppercase; margin-bottom:12px; }
+  h2 { font-family:'Archivo Black'; font-size:clamp(30px,4vw,50px); line-height:1.02; text-transform:uppercase; margin-bottom:12px; }
+  .ssub { font-size:15.5px; font-weight:500; color:#5d5950; max-width:56ch; line-height:1.65; margin-bottom:40px; }
+  /* pinboard */
+  .board { display:grid; grid-template-columns:repeat(3,1fr); gap:26px; }
+  .pin { background:#fff; border:2.5px solid var(--ink); border-radius:16px; padding:14px; box-shadow:5px 5px 0 var(--ink); position:relative; }
+  .pin.tilt-l { transform:rotate(-2deg); } .pin.tilt-r { transform:rotate(2deg); }
+  .tape { position:absolute; top:-14px; left:50%; transform:translateX(-50%) rotate(-3deg); width:90px; height:26px; background:rgba(255,226,74,0.85); border:1.5px dashed rgba(34,32,27,0.3); }
+  .pin img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:8px; border:1.5px solid var(--ink); }
+  .pin h3 { font-family:'Archivo Black'; font-size:15px; margin:12px 2px 4px; }
+  .pin p { font-size:13px; color:#5d5950; margin:0 2px; line-height:1.55; }
+  .sticky { background:var(--yel); border:2.5px solid var(--ink); padding:22px 20px; font-family:Caveat; font-weight:700; font-size:24px; line-height:1.3; color:var(--ink); box-shadow:5px 5px 0 var(--ink); transform:rotate(1.5deg); }
+  .sticky.blue { background:var(--blue); transform:rotate(-2deg); }
+  /* club rules */
+  .rules { background:#fff; border:2.5px solid var(--ink); border-radius:20px; padding:44px 46px; box-shadow:7px 7px 0 var(--ink); }
+  .rule { display:flex; gap:16px; align-items:flex-start; padding:14px 0; border-bottom:2px dashed rgba(34,32,27,0.2); }
+  .rule:last-child { border-bottom:none; }
+  .rule b { font-family:'Archivo Black'; font-size:15px; flex:0 0 auto; background:var(--yel); border:2px solid var(--ink); border-radius:999px; padding:4px 12px; }
+  .rule div h3 { font-size:16px; font-weight:800; margin-bottom:3px; }
+  .rule div p { font-size:14px; color:#5d5950; line-height:1.6; }
+  .final { text-align:center; padding:100px 0; position:relative; }
+  footer { border-top:2.5px solid var(--ink); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#5d5950; }
+  @media (max-width:920px) { .board { grid-template-columns:1fr 1fr; } .rules { padding:32px 24px; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } .board { grid-template-columns:1fr; } section { padding:56px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">BRIWELL<b>!</b></span><a class="nav-cta" href="#club">Únete</a></nav>
+  <section class="hero">
+    <h1>Creadoras <span class="hl">al frente</span> ★</h1>
+    <p class="sub">El club de K-beauty para creadoras latinas: productos reales de Seúl,
+      tu código propio y comisión clara. Sin spam <span class="scb" style="font-size:22px">(en serio!)</span></p>
+    <a class="cta" href="#club">ÚNETE AL CLUB</a><span class="arrow">← toma 3 min!</span>
+  </section>
+
+  <section>
+    <div class="kicker">El tablón del club</div>
+    <h2>Pinned <span class="hl">★</span></h2>
+    <p class="ssub">Lo que está pasando en el club — productos, rituales y avisos importantes.</p>
+    <div class="board">
+      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>CICAMANU PAD</h3><p>centella + manuka. la favorita de piel sensible.</p></div>
+      <div class="sticky">"tu código es tuyo — cada venta que generes queda registrada" 💛</div>
+      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/dermal-mask-model.jpg" alt=""><h3>RITUAL DOMINGUERO</h3><p>mascarilla dermal + serie favorita = contenido listo.</p></div>
+      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/ami-essenherb-stone.jpg" alt=""><h3>TEA TREE CALM</h3><p>essenherb: botánica coreana de laboratorio.</p></div>
+      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/parnell-model.jpg" alt=""><h3>GLOW CHECK</h3><p>resultados visibles = contenido que se hace solo.</p></div>
+      <div class="sticky blue">"sin tu permiso, ni una gota de tus datos" — regla de oro 🔒</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Las reglas</div>
+    <h2>Reglas del club</h2>
+    <div class="rules" style="margin-top:30px">
+      <div class="rule"><b>01</b><div><h3>Aplicas en 3 minutos</h3><p>Tu cuenta, tu país. Revisamos tu contenido solo con tu permiso.</p></div></div>
+      <div class="rule"><b>02</b><div><h3>Acordamos todo contigo</h3><p>Condiciones por escrito antes de empezar. Tu código exclusivo se activa.</p></div></div>
+      <div class="rule"><b>03</b><div><h3>Cada venta cuenta</h3><p>Registrada al momento, comisión visible. Sin cajas negras.</p></div></div>
+      <div class="rule"><b>04</b><div><h3>Sales cuando quieras</h3><p>Sin exclusividad, sin penalizaciones, sin drama.</p></div></div>
+    </div>
+  </section>
+
+  <section class="final" id="club">
+    <h2>¿Entras al <span class="hl">club?</span></h2>
+    <p class="ssub" style="margin:12px auto 30px">Cupos limitados por país — primera generación MX · PE · EC.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#club">ÚNETE AL CLUB ★</a>
+    <div class="scb" style="font-size:26px; margin-top:20px; transform:rotate(-3deg)">te esperamos! ♥</div>
+  </section>
+
+  <footer><span>© 2026 BRIWELL! · Seúl</span><span>creadoras al frente ★ MX PE EC</span></footer>
+</div>
+</body>
+</html>

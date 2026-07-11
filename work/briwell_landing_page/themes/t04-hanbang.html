@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — Sabiduría coreana, piel latina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --paper:#F7F1E5; --ink:#2B2620; --red:#B63B2E; --indigo:#2C4770; --mut:#8a8172; }
+  body { background:var(--paper); color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .mj { font-family:'Nanum Myeongjo',serif; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:26px 0; border-bottom:1px solid rgba(43,38,32,0.2); }
+  .seal { width:38px; height:38px; background:var(--red); border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--paper); font-size:18px; font-weight:800; box-shadow:0 5px 12px rgba(182,59,46,0.3); }
+  .logo { display:flex; align-items:center; gap:11px; font-family:'Nanum Myeongjo'; font-weight:800; font-size:19px; }
+  .nav-cta { font-weight:600; font-size:13px; color:var(--paper); background:var(--ink); text-decoration:none; padding:10px 24px; }
+  .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:56px; padding:74px 0 84px; align-items:center; }
+  h1 { font-family:'Nanum Myeongjo'; font-weight:800; font-size:clamp(38px,4.8vw,62px); line-height:1.28; }
+  h1 em { font-style:normal; color:var(--red); }
+  .sub { font-size:16.5px; color:#6d6558; max-width:44ch; line-height:1.8; margin:22px 0 32px; }
+  .cta { display:inline-block; font-weight:600; font-size:15px; color:var(--paper); background:var(--ink); padding:15px 34px; text-decoration:none; }
+  .vert-wrap { display:flex; gap:22px; justify-content:center; }
+  .vert { writing-mode:vertical-rl; font-family:'Nanum Myeongjo'; font-size:19px; letter-spacing:0.4em; color:var(--indigo); border-right:1px solid rgba(43,38,32,0.3); padding-right:12px; height:340px; }
+  .jog { width:96px; height:340px; display:grid; grid-template-rows:2fr 1fr 1.6fr; gap:8px; }
+  .jog div { border:1px solid rgba(43,38,32,0.3); }
+  section { padding:84px 0; }
+  .chap { display:flex; align-items:baseline; gap:18px; border-top:1px solid rgba(43,38,32,0.25); padding-top:30px; margin-bottom:16px; }
+  .chap b { font-family:'Nanum Myeongjo'; font-size:44px; font-weight:800; color:var(--red); }
+  .chap h2 { font-family:'Nanum Myeongjo'; font-weight:800; font-size:clamp(26px,3.2vw,38px); }
+  .ssub { font-size:15px; color:#6d6558; max-width:60ch; line-height:1.8; margin-bottom:40px; }
+  /* chapter 1: ingredients */
+  .ing { display:grid; grid-template-columns:repeat(3,1fr); gap:26px; }
+  .i { background:#fff; border:1px solid rgba(43,38,32,0.15); }
+  .i img { width:100%; aspect-ratio:1; object-fit:cover; }
+  .i div { padding:18px 20px 22px; }
+  .i h3 { font-family:'Nanum Myeongjo'; font-weight:800; font-size:17px; margin-bottom:5px; }
+  .i p { font-size:13px; color:#6d6558; line-height:1.65; }
+  .i small { display:block; font-size:10.5px; letter-spacing:0.18em; text-transform:uppercase; color:var(--red); margin-bottom:8px; }
+  /* chapter 2: method */
+  .method { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+  .m-list { display:flex; flex-direction:column; gap:0; }
+  .m { display:flex; gap:18px; padding:20px 0; border-bottom:1px dashed rgba(43,38,32,0.25); }
+  .m:last-child { border-bottom:none; }
+  .m b { font-family:'Nanum Myeongjo'; font-size:20px; font-weight:800; color:var(--indigo); flex:0 0 auto; }
+  .m div h3 { font-family:'Nanum Myeongjo'; font-weight:800; font-size:17px; margin-bottom:4px; }
+  .m div p { font-size:13.5px; color:#6d6558; line-height:1.7; }
+  .m-img { border:8px solid #fff; box-shadow:0 18px 40px rgba(43,38,32,0.18); }
+  .m-img img { width:100%; display:block; }
+  /* chapter 3: promise */
+  .prom { background:var(--ink); color:var(--paper); padding:70px 60px; text-align:center; }
+  .prom .mj { font-size:clamp(22px,3vw,32px); font-weight:800; line-height:1.6; max-width:26ch; margin:0 auto 16px; }
+  .prom .mj em { font-style:normal; color:#D9A441; }
+  .prom p { font-size:14px; color:rgba(247,241,229,0.7); max-width:52ch; margin:0 auto; line-height:1.8; }
+  .final { text-align:center; padding:104px 0; }
+  .final h2 { font-family:'Nanum Myeongjo'; font-weight:800; font-size:clamp(30px,4vw,46px); line-height:1.3; margin-bottom:14px; }
+  footer { border-top:1px solid rgba(43,38,32,0.25); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; color:var(--mut); }
+  @media (max-width:920px) { .hero, .method { grid-template-columns:1fr; } .ing { grid-template-columns:1fr; } .vert-wrap { display:none; } .prom { padding:48px 26px; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:56px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo"><span class="seal">브</span>브리웰 <span style="font-family:Inter; font-weight:500; font-size:11px; color:var(--mut)">BRIWELL</span></span><a class="nav-cta" href="#unirse">Únete</a></nav>
+  <section class="hero">
+    <div>
+      <h1>Sabiduría coreana,<br><em>piel latina.</em></h1>
+      <p class="sub">Un pozo que se cava durante generaciones da el agua más profunda. Briwell trae
+        la derma-cosmética heredera de esa paciencia coreana — centella, manuka, tea tree — a las
+        creadoras de México, Perú y Ecuador.</p>
+      <a class="cta" href="#unirse">Unirme al programa</a>
+    </div>
+    <div class="vert-wrap">
+      <div class="vert">기쁨으로 길어 올린 물</div>
+      <div class="jog"><div style="background:rgba(44,71,112,0.16)"></div><div style="background:rgba(182,59,46,0.2)"></div><div style="background:rgba(43,38,32,0.07)"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="chap"><b>一</b><h2>Los ingredientes</h2></div>
+    <p class="ssub">Fórmulas que respetan la tradición y pasan por el laboratorio. Productos originales,
+      de las casas que nosotros mismos distribuimos.</p>
+    <div class="ing">
+      <div class="i"><img src="../assets/img/products/parnell-pad.jpg" alt=""><div><small>Centella · Manuka</small><h3>Parnell Cicamanu</h3><p>La calma para piel sensible, en pad de algodón.</p></div></div>
+      <div class="i"><img src="../assets/img/products/ami-rosemary.jpg" alt=""><div><small>Botánica de laboratorio</small><h3>Essenherb</h3><p>Del tea tree al romero — la herbolaria coreana moderna.</p></div></div>
+      <div class="i"><img src="../assets/img/products/dermal-cream.jpg" alt=""><div><small>El ritual</small><h3>Dermal</h3><p>La mascarilla de los 15 minutos, millones de veces compartida.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="chap"><b>二</b><h2>El método</h2></div>
+    <div class="method">
+      <div class="m-list">
+        <div class="m"><b>壱</b><div><h3>Te elegimos despacio</h3><p>Aplicas en 3 minutos; revisamos tu contenido solo con tu permiso, como se elige a una socia — no como se manda spam.</p></div></div>
+        <div class="m"><b>弐</b><div><h3>Acordamos por escrito</h3><p>Condiciones claras antes de empezar. Tu código exclusivo se activa.</p></div></div>
+        <div class="m"><b>参</b><div><h3>El agua fluye</h3><p>Cada venta con tu código queda registrada y genera tu comisión, visible siempre.</p></div></div>
+      </div>
+      <div class="m-img"><img src="../assets/img/products/ami-essenherb-stone.jpg" alt=""></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="chap"><b>三</b><h2>La promesa</h2></div>
+    <div class="prom">
+      <p class="mj">"Sin tu permiso,<br><em>ni una gota.</em>"</p>
+      <p>No es un lema: nuestro sistema rechaza cualquier dato sin consentimiento. Sin DMs
+        automáticos, sin exclusividad forzada. La paciencia también es una tecnología.</p>
+    </div>
+  </section>
+
+  <section class="final" id="unirse">
+    <h2>El pozo está abierto.</h2>
+    <p class="ssub" style="margin:0 auto 30px">Formulario de 3 minutos, sin compromiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#unirse">Unirme al programa</a>
+  </section>
+
+  <footer><span>© 2026 브리웰 Briwell · Seúl</span><span>Sabiduría coreana, piel latina · MX PE EC</span></footer>
+</div>
+</body>
+</html>

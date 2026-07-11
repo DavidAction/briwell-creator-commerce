@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — Tu debut K-beauty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --bg:#FFF4F9; --ink:#3A2A4A; --pink:#FF4D9D; --lav:#8f7fa8; --holo:linear-gradient(130deg,#FFD3E8,#B9E8FF 40%,#FFE9B0 70%,#E3C8FF); }
+  body { background:linear-gradient(160deg,#FFF0F6,#F3EDFF 55%,#EAF6FF); color:var(--ink); font-family:Inter,sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:26px 0; }
+  .logo { font-weight:800; font-size:21px; } .logo em { font-style:normal; color:var(--pink); }
+  .nav-cta { font-weight:700; font-size:13px; color:#fff; background:var(--ink); text-decoration:none; padding:10px 22px; border-radius:12px; }
+  .hero { display:grid; grid-template-columns:1.05fr 0.95fr; gap:48px; align-items:center; padding:64px 0 80px; }
+  .badge { display:inline-block; font-size:12px; font-weight:700; letter-spacing:0.14em; color:var(--pink); background:#fff; border:2px solid var(--pink); border-radius:999px; padding:7px 16px; margin-bottom:24px; }
+  h1 { font-size:clamp(44px,5.4vw,72px); font-weight:800; letter-spacing:-0.03em; line-height:1.02; }
+  h1 em { font-style:normal; color:var(--pink); }
+  .sub { font-size:17px; font-weight:500; color:#6d5d85; line-height:1.65; max-width:44ch; margin:22px 0 30px; }
+  .cta { display:inline-block; font-weight:700; font-size:16px; color:#fff; background:var(--ink); padding:16px 36px; border-radius:14px; text-decoration:none; box-shadow:0 12px 26px rgba(58,42,74,0.3); }
+  .cta-hint { display:block; font-size:13px; color:var(--lav); margin-top:12px; }
+  .fan { position:relative; height:420px; }
+  .pc { position:absolute; width:200px; height:295px; border-radius:16px; overflow:hidden; box-shadow:0 18px 40px rgba(58,42,74,0.28); }
+  .pc::after { content:''; position:absolute; inset:0; border-radius:16px; border:5px solid transparent; background:var(--holo) border-box; -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+  .pc img { width:100%; height:100%; object-fit:cover; }
+  .pc span { position:absolute; bottom:10px; left:10px; right:10px; background:rgba(255,255,255,0.92); border-radius:8px; font-size:10.5px; font-weight:700; padding:6px 9px; z-index:2; }
+  section { padding:84px 0; }
+  .kicker { font-size:12px; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--pink); margin-bottom:14px; }
+  h2 { font-size:clamp(30px,3.6vw,44px); font-weight:800; letter-spacing:-0.02em; line-height:1.1; margin-bottom:14px; }
+  .ssub { font-size:15.5px; color:#6d5d85; max-width:58ch; line-height:1.65; margin-bottom:44px; }
+  /* collection */
+  .col-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+  .card { background:#fff; border-radius:18px; padding:12px 12px 16px; box-shadow:0 14px 30px rgba(58,42,74,0.14); position:relative; }
+  .card img { width:100%; aspect-ratio:3/4; object-fit:cover; border-radius:12px; }
+  .rare { position:absolute; top:20px; left:20px; font-size:10px; font-weight:800; letter-spacing:0.1em; background:var(--ink); color:#fff; border-radius:999px; padding:4px 10px; }
+  .rare.holo { background:var(--holo); color:var(--ink); }
+  .card h3 { font-size:15px; font-weight:700; margin:12px 4px 2px; }
+  .card p { font-size:12px; color:var(--lav); margin:0 4px; }
+  .progress { margin-top:36px; background:#fff; border-radius:999px; padding:8px; box-shadow:inset 0 2px 6px rgba(58,42,74,0.1); }
+  .progress div { width:33%; background:var(--holo); border-radius:999px; text-align:center; font-size:12px; font-weight:800; padding:8px 0; }
+  /* debut steps */
+  .debut { background:#fff; border-radius:28px; padding:64px 56px; box-shadow:0 20px 48px rgba(58,42,74,0.12); }
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:34px; counter-reset:st; }
+  .step { position:relative; padding-top:58px; }
+  .step::before { counter-increment:st; content:counter(st,decimal-leading-zero); position:absolute; top:0; left:0; font-size:40px; font-weight:800; background:var(--holo); -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1.5px var(--ink); }
+  .step h3 { font-size:19px; font-weight:800; margin-bottom:8px; }
+  .step p { font-size:14px; color:#6d5d85; line-height:1.65; }
+  /* lineup */
+  .lineup { display:flex; gap:18px; flex-wrap:wrap; }
+  .slot { flex:1 1 150px; aspect-ratio:3/4; border:2.5px dashed var(--lav); border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--lav); font-weight:700; font-size:13px; background:rgba(255,255,255,0.5); }
+  .slot.you { border-style:solid; border-color:var(--pink); color:var(--pink); background:#fff; box-shadow:0 14px 30px rgba(255,77,157,0.18); }
+  .slot b { font-size:26px; }
+  /* chant + final */
+  .chant { border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); padding:16px 0; overflow:hidden; white-space:nowrap; font-weight:800; font-size:15px; letter-spacing:0.06em; }
+  .chant span { color:var(--pink); margin:0 16px; }
+  .final { text-align:center; padding:110px 0; }
+  .final h2 { max-width:22ch; margin:0 auto 14px; }
+  footer { border-top:1.5px solid rgba(58,42,74,0.15); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; color:var(--lav); }
+  @media (max-width:920px) { .hero { grid-template-columns:1fr; } .fan { height:360px; } .col-grid { grid-template-columns:1fr 1fr; } .steps { grid-template-columns:1fr; } .debut { padding:44px 28px; } }
+  @media (max-width:480px) {
+    h1 { font-size:40px; } .col-grid { grid-template-columns:1fr; } .wrap { padding:0 22px; } section { padding:60px 0; }
+    .fan { height:280px; }
+    .pc { width:146px; height:216px; }
+    .pc:nth-child(1) { left:1% !important; }
+    .pc:nth-child(2) { left:29% !important; }
+    .pc:nth-child(3) { left:57% !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">bri<em>well</em> 💗</span><a class="nav-cta" href="#audicion">Audición</a></nav>
+  <section class="hero" style="padding-top:40px">
+    <div>
+      <span class="badge">AUDICIÓN ABIERTA · MX PE EC</span>
+      <h1>Tu debut<br><em>K-beauty.</em></h1>
+      <p class="sub">Briwell te recluta como se debuta en Seúl: te elegimos en serio, te llenamos de
+        productos reales y cada venta con tu código genera comisión. Tú eres el bias.</p>
+      <a class="cta" href="#audicion">Debutar ahora</a>
+      <span class="cta-hint">Formulario de 3 minutos — sin compromiso, sin spam.</span>
+    </div>
+    <div class="fan">
+      <div class="pc" style="left:4%; top:36px; transform:rotate(-8deg)"><img src="../assets/img/products/dermal-mask-model.jpg" alt=""><span>GLOW ★ no.001</span></div>
+      <div class="pc" style="left:34%; top:8px; transform:rotate(1deg); z-index:2"><img src="../assets/img/products/parnell-pad.jpg" alt=""><span>CICAMANU ★★ no.002</span></div>
+      <div class="pc" style="left:63%; top:44px; transform:rotate(8deg)"><img src="../assets/img/products/ami-essenherb-pad.jpg" alt=""><span>TEA TREE ✦HOLO no.003</span></div>
+    </div>
+  </section>
+</div>
+
+<div class="chant">BRI-WELL <span>♥</span> BRI-WELL <span>♥</span> TU DEBUT K-BEAUTY <span>♥</span> BRI-WELL <span>♥</span> BRI-WELL <span>♥</span> TU DEBUT K-BEAUTY <span>♥</span> BRI-WELL <span>♥</span> BRI-WELL</div>
+
+<div class="wrap">
+  <section>
+    <div class="kicker">La colección</div>
+    <h2>Colecciona tu <em style="font-style:normal;color:var(--pink)">glow</em></h2>
+    <p class="ssub">Cada producto es una carta de tu colección de debut. Skincare coreano original,
+      de las marcas que nosotros mismos distribuimos.</p>
+    <div class="col-grid">
+      <div class="card"><span class="rare">★ COMMON</span><img src="../assets/img/products/parnell-cleanser.jpg" alt=""><h3>Parnell Cleanser</h3><p>Apple vinegar · poros</p></div>
+      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>Cicamanu Pad</h3><p>centella + manuka</p></div>
+      <div class="card"><span class="rare holo">✦ HOLO</span><img src="../assets/img/products/ami-essenherb-stone.jpg" alt=""><h3>Essenherb Tea Tree</h3><p>calmante botánico</p></div>
+      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><h3>Dermal Mask</h3><p>ritual 15 min</p></div>
+    </div>
+    <div class="progress"><div>colección 4/12 — se completa al debutar</div></div>
+  </section>
+
+  <section>
+    <div class="debut">
+      <div class="kicker">Cómo debutar</div>
+      <h2>De trainee a <em style="font-style:normal;color:var(--pink)">idol</em> en 3 pasos</h2>
+      <div class="steps" style="margin-top:38px">
+        <div class="step"><h3>La audición</h3><p>Aplica con tu cuenta y tu país. Revisamos tu contenido — solo con tu permiso — como una agencia que elige en serio.</p></div>
+        <div class="step"><h3>El debut</h3><p>Acordamos los detalles contigo y activamos tu código exclusivo. Tu photocard entra a la colección.</p></div>
+        <div class="step"><h3>El fandom</h3><p>Cada venta con tu código queda registrada y genera tu comisión — visible, sin cajas negras.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Line-up</div>
+    <h2>La primera generación</h2>
+    <p class="ssub">Buscamos pocas creadoras, bien elegidas — la primera generación de Briwell en
+      México, Perú y Ecuador.</p>
+    <div class="lineup">
+      <div class="slot"><b>?</b>MX · slot 01</div>
+      <div class="slot"><b>?</b>MX · slot 02</div>
+      <div class="slot you"><b>★</b>TU CARTA AQUÍ</div>
+      <div class="slot"><b>?</b>PE · slot 04</div>
+      <div class="slot"><b>?</b>EC · slot 05</div>
+    </div>
+  </section>
+
+  <section class="final" id="audicion">
+    <span class="badge">LA AUDICIÓN CIERRA CUANDO SE LLENA EL LINE-UP</span>
+    <h2>¿Lista para tu <em style="font-style:normal;color:var(--pink)">debut?</em></h2>
+    <p class="ssub" style="margin:0 auto 30px">Sin exclusividad, sin promesas vagas. Solo con tu permiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#audicion">Debutar ahora</a>
+  </section>
+
+  <footer><span>© 2026 Briwell · Seúl</span><span>Tu debut K-beauty · MX PE EC</span></footer>
+</div>
+</body>
+</html>

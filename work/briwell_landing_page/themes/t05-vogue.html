@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRIWELL — The K-Beauty Issue №1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --ink:#0B0B0B; --red:#E0201B; --mut:#777; }
+  body { background:#fff; color:var(--ink); font-family:'Bodoni Moda',serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .ui { font-family:Inter,sans-serif; }
+  .wrap { max-width:1060px; margin:0 auto; padding:0 28px; }
+  .mast { font-size:clamp(44px,7vw,84px); font-weight:700; letter-spacing:0.05em; text-align:center; border-bottom:3.5px solid var(--ink); padding:34px 0 14px; }
+  .mast-sub { display:flex; justify-content:space-between; font-family:Inter; font-size:11px; letter-spacing:0.24em; color:#555; padding:10px 0 0; text-transform:uppercase; }
+  .cover { display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center; padding:64px 0 80px; }
+  .cover img { width:100%; aspect-ratio:4/5; object-fit:cover; filter:grayscale(1) contrast(1.08); }
+  h1 { font-size:clamp(44px,5.6vw,74px); line-height:1.05; }
+  h1 em { font-style:italic; color:var(--red); }
+  .deck { font-family:Inter; font-size:15.5px; color:#555; max-width:34ch; line-height:1.75; margin:22px 0 30px; }
+  .cta { font-family:Inter; font-weight:600; font-size:13px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink); border-bottom:2.5px solid var(--red); padding-bottom:5px; text-decoration:none; display:inline-block; }
+  .rule { border-top:1px solid var(--ink); }
+  section { padding:76px 0; }
+  .sec-kick { font-family:Inter; font-size:11px; letter-spacing:0.26em; text-transform:uppercase; color:var(--red); font-weight:600; margin-bottom:14px; }
+  h2 { font-size:clamp(30px,4vw,48px); line-height:1.08; margin-bottom:14px; }
+  /* editorial article 2-col */
+  .article { display:grid; grid-template-columns:1.2fr 0.8fr; gap:52px; }
+  .body-copy { font-family:Inter; font-size:15px; color:#333; line-height:1.85; column-count:2; column-gap:34px; }
+  .body-copy p { margin-bottom:16px; }
+  .dropcap::first-letter { font-family:'Bodoni Moda'; font-size:64px; line-height:0.8; float:left; padding:8px 10px 0 0; color:var(--red); }
+  .pull { border-top:3px solid var(--ink); border-bottom:1px solid var(--ink); padding:26px 4px; margin-top:8px; }
+  .pull p { font-size:26px; font-style:italic; line-height:1.4; }
+  .pull cite { font-family:Inter; font-style:normal; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--mut); display:block; margin-top:14px; }
+  /* products as credits */
+  .credits { display:grid; grid-template-columns:repeat(3,1fr); gap:34px; }
+  .cr img { width:100%; aspect-ratio:3/4; object-fit:cover; }
+  .cr .no { font-family:Inter; font-size:11px; letter-spacing:0.2em; color:var(--red); margin:14px 0 4px; }
+  .cr h3 { font-size:20px; margin-bottom:4px; }
+  .cr p { font-family:Inter; font-size:12.5px; color:var(--mut); line-height:1.6; }
+  /* contributors */
+  .contrib { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
+  .ct { border-top:1px solid var(--ink); padding-top:16px; }
+  .ct b { font-size:17px; }
+  .ct p { font-family:Inter; font-size:12px; color:var(--mut); line-height:1.6; margin-top:5px; }
+  .ct.open b { color:var(--red); }
+  .final { text-align:center; padding:100px 0; }
+  footer { border-top:3px solid var(--ink); padding:22px 0 30px; display:flex; justify-content:space-between; font-family:Inter; font-size:11px; letter-spacing:0.14em; color:var(--mut); text-transform:uppercase; }
+  @media (max-width:920px) { .cover, .article { grid-template-columns:1fr; } .body-copy { column-count:1; } .credits, .contrib { grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } .credits, .contrib { grid-template-columns:1fr; } section { padding:54px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">BRIWELL</div>
+  <div class="mast-sub"><span>№1 — Latinoamérica</span><span>The K-Beauty Issue</span><span>Seoul, 2026</span></div>
+
+  <section class="cover">
+    <img src="../assets/img/products/parnell-model.jpg" alt="">
+    <div>
+      <div class="sec-kick">Cover story</div>
+      <h1>The K-Beauty <em>Issue.</em></h1>
+      <p class="deck">Creadoras, fórmulas de Seúl y comisiones sin letra chiquita. El editorial
+        está abierto para México, Perú y Ecuador — buscamos las firmas de la primera edición.</p>
+      <a class="cta" href="#aplicar">Aplicar al programa</a>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="sec-kick">El reportaje</div>
+    <h2>Del pozo de Seúl<br>a tu <em>página.</em></h2>
+    <div class="article" style="margin-top:34px">
+      <div class="body-copy">
+        <p class="dropcap">Briwell no es una agencia más: es puente y pozo. Distribuimos directamente
+          las marcas coreanas que aparecen en esta edición, y elegimos a cada creadora como un editor
+          elige una firma — despacio, leyendo su trabajo, siempre con permiso.</p>
+        <p>El acuerdo es de imprenta, no de humo: condiciones por escrito, código exclusivo con tu
+          nombre y cada venta registrada en un sistema real que puedes consultar. La comisión no es
+          una promesa editorial — es una cifra en tu panel.</p>
+        <p>Sin exclusividad. Sin DMs masivos. Sin una gota de tus datos sin consentimiento. Ese es
+          el manual de estilo de esta casa.</p>
+      </div>
+      <div class="pull">
+        <p>"No buscamos mil firmas. Buscamos las correctas — y las tratamos en serio."</p>
+        <cite>— El equipo editorial, Seúl</cite>
+      </div>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="sec-kick">En este número</div>
+    <h2>Los <em>créditos</em> de belleza</h2>
+    <div class="credits" style="margin-top:34px">
+      <div class="cr"><img src="../assets/img/products/parnell-pad.jpg" alt=""><div class="no">PÁG. 01</div><h3>Parnell Cicamanu</h3><p>Centella y manuka para piel sensible — Eleven Corporation, Seúl.</p></div>
+      <div class="cr"><img src="../assets/img/products/ami-rosemary.jpg" alt=""><div class="no">PÁG. 02</div><h3>Essenherb &amp; BRTC</h3><p>Botánica y derma de laboratorio — AMI Cosmetic, Seúl.</p></div>
+      <div class="cr"><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><div class="no">PÁG. 03</div><h3>Dermal</h3><p>El ritual de 15 minutos, millones de unidades en el mundo.</p></div>
+    </div>
+  </section>
+
+  <section class="rule">
+    <div class="sec-kick">Colaboradoras</div>
+    <h2>Las firmas de la <em>№1</em></h2>
+    <div class="contrib" style="margin-top:34px">
+      <div class="ct"><b>Por confirmar</b><p>México — skincare editorial</p></div>
+      <div class="ct"><b>Por confirmar</b><p>Perú — rutinas y reseñas</p></div>
+      <div class="ct open"><b>Tu firma aquí</b><p>La edición busca su siguiente pluma. Aplica abajo.</p></div>
+      <div class="ct"><b>Por confirmar</b><p>Ecuador — piel sensible</p></div>
+    </div>
+  </section>
+
+  <section class="final rule" id="aplicar">
+    <div class="sec-kick">Convocatoria abierta</div>
+    <h2>Publica con <em>nosotros.</em></h2>
+    <p class="deck" style="margin:16px auto 28px; max-width:44ch">Formulario de 3 minutos. Respuesta editorial, no automática.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#aplicar">Aplicar al programa</a>
+  </section>
+
+  <footer><span>Briwell — Seoul</span><span>The K-Beauty Issue №1</span><span>MX · PE · EC</span></footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — Tu glow, tu escenario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { overflow-x:hidden; scroll-behavior:smooth; }
+  :root { --bg:#0A0A14; --ink:#FFFFFF; --mut:#8F8FA8; --grad:linear-gradient(93deg,#FF2E88,#8A2EFF 55%,#2ED6FF); }
+  body { background:var(--bg); color:var(--ink); font-family:Inter,sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased; }
+  .grad { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 28px; }
+  .nav { display:flex; justify-content:space-between; align-items:center; padding:26px 0; }
+  .logo { font-family:'Archivo Black'; font-size:21px; }
+  .nav-cta { font-weight:700; font-size:13px; color:var(--bg); background:var(--grad); text-decoration:none; padding:11px 24px; border-radius:999px; }
+  .hero { padding:80px 0 90px; position:relative; display:grid; grid-template-columns:1.1fr 0.9fr; gap:50px; align-items:center; }
+  .hero::before { content:''; position:absolute; right:-160px; top:-60px; width:560px; height:560px; border-radius:50%; background:radial-gradient(circle,rgba(138,46,255,0.3),transparent 65%); pointer-events:none; }
+  .tour { display:inline-block; font-weight:700; font-size:12px; letter-spacing:0.22em; color:var(--mut); border:1px solid rgba(143,143,168,0.4); border-radius:999px; padding:8px 18px; margin-bottom:26px; }
+  h1 { font-family:'Archivo Black'; font-size:clamp(46px,6vw,86px); line-height:0.98; text-transform:uppercase; }
+  .sub { font-size:17px; color:#B9B7CC; max-width:42ch; line-height:1.65; margin:24px 0 32px; }
+  .cta { display:inline-block; font-weight:700; font-size:16px; color:var(--bg); background:var(--grad); padding:17px 38px; border-radius:999px; text-decoration:none; box-shadow:0 0 42px rgba(255,46,136,0.45); }
+  .hero-img { width:100%; max-width:390px; aspect-ratio:5/6; object-fit:cover; border-radius:200px 200px 24px 24px; border:2px solid rgba(255,46,136,0.7); box-shadow:0 0 60px rgba(138,46,255,0.5); justify-self:center; }
+  section { padding:88px 0; }
+  .kicker { font-family:'Archivo Black'; font-size:13px; letter-spacing:0.24em; text-transform:uppercase; margin-bottom:14px; }
+  h2 { font-family:'Archivo Black'; font-size:clamp(30px,4vw,52px); line-height:1.02; text-transform:uppercase; margin-bottom:14px; }
+  .ssub { font-size:15.5px; color:var(--mut); max-width:56ch; line-height:1.65; margin-bottom:44px; }
+  /* lineup */
+  .lineup { display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .act { background:#11101E; border:1px solid rgba(143,143,168,0.25); border-radius:18px; overflow:hidden; }
+  .act img { width:100%; aspect-ratio:4/3; object-fit:cover; }
+  .act div { padding:18px 20px 22px; }
+  .act h3 { font-family:'Archivo Black'; font-size:17px; margin-bottom:4px; }
+  .act p { font-size:13px; color:var(--mut); line-height:1.55; }
+  .act b { display:inline-block; font-size:10.5px; letter-spacing:0.14em; color:#2ED6FF; border:1px solid rgba(46,214,255,0.4); border-radius:999px; padding:3px 10px; margin-bottom:10px; }
+  /* backstage timeline */
+  .tl { border-left:2px solid rgba(143,143,168,0.3); margin-left:10px; padding-left:34px; display:flex; flex-direction:column; gap:38px; position:relative; }
+  .tl-item { position:relative; max-width:60ch; }
+  .tl-item::before { content:''; position:absolute; left:-42px; top:4px; width:14px; height:14px; border-radius:50%; background:var(--grad); box-shadow:0 0 18px rgba(255,46,136,0.7); }
+  .tl-item b { font-family:'Archivo Black'; font-size:12px; letter-spacing:0.2em; color:#FF2E88; }
+  .tl-item h3 { font-family:'Archivo Black'; font-size:20px; margin:6px 0; }
+  .tl-item p { font-size:14.5px; color:var(--mut); line-height:1.65; }
+  /* counters */
+  .counters { display:flex; border-top:1px solid rgba(143,143,168,0.25); flex-wrap:wrap; }
+  .cnt { flex:1 1 200px; padding:26px 24px 0 0; }
+  .cnt + .cnt { border-left:1px solid rgba(143,143,168,0.25); padding-left:24px; }
+  .cnt b { font-family:'Archivo Black'; font-size:36px; display:block; }
+  .cnt span { font-size:12.5px; color:var(--mut); line-height:1.5; display:block; margin-top:4px; }
+  .final { text-align:center; padding:110px 0; }
+  footer { border-top:1px solid rgba(143,143,168,0.25); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; color:var(--mut); }
+  @media (max-width:920px) { .hero { grid-template-columns:1fr; } .lineup { grid-template-columns:1fr; } }
+  @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:60px 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav"><span class="logo">BW<span class="grad">★</span></span><a class="nav-cta" href="#casting">Casting</a></nav>
+  <section class="hero">
+    <div>
+      <span class="tour">WORLD TOUR · SEOUL → MX · PE · EC</span>
+      <h1>Tu glow,<br><span class="grad">tu escenario.</span></h1>
+      <p class="sub">La K-beauty más pura de Seúl busca a sus headliners en Latinoamérica.
+        Código propio, comisión clara — y el foco sobre ti.</p>
+      <a class="cta" href="#casting">Súbete al escenario</a>
+    </div>
+    <img class="hero-img" src="../assets/img/products/dermal-mask-model.jpg" alt="">
+  </section>
+
+  <section>
+    <div class="kicker grad">Line-up de marcas</div>
+    <h2>Los headliners<br>de Seúl</h2>
+    <p class="ssub">Marcas que nosotros mismos distribuimos — directo del backstage coreano a tu público.</p>
+    <div class="lineup">
+      <div class="act"><img src="../assets/img/products/parnell-pad.jpg" alt=""><div><b>MAIN ACT</b><h3>Parnell</h3><p>Cicamanu: centella + manuka para piel sensible. La derma que abre el show.</p></div></div>
+      <div class="act"><img src="../assets/img/products/ami-brtc-sun.jpg" alt=""><div><b>SPECIAL GUEST</b><h3>BRTC · Essenherb</h3><p>Del laboratorio: escudo solar Active Max y botánica tea tree.</p></div></div>
+      <div class="act"><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><div><b>ENCORE</b><h3>Dermal</h3><p>El ritual de 15 minutos con millones de fans en el mundo.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker grad">Backstage</div>
+    <h2>El rider técnico</h2>
+    <p class="ssub">Lo que pasa detrás del escenario, paso a paso.</p>
+    <div class="tl">
+      <div class="tl-item"><b>SOUNDCHECK</b><h3>Aplicas en 3 minutos</h3><p>Tu cuenta, tu país, tu vibra. Revisamos tu contenido solo con tu permiso — casting serio, no DM masivo.</p></div>
+      <div class="tl-item"><b>SHOWTIME</b><h3>Se enciende tu código</h3><p>Acordamos los detalles contigo y activamos tu código exclusivo de descuento.</p></div>
+      <div class="tl-item"><b>ENCORE</b><h3>La caja registra cada venta</h3><p>Comisión clara con seguimiento visible. Lo que ves tú es lo que vemos nosotros.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="counters">
+      <div class="cnt"><b class="grad">3</b><span>países en la primera gira — MX · PE · EC</span></div>
+      <div class="cnt"><b class="grad">1</b><span>código exclusivo con tu nombre</span></div>
+      <div class="cnt"><b class="grad">0</b><span>spam — ni una gota de datos sin permiso</span></div>
+      <div class="cnt"><b class="grad">100%</b><span>ventas registradas en un sistema real</span></div>
+    </div>
+  </section>
+
+  <section class="final" id="casting">
+    <div class="kicker grad">Casting abierto</div>
+    <h2>El escenario<br>está listo.</h2>
+    <p class="ssub" style="margin:14px auto 30px">Formulario de 3 minutos. Sin exclusividad, sin compromiso.</p>
+    <!-- TODO: conectar formulario -->
+    <a class="cta" href="#casting">Súbete al escenario</a>
+  </section>
+
+  <footer><span>© 2026 Briwell · Seúl</span><span>World Tour · MX PE EC</span></footer>
+</div>
+</body>
+</html>
