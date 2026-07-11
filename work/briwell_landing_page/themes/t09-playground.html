@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Briwell — Creadoras al frente ★</title>
+<meta name="description" content="El club de K-beauty para creadoras latinas: productos reales, código propio, comisión clara. Sin spam.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -46,6 +47,20 @@
   footer { border-top:2.5px solid var(--ink); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#5d5950; }
   @media (max-width:920px) { .board { grid-template-columns:1fr 1fr; } .rules { padding:32px 24px; } }
   @media (max-width:480px) { .wrap { padding:0 22px; } .board { grid-template-columns:1fr; } section { padding:56px 0; } }
+  /* signature: sticker wiggle + press-down button physics */
+  @keyframes wiggle { 0%,100% { transform:rotate(-2deg); } 50% { transform:rotate(2.5deg); } }
+  .pin:hover, .sticky:hover { animation:wiggle .4s ease-in-out; }
+  .cta { transition:transform .12s, box-shadow .12s; }
+  .cta:hover { transform:translate(-1px,-1px); box-shadow:6px 6px 0 var(--ink); }
+  .cta:active { transform:translate(4px,4px); box-shadow:1px 1px 0 var(--ink); }
+  .nav-cta:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -63,11 +78,11 @@
     <h2>Pinned <span class="hl">★</span></h2>
     <p class="ssub">Lo que está pasando en el club — productos, rituales y avisos importantes.</p>
     <div class="board">
-      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>CICAMANU PAD</h3><p>centella + manuka. la favorita de piel sensible.</p></div>
+      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><h3>CICAMANU PAD</h3><p>centella + manuka. la favorita de piel sensible.</p></div>
       <div class="sticky">"tu código es tuyo — cada venta que generes queda registrada" 💛</div>
-      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/dermal-mask-model.jpg" alt=""><h3>RITUAL DOMINGUERO</h3><p>mascarilla dermal + serie favorita = contenido listo.</p></div>
-      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/ami-essenherb-stone.jpg" alt=""><h3>TEA TREE CALM</h3><p>essenherb: botánica coreana de laboratorio.</p></div>
-      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/parnell-model.jpg" alt=""><h3>GLOW CHECK</h3><p>resultados visibles = contenido que se hace solo.</p></div>
+      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/web/dermal-mask-model.jpg" alt=""><h3>RITUAL DOMINGUERO</h3><p>mascarilla dermal + serie favorita = contenido listo.</p></div>
+      <div class="pin tilt-r"><span class="tape"></span><img src="../assets/img/products/web/ami-essenherb-stone.jpg" alt=""><h3>TEA TREE CALM</h3><p>essenherb: botánica coreana de laboratorio.</p></div>
+      <div class="pin tilt-l"><span class="tape"></span><img src="../assets/img/products/web/parnell-model.jpg" alt=""><h3>GLOW CHECK</h3><p>resultados visibles = contenido que se hace solo.</p></div>
       <div class="sticky blue">"sin tu permiso, ni una gota de tus datos" — regla de oro 🔒</div>
     </div>
   </section>
@@ -93,5 +108,14 @@
 
   <footer><span>© 2026 BRIWELL! · Seúl</span><span>creadoras al frente ★ MX PE EC</span></footer>
 </div>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>

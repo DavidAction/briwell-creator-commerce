@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>briwell — piel en calma</title>
+<meta name="description" content="piel en calma — skincare coreano escogido despacio, comisión clara, sin ruido.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Karla:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -31,6 +32,21 @@
   footer { border-top:1px solid rgba(74,68,61,0.25); padding:26px 0; display:flex; justify-content:space-between; font-size:10.5px; letter-spacing:0.2em; color:var(--mut); text-transform:lowercase; }
   @media (max-width:920px) { .pair { grid-template-columns:1fr; } .pair img { height:300px; } }
   @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:64px 0; } .hero { padding:80px 0 60px; } }
+  /* signature: breathing pace */
+  .rv { transition-duration:1.4s !important; }
+  .bleed { transition:transform 1.4s ease; }
+  .bleed:hover { transform:scale(1.012); }
+  .cta { transition:background .35s, color .35s; }
+  .cta:hover { background:var(--ink); color:var(--bg); }
+  .li { transition:padding-left .3s; }
+  .li:hover { padding-left:10px; }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -43,7 +59,7 @@
   </section>
 </div>
 
-<img class="bleed" src="../assets/img/products/parnell-gel.jpg" alt="">
+<img class="bleed" src="../assets/img/products/web/parnell-gel.jpg" alt="">
 
 <div class="wrap">
   <section>
@@ -54,8 +70,8 @@
 </div>
 
 <div class="pair">
-  <img src="../assets/img/products/ami-essenherb-stone.jpg" alt="">
-  <img src="../assets/img/products/parnell-texture.jpg" alt="">
+  <img src="../assets/img/products/web/ami-essenherb-stone.jpg" alt="">
+  <img src="../assets/img/products/web/parnell-texture.jpg" alt="">
 </div>
 <div class="wrap"><div class="caption" style="text-align:center">essenherb · parnell — seúl</div></div>
 
@@ -70,7 +86,7 @@
   </section>
 </div>
 
-<img class="bleed" src="../assets/img/products/dermal-mask-model.jpg" alt="" style="height:560px">
+<img class="bleed" src="../assets/img/products/web/dermal-mask-model.jpg" alt="" style="height:560px">
 
 <div class="wrap">
   <section id="aplicar">
@@ -81,5 +97,14 @@
   </section>
   <footer><span>© 2026 briwell · seúl</span><span>piel en calma · mx pe ec</span></footer>
 </div>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Briwell — Tu debut K-beauty</title>
+<meta name="description" content="Tu debut K-beauty: Briwell te recluta como se debuta en Seúl. Código propio, comisión clara, cero spam. MX·PE·EC.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -67,6 +68,23 @@
     .pc:nth-child(2) { left:29% !important; }
     .pc:nth-child(3) { left:57% !important; }
   }
+  /* signature: photocard tilt + holo shine sweep */
+  .pc, .card, .cta { transition:transform .45s cubic-bezier(.2,.7,.3,1), box-shadow .45s; }
+  .pc:hover { transform:rotate(0deg) translateY(-10px) scale(1.05) !important; z-index:6; }
+  .card { overflow:hidden; }
+  .card::after { content:''; position:absolute; inset:0; background:linear-gradient(115deg,transparent 42%,rgba(255,255,255,0.6) 50%,transparent 58%); transform:translateX(-130%); transition:transform .7s ease; pointer-events:none; }
+  .card:hover::after { transform:translateX(130%); }
+  .card:hover { transform:translateY(-8px); box-shadow:0 24px 44px rgba(58,42,74,0.22); }
+  .cta:hover { transform:translateY(-3px); box-shadow:0 18px 34px rgba(58,42,74,0.38); }
+  .slot { transition:transform .3s, box-shadow .3s; }
+  .slot.you:hover { transform:scale(1.05); box-shadow:0 20px 40px rgba(255,77,157,0.3); }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -82,9 +100,9 @@
       <span class="cta-hint">Formulario de 3 minutos — sin compromiso, sin spam.</span>
     </div>
     <div class="fan">
-      <div class="pc" style="left:4%; top:36px; transform:rotate(-8deg)"><img src="../assets/img/products/dermal-mask-model.jpg" alt=""><span>GLOW ★ no.001</span></div>
-      <div class="pc" style="left:34%; top:8px; transform:rotate(1deg); z-index:2"><img src="../assets/img/products/parnell-pad.jpg" alt=""><span>CICAMANU ★★ no.002</span></div>
-      <div class="pc" style="left:63%; top:44px; transform:rotate(8deg)"><img src="../assets/img/products/ami-essenherb-pad.jpg" alt=""><span>TEA TREE ✦HOLO no.003</span></div>
+      <div class="pc" style="left:4%; top:36px; transform:rotate(-8deg)"><img src="../assets/img/products/web/dermal-mask-model.jpg" alt=""><span>GLOW ★ no.001</span></div>
+      <div class="pc" style="left:34%; top:8px; transform:rotate(1deg); z-index:2"><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><span>CICAMANU ★★ no.002</span></div>
+      <div class="pc" style="left:63%; top:44px; transform:rotate(8deg)"><img src="../assets/img/products/web/ami-essenherb-pad.jpg" alt=""><span>TEA TREE ✦HOLO no.003</span></div>
     </div>
   </section>
 </div>
@@ -98,10 +116,10 @@
     <p class="ssub">Cada producto es una carta de tu colección de debut. Skincare coreano original,
       de las marcas que nosotros mismos distribuimos.</p>
     <div class="col-grid">
-      <div class="card"><span class="rare">★ COMMON</span><img src="../assets/img/products/parnell-cleanser.jpg" alt=""><h3>Parnell Cleanser</h3><p>Apple vinegar · poros</p></div>
-      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>Cicamanu Pad</h3><p>centella + manuka</p></div>
-      <div class="card"><span class="rare holo">✦ HOLO</span><img src="../assets/img/products/ami-essenherb-stone.jpg" alt=""><h3>Essenherb Tea Tree</h3><p>calmante botánico</p></div>
-      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><h3>Dermal Mask</h3><p>ritual 15 min</p></div>
+      <div class="card"><span class="rare">★ COMMON</span><img src="../assets/img/products/web/parnell-cleanser.jpg" alt=""><h3>Parnell Cleanser</h3><p>Apple vinegar · poros</p></div>
+      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><h3>Cicamanu Pad</h3><p>centella + manuka</p></div>
+      <div class="card"><span class="rare holo">✦ HOLO</span><img src="../assets/img/products/web/ami-essenherb-stone.jpg" alt=""><h3>Essenherb Tea Tree</h3><p>calmante botánico</p></div>
+      <div class="card"><span class="rare">★★ RARE</span><img src="../assets/img/products/web/dermal-mask-model2.jpg" alt=""><h3>Dermal Mask</h3><p>ritual 15 min</p></div>
     </div>
     <div class="progress"><div>colección 4/12 — se completa al debutar</div></div>
   </section>
@@ -142,5 +160,14 @@
 
   <footer><span>© 2026 Briwell · Seúl</span><span>Tu debut K-beauty · MX PE EC</span></footer>
 </div>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>

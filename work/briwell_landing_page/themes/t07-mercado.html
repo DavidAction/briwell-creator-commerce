@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Briwell — De Seúl, con calor latino</title>
+<meta name="description" content="De Seúl con calor latino: K-beauty original con trato de vecina y comisión clara.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -47,6 +48,21 @@
   footer { padding:24px 0; display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#8a6a4a; }
   @media (max-width:920px) { .hero { grid-template-columns:1fr; } .stalls, .pasos { grid-template-columns:1fr; } .prom { padding:40px 24px; } }
   @media (max-width:480px) { .wrap { padding:0 22px; } section { padding:56px 0; } }
+  /* signature: swaying sun + stall lift + press physics */
+  @keyframes sway { 0%,100% { transform:rotate(-4deg); } 50% { transform:rotate(4deg); } }
+  .hero svg { animation:sway 5.5s ease-in-out infinite; transform-origin:50% 60%; }
+  .stall { transition:transform .3s cubic-bezier(.34,1.56,.64,1), box-shadow .3s; }
+  .stall:hover { transform:translateY(-8px); box-shadow:0 22px 42px rgba(74,46,29,0.26); }
+  .cta { transition:transform .12s, box-shadow .12s; }
+  .cta:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--terra); }
+  .cta:active { transform:translate(3px,3px); box-shadow:1px 1px 0 var(--terra); }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -70,9 +86,9 @@
     <h2>El mercadito coreano</h2>
     <p class="ssub">Tres puestos, tres casas de Seúl — todas distribuidas directamente por nosotros.</p>
     <div class="stalls">
-      <div class="stall"><div class="awning"><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i></div><img src="../assets/img/products/parnell-pad.jpg" alt=""><div class="body"><h3>Puesto Parnell</h3><p>Cicamanu: centella + manuka, la calma para piel sensible.</p></div></div>
-      <div class="stall"><div class="awning"><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i></div><img src="../assets/img/products/ami-rosemary.jpg" alt=""><div class="body"><h3>Puesto Essenherb</h3><p>Botánica coreana de laboratorio — tea tree, romero y calma.</p></div></div>
-      <div class="stall"><div class="awning"><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i></div><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><div class="body"><h3>Puesto Dermal</h3><p>El ritual de 15 minutos que ya conquistó medio mundo.</p></div></div>
+      <div class="stall"><div class="awning"><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i><i style="background:var(--sand)"></i><i style="background:var(--terra)"></i></div><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><div class="body"><h3>Puesto Parnell</h3><p>Cicamanu: centella + manuka, la calma para piel sensible.</p></div></div>
+      <div class="stall"><div class="awning"><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i><i style="background:var(--sand)"></i><i style="background:var(--cactus)"></i></div><img src="../assets/img/products/web/ami-rosemary.jpg" alt=""><div class="body"><h3>Puesto Essenherb</h3><p>Botánica coreana de laboratorio — tea tree, romero y calma.</p></div></div>
+      <div class="stall"><div class="awning"><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i><i style="background:var(--sand)"></i><i style="background:var(--rosa)"></i></div><img src="../assets/img/products/web/dermal-mask-model2.jpg" alt=""><div class="body"><h3>Puesto Dermal</h3><p>El ritual de 15 minutos que ya conquistó medio mundo.</p></div></div>
     </div>
   </section>
 
@@ -104,5 +120,14 @@
 </div>
 <div class="stripe"></div>
 <div class="wrap"><footer><span>© 2026 Briwell · Seúl</span><span>De Seúl, con calor latino · MX PE EC</span></footer></div>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>

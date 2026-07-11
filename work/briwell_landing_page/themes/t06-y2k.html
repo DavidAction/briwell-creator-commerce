@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Briwell — shine 2 the future</title>
+<meta name="description" content="shine 2 the future — K-beauty de Seúl para la próxima generación de creadoras latinas.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -45,6 +46,23 @@
   footer { border-top:1.5px solid rgba(255,255,255,0.8); padding:26px 0; display:flex; justify-content:space-between; font-size:12px; color:var(--mut); }
   @media (max-width:920px) { .wish { grid-template-columns:1fr 1fr; } }
   @media (max-width:480px) { .wrap { padding:0 22px; } .wish { grid-template-columns:1fr; } section { padding:56px 0; } }
+  /* signature: chrome shine sweep + twinkle + clickable hearts */
+  @keyframes shinesweep { 0% { background-position:0% 0%; } 100% { background-position:0% 200%; } }
+  h1 .chrome { background-size:100% 220%; animation:shinesweep 6s linear infinite; }
+  @keyframes twinkle { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.35; transform:scale(0.82); } }
+  .star { animation:twinkle 2.8s ease-in-out infinite; }
+  .heart { cursor:pointer; transition:transform .18s cubic-bezier(.34,1.56,.64,1); user-select:none; }
+  .w { transition:transform .3s, box-shadow .3s; }
+  .w:hover { transform:translateY(-8px) rotate(-0.6deg); box-shadow:0 22px 44px rgba(95,107,133,0.3); }
+  .cta { transition:transform .25s, box-shadow .25s; }
+  .cta:hover { transform:translateY(-2px); box-shadow:0 16px 34px rgba(95,107,133,0.42); }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -69,12 +87,12 @@
     <h2><span class="chrome">drops</span> que vas a querer</h2>
     <p class="ssub">Skincare coreano original — de las marcas que nosotros distribuimos. Dale ♥ a tu favorito.</p>
     <div class="wish">
-      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/parnell-pad.jpg" alt=""><h3>cicamanu pad</h3><p>parnell · piel sensible</p></div>
-      <div class="w"><span class="heart">💜</span><img src="../assets/img/products/ami-essenherb-pad.jpg" alt=""><h3>tea tree pad</h3><p>essenherb · calmante</p></div>
-      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/ami-brtc-sun.jpg" alt=""><h3>active max sun</h3><p>brtc · spf sin rastro</p></div>
-      <div class="w"><span class="heart">💙</span><img src="../assets/img/products/parnell-cleanser.jpg" alt=""><h3>apple cleanser</h3><p>parnell · poros</p></div>
-      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/dermal-cream.jpg" alt=""><h3>dermal ritual</h3><p>mascarilla · 15 min</p></div>
-      <div class="w"><span class="heart">💗</span><img src="../assets/img/products/parnell-texture.jpg" alt=""><h3>texture check</h3><p>glow en cámara</p></div>
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><h3>cicamanu pad</h3><p>parnell · piel sensible</p></div>
+      <div class="w"><span class="heart">💜</span><img src="../assets/img/products/web/ami-essenherb-pad.jpg" alt=""><h3>tea tree pad</h3><p>essenherb · calmante</p></div>
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/web/ami-brtc-sun.jpg" alt=""><h3>active max sun</h3><p>brtc · spf sin rastro</p></div>
+      <div class="w"><span class="heart">💙</span><img src="../assets/img/products/web/parnell-cleanser.jpg" alt=""><h3>apple cleanser</h3><p>parnell · poros</p></div>
+      <div class="w"><span class="heart">🤍</span><img src="../assets/img/products/web/dermal-cream.jpg" alt=""><h3>dermal ritual</h3><p>mascarilla · 15 min</p></div>
+      <div class="w"><span class="heart">💗</span><img src="../assets/img/products/web/parnell-texture.jpg" alt=""><h3>texture check</h3><p>glow en cámara</p></div>
     </div>
   </section>
 
@@ -102,5 +120,24 @@
 
   <footer><span>© 2026 briwell · seoul</span><span>shine 2 the future · mx pe ec</span></footer>
 </div>
+<script>
+  // signature: wishlist hearts toggle
+  document.querySelectorAll(".heart").forEach(function (h) {
+    h.addEventListener("click", function () {
+      h.textContent = h.textContent === "🤍" ? "💗" : "🤍";
+      h.style.transform = "scale(1.35)";
+      setTimeout(function () { h.style.transform = ""; }, 180);
+    });
+  });
+</script>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>

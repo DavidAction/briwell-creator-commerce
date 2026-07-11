@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BRIWELL — The K-Beauty Issue №1</title>
+<meta name="description" content="The K-Beauty Issue №1 — creadoras, fórmulas de Seúl y comisiones sin letra chiquita.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -48,6 +49,22 @@
   footer { border-top:3px solid var(--ink); padding:22px 0 30px; display:flex; justify-content:space-between; font-family:Inter; font-size:11px; letter-spacing:0.14em; color:var(--mut); text-transform:uppercase; }
   @media (max-width:920px) { .cover, .article { grid-template-columns:1fr; } .body-copy { column-count:1; } .credits, .contrib { grid-template-columns:1fr 1fr; } }
   @media (max-width:480px) { .wrap { padding:0 22px; } .credits, .contrib { grid-template-columns:1fr; } section { padding:54px 0; } }
+  /* signature: b/w -> color reveal on hover */
+  .cover img, .cr img { transition:filter .6s ease, transform .6s ease; }
+  .cover img:hover { filter:grayscale(0) contrast(1); }
+  .cr img { filter:grayscale(1) contrast(1.05); }
+  .cr:hover img { filter:grayscale(0) contrast(1); transform:scale(1.015); }
+  .cta { transition:color .25s, border-color .25s; }
+  .cta:hover { color:var(--red); }
+  .ct { transition:border-color .25s; }
+  .ct:hover { border-top-color:var(--red); }
+
+  /* — elevation layer: scroll reveal + focus — */
+  @media (prefers-reduced-motion: no-preference) {
+    .rv { opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.3,1), transform .7s cubic-bezier(.2,.7,.3,1); }
+    .rv.in { opacity:1; transform:none; }
+  }
+  a:focus-visible { outline:2.5px solid currentColor; outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -56,7 +73,7 @@
   <div class="mast-sub"><span>№1 — Latinoamérica</span><span>The K-Beauty Issue</span><span>Seoul, 2026</span></div>
 
   <section class="cover">
-    <img src="../assets/img/products/parnell-model.jpg" alt="">
+    <img src="../assets/img/products/web/parnell-model.jpg" alt="">
     <div>
       <div class="sec-kick">Cover story</div>
       <h1>The K-Beauty <em>Issue.</em></h1>
@@ -91,9 +108,9 @@
     <div class="sec-kick">En este número</div>
     <h2>Los <em>créditos</em> de belleza</h2>
     <div class="credits" style="margin-top:34px">
-      <div class="cr"><img src="../assets/img/products/parnell-pad.jpg" alt=""><div class="no">PÁG. 01</div><h3>Parnell Cicamanu</h3><p>Centella y manuka para piel sensible — Eleven Corporation, Seúl.</p></div>
-      <div class="cr"><img src="../assets/img/products/ami-rosemary.jpg" alt=""><div class="no">PÁG. 02</div><h3>Essenherb &amp; BRTC</h3><p>Botánica y derma de laboratorio — AMI Cosmetic, Seúl.</p></div>
-      <div class="cr"><img src="../assets/img/products/dermal-mask-model2.jpg" alt=""><div class="no">PÁG. 03</div><h3>Dermal</h3><p>El ritual de 15 minutos, millones de unidades en el mundo.</p></div>
+      <div class="cr"><img src="../assets/img/products/web/parnell-pad.jpg" alt=""><div class="no">PÁG. 01</div><h3>Parnell Cicamanu</h3><p>Centella y manuka para piel sensible — Eleven Corporation, Seúl.</p></div>
+      <div class="cr"><img src="../assets/img/products/web/ami-rosemary.jpg" alt=""><div class="no">PÁG. 02</div><h3>Essenherb &amp; BRTC</h3><p>Botánica y derma de laboratorio — AMI Cosmetic, Seúl.</p></div>
+      <div class="cr"><img src="../assets/img/products/web/dermal-mask-model2.jpg" alt=""><div class="no">PÁG. 03</div><h3>Dermal</h3><p>El ritual de 15 minutos, millones de unidades en el mundo.</p></div>
     </div>
   </section>
 
@@ -118,5 +135,14 @@
 
   <footer><span>Briwell — Seoul</span><span>The K-Beauty Issue №1</span><span>MX · PE · EC</span></footer>
 </div>
+<script>
+  (function () {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { threshold: 0.08 });
+    document.querySelectorAll("section").forEach(function (el) { el.classList.add("rv"); io.observe(el); });
+  })();
+</script>
 </body>
 </html>
