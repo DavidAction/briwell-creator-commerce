@@ -359,6 +359,31 @@ David 브랜드 결정: 공식 표기 **Briwell**, 태그라인 **"Bridge + Well
    방식(파일럿 규모 표준) — GET /portal/{token}으로 본인 코드·판매 기록·커미션 조회, 모바일
    웹 우선, 백엔드 정산 모델 재사용. 구현 시 368개 테스트 유지가 게이트.
 
+## 0.0.17 크리에이터 셀프서브 포털 (2026-07-12) — 로드맵 3 구현, 테스트 378 통과/26 스킵
+
+로그인 없는 **토큰 개인링크** 방식(파일럿 규모 표준). 크리에이터가 자기 코드·판매 기록·커미션
+잔액을 언제든 확인 — "커미션 신뢰"라는 최대 차별점을 셀프서브로 증명하는 표면.
+
+1. **백엔드**: 마이그레이션 009(`creator_portal_token` — 크리에이터당 활성 토큰 1개, 회전=폐기),
+   `app/repositories/portal.py`, `app/routers/portal.py`:
+   - `POST /portal/tokens` (admin/operator/campaign_manager) — 발급·회전. DB off →
+     validated_not_persisted 관례 유지.
+   - `DELETE /portal/tokens/{creator_id}` — 폐기(킬스위치).
+   - `GET /portal/me?token=` — **공개·토큰 게이트·읽기 전용**. 필드 화이트리스트로 운영자
+     이메일·내부 메모·타 크리에이터 데이터 누출 구조적 차단. DB off는 소비자 표면이므로
+     503 PORTAL_UNAVAILABLE로 정직하게 실패(운영자 읽기의 빈 배열 관례와 의도적으로 다름).
+   - 데이터는 기존 commerce 스키마 재사용: `creator_discount_code`·`commission_ledger`·
+     `creator_commission_balance`. 신규 쓰기 경로 없음.
+2. **프런트**: `work/briwell_portal_app/index.html` — 자기완결 모바일 웹(ES), The Well
+   아이덴티티(포털=기업 인프라 표면). 잔액·코드(복사 버튼)·무브먼트(+적립/−리버설)·에러
+   상태(만료 링크/점검 중). `?demo=1` 데모 모드, `?api=` 오리진 오버라이드. 560px 렌더 검증.
+3. **테스트**: `tests/test_portal.py` 10개 — RBAC(403), DB off 관례, 404 무효 토큰,
+   해피패스 + **누출 방지 단정**(내부 이메일·메모·shopify id가 응답 텍스트에 없음을 검사).
+   전체 378 통과/26 스킵, 회귀 0.
+4. **배포 시 남은 것**: 포털 페이지 호스팅 오리진의 CORS 허용(프로덕션 CORS 게이트에 추가),
+   대시보드에서 토큰 발급 버튼(현재는 API 직접 호출), 프로덕션 URL 형태
+   `portal.briwell.co/?t=...` 결정.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

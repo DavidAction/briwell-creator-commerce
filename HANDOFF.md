@@ -11,6 +11,13 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state (re-run 2026-07-10):** backend `368 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-5. Creator self-serve portal (briefing 0.0.17): tokenized personal links (no login) —
+   migration 009 + /portal/tokens (RBAC issue/rotate/revoke) + public read-only
+   GET /portal/me?token= with a strict field whitelist (no operator emails, memos or
+   cross-creator data), reusing the existing commerce ledger/balance schema. Mobile web
+   UI at work/briwell_portal_app (The Well identity, demo mode, copy-code, error
+   states). Tests 368->378 passing. Deploy notes: CORS origin for the portal page,
+   dashboard issue-token button, production URL shape.
 -4. Brand decisions + dashboard PWA + mobile roadmap (briefing 0.0.16): official notation
    "Briwell", tagline "Bridge + Well", faith kept internal-only (scripture removed from the
    public KO page), logo/cards deferred (13 mark directions + 7 wordmark type candidates in
