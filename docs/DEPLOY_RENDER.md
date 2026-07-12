@@ -60,7 +60,7 @@ first deploy and update the timestamp.
    | --- | --- |
    | `OIDC_ISSUER_URL` | step 1.5 |
    | `OIDC_JWKS_URL` | step 1.5 |
-   | `CORS_ALLOWED_ORIGINS` | dashboard origin(s), e.g. `https://briwell-dashboard.vercel.app` — no localhost |
+   | `CORS_ALLOWED_ORIGINS` | dashboard origin(s), e.g. `https://briwell-dashboard.vercel.app` — no localhost. Once the creator portal page (`work/briwell_portal_app`) is hosted, add its origin here too or `GET /portal/me` will be blocked by the browser |
    | `GEMINI_API_KEY` | Google AI Studio |
    | `BACKUP_RESTORE_TESTED_AT` | step 2 timestamp |
    | `APIFY_API_TOKEN`, `DATA365_API_KEY`, `BRIGHTDATA_API_KEY`, `TIKAPI_API_KEY` | leave empty (unused lanes) |

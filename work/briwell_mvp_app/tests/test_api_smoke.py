@@ -28,6 +28,22 @@ def test_dashboard_cors_origin_allowed() -> None:
     assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:8070"
 
 
+def test_portal_token_revoke_preflight_allows_delete() -> None:
+    # The portal-token kill switch is the only DELETE the dashboard calls;
+    # if DELETE drops out of the CORS allow-methods, the browser preflight
+    # fails and operators lose the ability to revoke leaked portal links.
+    response = client.options(
+        "/portal/tokens/creator-1",
+        headers={
+            "Origin": "http://127.0.0.1:8070",
+            "Access-Control-Request-Method": "DELETE",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "DELETE" in response.headers["access-control-allow-methods"]
+
+
 def test_list_products_placeholder() -> None:
     response = client.get("/products")
     assert response.status_code == 200

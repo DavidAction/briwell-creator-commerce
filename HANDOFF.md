@@ -2,15 +2,24 @@
 
 This document is for external development teams and AI coding tools continuing the Briwell MVP.
 
-## Start Here (last updated 2026-07-10)
+## Start Here (last updated 2026-07-12)
 
 Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; latest state lives in the numbered `0.0.x` sections, most recent = highest number).
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook.
 
-**Latest verified state (re-run 2026-07-10):** backend `368 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
+**Latest verified state (re-run 2026-07-12):** backend `379 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-6. Dashboard portal-link panel + CORS DELETE fix (briefing 0.0.18): the settlement
+   screen now issues/rotates and revokes portal links (write-confirm gated), assembles
+   the `?t=` personal link with a copy button, and refuses to fabricate tokens offline
+   (api_unreachable — a locally invented token is a dead link). Real-browser
+   verification caught that the CORS gate allowed only GET/POST/OPTIONS, so the
+   0.0.17 revoke kill switch (DELETE /portal/tokens) was unreachable from any
+   browser — fixed in app/main.py + preflight regression test, 378->379 passing.
+   Remaining portal deploy items (both David decisions): portal page origin in
+   CORS_ALLOWED_ORIGINS (noted in DEPLOY_RENDER.md) and the production URL shape.
 -5. Creator self-serve portal (briefing 0.0.17): tokenized personal links (no login) —
    migration 009 + /portal/tokens (RBAC issue/rotate/revoke) + public read-only
    GET /portal/me?token= with a strict field whitelist (no operator emails, memos or

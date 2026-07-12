@@ -384,6 +384,29 @@ David 브랜드 결정: 공식 표기 **Briwell**, 태그라인 **"Bridge + Well
    대시보드에서 토큰 발급 버튼(현재는 API 직접 호출), 프로덕션 URL 형태
    `portal.briwell.co/?t=...` 결정.
 
+## 0.0.18 대시보드 포털 링크 발급 패널 + CORS DELETE 수정 (2026-07-12) — 테스트 379 통과/26 스킵
+
+0.0.17 배포 노트의 계정-독립 잔여 작업(대시보드 토큰 발급 버튼) 구현. 실 브라우저 검증
+과정에서 백엔드 CORS 버그를 발견해 함께 수정.
+
+1. **정산 화면 "크리에이터 포털 링크" 패널**: 발급·회전(`POST /portal/tokens`)과 폐기
+   (`DELETE`, 킬스위치) 버튼 — 둘 다 라이브 쓰기 확인 게이트 통과(`data-write-action`).
+   포털 페이지 주소 입력(localStorage 유지) → `?t=` 개인링크 조립 + 복사 버튼(포털 페이지는
+   `qs.get("t")`를 읽음).
+2. **정직성 규칙**: persisted일 때만 링크 렌더. validated_not_persisted(DB off)는 "실제 포털
+   링크로 동작하지 않습니다"를 명시. API 불통 시 로컬 가짜 토큰 생성 금지(죽은 링크 방지) —
+   `api_unreachable`로 정직하게 실패. 전부 스모크 단정으로 고정.
+3. **CORS 버그 수정(`app/main.py`)**: allow_methods가 GET/POST/OPTIONS뿐이라 0.0.17의
+   `DELETE /portal/tokens`(킬스위치)를 브라우저에서 절대 호출할 수 없었음(preflight 실패).
+   실 브라우저 검증에서 발견 → DELETE 추가 + 회귀 테스트(preflight 200, allow-methods에
+   DELETE 포함). 378→379 통과/26 스킵.
+4. **검증(실 브라우저, 대시보드 8070 + 백엔드 8030 라이브)**: 발급·폐기 라이브 왕복, 쓰기
+   확인 모달(POST /portal/tokens 표기)·취소 경로(cancelled_by_user), 링크 조립 3케이스
+   (기본 base / 쿼리 포함 base는 `&t=` / 빈 base는 토큰만+안내), 콘솔 에러 0.
+   `docs/DEPLOY_RENDER.md`의 CORS_ALLOWED_ORIGINS 행에 포털 오리진도 추가해야 함을 명시.
+5. **배포 시 남은 것(0.0.17에서 축소)**: 포털 페이지 호스팅 오리진의 CORS 등록과 프로덕션
+   URL 형태(`portal.briwell.co/?t=...`) 결정 — 둘 다 David 계정/도메인 대기.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

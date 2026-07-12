@@ -66,7 +66,9 @@ if settings.cors_allowed_origins:
         CORSMiddleware,
         allow_origins=list(settings.cors_allowed_origins),
         allow_credentials=True,
-        allow_methods=["GET", "POST", "OPTIONS"],
+        # DELETE covers the portal-token kill switch (DELETE /portal/tokens/{creator_id});
+        # without it the browser preflight fails and the dashboard cannot revoke links.
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=[
             "Authorization",
             "Content-Type",

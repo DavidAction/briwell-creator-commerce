@@ -122,6 +122,9 @@
     issueDiscountCode: (body) =>
       request("/commerce/discount-codes/issue", { method: "POST", body }),
     listDiscountCodes: (params) => request(`/commerce/discount-codes${toQuery(params)}`),
+    issuePortalToken: (body) => request("/portal/tokens", { method: "POST", body }),
+    revokePortalTokens: (creatorId) =>
+      request(`/portal/tokens/${encodeURIComponent(creatorId)}`, { method: "DELETE" }),
     runRecentPostsScreen: (body) =>
       request("/analysis-jobs/run-recent-posts-screen", { method: "POST", body }),
     saveImportQualityLog: (body) =>

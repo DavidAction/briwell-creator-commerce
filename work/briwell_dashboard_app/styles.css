@@ -1898,6 +1898,32 @@ tbody tr.row-selected {
   background: var(--surface-soft);
 }
 
+.portal-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.portal-link-row input {
+  flex: 1 1 260px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: var(--fs-cap);
+  color: var(--ink);
+  background: #fff;
+}
+
+.portal-link-note {
+  margin: 8px 0 0;
+  font-size: var(--fs-cap);
+  color: var(--muted);
+}
+
 .upload-zone {
   display: grid;
   gap: 10px;

@@ -275,6 +275,13 @@ function bindActions() {
   updateSnapshotFxAvailability();
   byId("saveContractButton").addEventListener("click", saveContract);
   byId("issueDiscountCodeButton").addEventListener("click", issueDiscountCode);
+  byId("issuePortalTokenButton").addEventListener("click", issuePortalToken);
+  byId("revokePortalTokenButton").addEventListener("click", revokePortalTokens);
+  const portalPageBase = byId("portalPageBase");
+  portalPageBase.value = localStorage.getItem("briwell.portalPageBase") || "";
+  portalPageBase.addEventListener("change", () => {
+    localStorage.setItem("briwell.portalPageBase", portalPageBase.value.trim());
+  });
   byId("runOperationsPipelineButton").addEventListener("click", runOperationsPipeline);
 
   byId("loadCreatorCsvButton").addEventListener("click", loadCreatorCsv);
@@ -2699,6 +2706,105 @@ async function issueDiscountCode() {
 function recordSessionDiscountCode(mode) {
   state.sessionDiscountCodes.push({ mode });
   renderScreenKpis();
+}
+
+async function issuePortalToken() {
+  const creatorId = byId("portalCreatorId").value.trim();
+  if (!creatorId) {
+    showToast("크리에이터 ID가 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.issuePortalToken({ creator_id: creatorId });
+    showResult("portalTokenResult", response);
+    if (response.status === "persisted") {
+      appendPortalLinkRow(response.token);
+      showToast("포털 링크 발급 완료 · 이전 링크는 즉시 무효");
+    } else if (response.status === "validated_not_persisted") {
+      appendPortalLinkNote("이 토큰은 DB에 저장되지 않아 실제 포털 링크로 동작하지 않습니다.");
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("portalTokenResult", error.payload);
+      return;
+    }
+    // A portal token only exists if the server stored it — fabricating one
+    // locally would hand the operator a dead link, so there is no offline
+    // preview fallback on this panel.
+    showResult(
+      "portalTokenResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "포털 토큰은 서버에서만 발급됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
+}
+
+async function revokePortalTokens() {
+  const creatorId = byId("portalCreatorId").value.trim();
+  if (!creatorId) {
+    showToast("크리에이터 ID가 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.revokePortalTokens(creatorId);
+    showResult("portalTokenResult", response);
+    if (response.status === "persisted") {
+      showToast(`포털 링크 ${response.revoked ?? 0}건 폐기 · 기존 링크 즉시 무효`);
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("portalTokenResult", error.payload);
+      return;
+    }
+    showResult(
+      "portalTokenResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "포털 토큰 폐기는 서버에서만 수행됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
+}
+
+function appendPortalLinkRow(token) {
+  const box = byId("portalTokenResult");
+  const base = byId("portalPageBase").value.trim();
+  const link = base ? `${base}${base.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}` : "";
+  const row = document.createElement("div");
+  row.className = "portal-link-row";
+  const input = document.createElement("input");
+  input.readOnly = true;
+  input.value = link || token;
+  input.setAttribute("aria-label", link ? "크리에이터 포털 개인 링크" : "포털 토큰");
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "button";
+  copyButton.textContent = link ? "링크 복사" : "토큰 복사";
+  copyButton.addEventListener("click", () => copyPortalLink(input));
+  row.appendChild(input);
+  row.appendChild(copyButton);
+  box.appendChild(row);
+  if (!base) {
+    appendPortalLinkNote("포털 페이지 주소를 입력하면 완성된 개인 링크로 복사할 수 있습니다.");
+  }
+}
+
+function appendPortalLinkNote(text) {
+  const note = document.createElement("p");
+  note.className = "portal-link-note";
+  note.textContent = text;
+  byId("portalTokenResult").appendChild(note);
+}
+
+function copyPortalLink(input) {
+  const done = () => showToast("복사됨 · 해당 크리에이터에게만 전달하세요");
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(input.value).then(done, () => fallbackCopy(input, done));
+  } else {
+    fallbackCopy(input, done);
+  }
 }
 
 async function saveContract() {

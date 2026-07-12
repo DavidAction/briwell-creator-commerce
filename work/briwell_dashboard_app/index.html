@@ -826,14 +826,37 @@
             </div>
             <div id="issueDiscountResult" class="result-box"></div>
           </section>
+
+          <section class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <h2>크리에이터 포털 링크</h2>
+                <p class="panel-subtitle">로그인 없는 토큰 개인링크 발급 · 재발급하면 이전 링크는 즉시 무효(회전) · 폐기는 킬스위치</p>
+              </div>
+              <span class="badge teal">셀프서브</span>
+            </div>
+            <div class="form-grid">
+              <label><span>크리에이터 ID</span><input id="portalCreatorId" value="creator-1"></label>
+              <label>
+                <span>포털 페이지 주소 (선택)</span>
+                <input id="portalPageBase" placeholder="https://portal.briwell.co/">
+                <small class="field-hint">프로덕션 주소 확정 전에는 로컬 포털 주소를 입력하세요. 비우면 토큰만 표시됩니다.</small>
+              </label>
+            </div>
+            <div class="button-row">
+              <button class="button primary" id="issuePortalTokenButton" data-write-action>포털 링크 발급 · 회전</button>
+              <button class="button danger" id="revokePortalTokenButton" data-write-action>링크 폐기</button>
+            </div>
+            <div id="portalTokenResult" class="result-box"></div>
+          </section>
         </div>
       </section>
     </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./api-client.js?v=20260708c"></script>
-  <script src="./app.js?v=20260708f"></script>
+  <script src="./api-client.js?v=20260712a"></script>
+  <script src="./app.js?v=20260712a"></script>
   <script>
     // PWA: register the app-shell service worker (no-op where unsupported).
     if ("serviceWorker" in navigator) {

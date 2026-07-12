@@ -51,6 +51,7 @@ const requiredEndpoints = [
   "/settlements/contracts",
   "/commerce/discount-codes/issue",
   "/providers/creator-provided/import",
+  "/portal/tokens",
 ];
 
 // --- Phase 3 elevation: currency-explicit revenue + Shopify discount issuance ---
@@ -151,6 +152,32 @@ assert(files.css.includes(".news-signal-item"), "news signal styling missing");
 assert(/news-signal-item[\s\S]{0,200}?rel="noopener noreferrer"/.test(files.app), "news links must use rel=noopener");
 assert(files.app.includes("function safeExternalUrl("), "external URL scheme guard missing");
 assert(files.app.includes("safeExternalUrl(item.url)"), "news link hrefs must pass through the scheme guard");
+
+// --- Creator portal link issuance from the dashboard (briefing 0.0.17 deploy note) ---
+assert(files.html.includes("크리에이터 포털 링크"), "portal link panel missing from settlement view");
+assert(files.html.includes('id="issuePortalTokenButton" data-write-action'), "portal issue button must carry the write-action badge");
+assert(files.html.includes('id="revokePortalTokenButton" data-write-action'), "portal revoke button must carry the write-action badge");
+assert(files.html.includes('id="portalCreatorId"'), "portal creator id input missing");
+assert(files.html.includes('id="portalPageBase"'), "portal page base input missing");
+assert(files.client.includes("issuePortalToken"), "portal token issue API client method missing");
+assert(files.client.includes("revokePortalTokens"), "portal token revoke API client method missing");
+assert(files.app.includes("async function issuePortalToken"), "portal issue handler missing");
+assert(files.app.includes("async function revokePortalTokens"), "portal revoke handler missing");
+assert(files.app.includes("appendPortalLinkRow"), "portal link row renderer missing");
+assert(files.css.includes(".portal-link-row"), "portal link row styling missing");
+// Rotation semantics must be visible to the operator: issuing again kills the old link.
+assert(files.html.includes("재발급하면 이전 링크는 즉시 무효"), "rotation kill-switch copy missing");
+// Honesty gates: a token that only exists locally is a dead link, so the panel
+// must fail loudly instead of fabricating an offline preview token, and a
+// DB-off (validated_not_persisted) token must be flagged as non-working.
+assert(files.app.includes('"api_unreachable"'), "portal handlers must fail honestly when the API is unreachable");
+assert(files.app.includes("실제 포털 링크로 동작하지 않습니다"), "DB-off portal token must be flagged as non-working");
+// The personal link embeds the token via the ?t= param the portal page reads
+// (work/briwell_portal_app reads qs.get("t") || qs.get("token")).
+assert(
+  files.app.includes('${base.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}'),
+  "portal link must embed the token as the t query param"
+);
 
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");
