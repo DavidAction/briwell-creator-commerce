@@ -1315,6 +1315,173 @@ def test_operator_file_serving_rbac_and_happy_path(monkeypatch, tmp_path) -> Non
 
 
 # ---------------------------------------------------------------------------
+# P12: server-side text extraction for ZIP-based documents
+# ---------------------------------------------------------------------------
+
+from app.partners.text_extraction import extract_document_text  # noqa: E402
+
+
+def _zip_with_parts(parts: dict[str, str]) -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name, content in parts.items():
+            archive.writestr(name, content)
+    return buffer.getvalue()
+
+
+def _write(tmp_path, name: str, data: bytes):
+    path = tmp_path / name
+    path.write_bytes(data)
+    return path
+
+
+def test_extract_docx_text(tmp_path) -> None:
+    data = _zip_with_parts(
+        {
+            "word/document.xml": (
+                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                "<w:body><w:p><w:r><w:t>시카마니드 수분 진정 세럼</w:t></w:r></w:p>"
+                "<w:p><w:r><w:t>전성분: Water, Niacinamide</w:t></w:r></w:p></w:body></w:document>"
+            )
+        }
+    )
+    result = extract_document_text(_write(tmp_path, "intro.docx", data), "intro.docx")
+    assert result is not None
+    assert "시카마니드 수분 진정 세럼" in result["text"]
+    assert "Niacinamide" in result["text"]
+    assert result["truncated"] is False
+
+
+def test_extract_pptx_slides_in_order(tmp_path) -> None:
+    slide = (
+        '<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" '
+        'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+        "<a:t>{text}</a:t></p:sld>"
+    )
+    data = _zip_with_parts(
+        {
+            "ppt/slides/slide2.xml": slide.replace("{text}", "두번째 슬라이드"),
+            "ppt/slides/slide1.xml": slide.replace("{text}", "회사 소개"),
+        }
+    )
+    result = extract_document_text(_write(tmp_path, "deck.pptx", data), "deck.pptx")
+    assert result is not None
+    assert result["text"].index("회사 소개") < result["text"].index("두번째 슬라이드")
+
+
+def test_extract_hwpx_and_xlsx(tmp_path) -> None:
+    hwpx = _zip_with_parts(
+        {
+            "Contents/section0.xml": (
+                '<hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" '
+                'xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">'
+                "<hp:p><hp:run><hp:t>한글 소개서 본문입니다</hp:t></hp:run></hp:p></hs:sec>"
+            )
+        }
+    )
+    result = extract_document_text(_write(tmp_path, "소개서.hwpx", hwpx), "소개서.hwpx")
+    assert result is not None and "한글 소개서 본문입니다" in result["text"]
+
+    xlsx = _zip_with_parts(
+        {
+            "xl/sharedStrings.xml": (
+                '<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                "<si><t>제품명</t></si><si><t>수분 진정 세럼</t></si>"
+                "<si><t>공급가</t></si></sst>"
+            )
+        }
+    )
+    result = extract_document_text(_write(tmp_path, "가격표.xlsx", xlsx), "가격표.xlsx")
+    assert result is not None and "수분 진정 세럼" in result["text"]
+
+
+def test_extract_out_of_scope_and_broken_inputs_return_none(tmp_path) -> None:
+    # .hwp (OLE) is deliberately out of scope — metadata-only path stays.
+    assert extract_document_text(_write(tmp_path, "doc.hwp", OLE_BYTES), "doc.hwp") is None
+    # Corrupt zip: honest None, never an exception.
+    broken = _write(tmp_path, "broken.docx", b"PK\x03\x04" + b"0" * 32)
+    assert extract_document_text(broken, "broken.docx") is None
+    # Valid zip without text parts.
+    empty = _write(tmp_path, "empty.docx", _zip_with_parts({"word/styles.xml": "<a/>"}))
+    assert extract_document_text(empty, "empty.docx") is None
+    # Missing file.
+    assert extract_document_text(tmp_path / "gone.docx", "gone.docx") is None
+
+
+def test_extract_skips_dtd_carrying_parts(tmp_path) -> None:
+    # Office XML never ships DTDs; entity expansion is a hostile pattern.
+    hostile = _zip_with_parts(
+        {
+            "word/document.xml": (
+                '<?xml version="1.0"?><!DOCTYPE x [<!ENTITY a "aaaa">]>'
+                '<w:document xmlns:w="http://x"><w:t>&a;</w:t></w:document>'
+            )
+        }
+    )
+    assert extract_document_text(_write(tmp_path, "evil.docx", hostile), "evil.docx") is None
+
+
+def test_extract_truncates_huge_text(tmp_path) -> None:
+    big = "가" * 60_000
+    data = _zip_with_parts(
+        {
+            "word/document.xml": (
+                '<w:document xmlns:w="http://x"><w:t>' + big + "</w:t></w:document>"
+            )
+        }
+    )
+    result = extract_document_text(_write(tmp_path, "big.docx", data), "big.docx")
+    assert result is not None
+    assert result["truncated"] is True
+    assert len(result["text"]) == 40_000
+
+
+def test_gemini_upload_part_inlines_extracted_xlsx(tmp_path) -> None:
+    xlsx = _zip_with_parts(
+        {
+            "xl/sharedStrings.xml": (
+                "<sst><si><t>수분 진정 세럼</t></si><si><t>12500</t></si></sst>"
+            )
+        }
+    )
+    path = _write(tmp_path, "가격표.xlsx", xlsx)
+    upload = {
+        "kind": "data",
+        "original_filename": "가격표.xlsx",
+        "storage_path": str(path),
+    }
+    part, skip_reason = extraction_module._upload_part(upload)
+    assert skip_reason is None
+    assert part is not None and "수분 진정 세럼" in part["text"]
+    assert "서버 추출 텍스트" in part["text"]
+
+
+def test_anthropic_parts_inline_extracted_docx_with_caveat(tmp_path) -> None:
+    docx = _zip_with_parts(
+        {
+            "word/document.xml": '<w:document xmlns:w="http://x"><w:t>브랜드 소개 본문</w:t></w:document>'
+        }
+    )
+    path = _write(tmp_path, "intro.docx", docx)
+    upload = {
+        "kind": "etc",
+        "original_filename": "intro.docx",
+        "storage_path": str(path),
+    }
+    parts, caveat = ingestion._anthropic_content_parts(upload)
+    assert any("브랜드 소개 본문" in str(part.get("text", "")) for part in parts)
+    assert caveat is not None and "서버 추출 텍스트" in caveat
+
+
+def test_anthropic_parts_hwp_stays_metadata_only(tmp_path) -> None:
+    path = _write(tmp_path, "doc.hwp", OLE_BYTES)
+    upload = {"kind": "etc", "original_filename": "doc.hwp", "storage_path": str(path)}
+    parts, caveat = ingestion._anthropic_content_parts(upload)
+    assert len(parts) == 1  # header only, no content part
+    assert caveat is not None and "추출하지 못해" in caveat
+
+
+# ---------------------------------------------------------------------------
 # P7: assemble — catalog/ingredient/price profiles -> N drafts
 # ---------------------------------------------------------------------------
 

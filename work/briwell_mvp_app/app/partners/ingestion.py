@@ -56,8 +56,10 @@ DOC_TYPE_LABELS_KO = {
     "needs_review": "확인 필요",
 }
 
-# Formats no current model reads natively: classified from filename/metadata
-# only, and the summary says so instead of pretending the content was read.
+# Formats no current model reads natively. Since P12, the ZIP-based ones
+# (docx/pptx/hwpx/xlsx) get server-side text extraction and are analyzed from
+# that text; only .hwp (OLE) remains filename/metadata-only — and the summary
+# says so instead of pretending the content was read.
 _METADATA_ONLY_SUFFIXES = {".docx", ".pptx", ".hwp", ".hwpx", ".xlsx"}
 
 CLASSIFY_SCHEMA = {
@@ -200,9 +202,22 @@ def _anthropic_content_parts(upload: dict[str, Any]) -> tuple[list[dict[str, Any
         text = data.decode("utf-8", errors="replace")[:40_000]
         return [text_header, {"type": "text", "text": f"[{suffix} 원문]\n{text}"}], None
     if suffix in _METADATA_ONLY_SUFFIXES:
+        # P12: ZIP-based documents get server-side text extraction.
+        from app.partners.text_extraction import extract_document_text
+
+        extracted = extract_document_text(storage_path, filename)
+        if extracted is not None:
+            note = " (일부 생략)" if extracted["truncated"] else ""
+            return [
+                text_header,
+                {
+                    "type": "text",
+                    "text": f"[{suffix} 서버 추출 텍스트{note}]\n{extracted['text']}",
+                },
+            ], f"{suffix} 문서는 서버 추출 텍스트 기준으로 분석했습니다 (레이아웃·이미지 제외)."
         return [text_header], (
-            f"{suffix} 형식은 모델이 직접 읽지 못해 파일명/메타데이터 기준으로만 분류했습니다 — "
-            "서버측 텍스트 추출 전처리는 후속 항목입니다."
+            f"{suffix} 문서에서 텍스트를 추출하지 못해 파일명/메타데이터 기준으로만 "
+            "분류했습니다."
         )
     return [text_header], "지원되지 않는 형식이라 파일명 기준으로만 분류했습니다."
 

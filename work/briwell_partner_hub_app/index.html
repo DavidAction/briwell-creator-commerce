@@ -223,7 +223,12 @@
     return '<span class="chip ok">' + esc(a.doc_type_label || a.doc_type) + pctText + "</span>";
   }
 
-  var state = { hub: null, busy: false, previews: {} };
+  var state = { hub: null, busy: false, previews: {}, picks: {} };
+
+  var COMPONENT_KO = {
+    basics: "기본 정보", ingredients: "전성분", images: "사진",
+    claims: "클레임", regulatory: "규제"
+  };
 
   var $ = function (id) { return document.getElementById(id); };
   function show(id) {
@@ -306,7 +311,11 @@
       var preview = u.kind === "photo"
         ? '<img class="thumb" data-preview="' + esc(u.id) + '" alt="' + esc(u.original_filename) + ' 미리보기">'
         : "";
-      return '<tr><td><input type="checkbox" class="pick" value="' + esc(u.id) + '"' + (used ? "" : " checked") + '></td>' +
+      // P11: 재로딩 후에도 사용자의 체크 선택을 유지 (기본값: 미사용 파일 선택).
+      var picked = Object.prototype.hasOwnProperty.call(state.picks, u.id)
+        ? state.picks[u.id]
+        : !used;
+      return '<tr><td><input type="checkbox" class="pick" value="' + esc(u.id) + '"' + (picked ? " checked" : "") + '></td>' +
         '<td>' + preview + '</td>' +
         '<td>' + esc(u.original_filename) + summary + '</td>' +
         '<td><span class="chip mut">' + (KIND_KO[u.kind] || esc(u.kind)) + '</span></td>' +
@@ -317,7 +326,10 @@
     $("uploads").innerHTML = '<table><thead><tr><th></th><th></th><th>파일</th><th>구분</th><th>크기</th><th>AI 분석</th><th>상태</th></tr></thead><tbody>' + rows + '</tbody></table>';
     syncExtractButton();
     Array.prototype.forEach.call(document.querySelectorAll(".pick"), function (el) {
-      el.addEventListener("change", syncExtractButton);
+      el.addEventListener("change", function () {
+        state.picks[el.value] = el.checked;
+        syncExtractButton();
+      });
     });
     loadPreviews();
   }
@@ -388,7 +400,8 @@
       "</div>" +
       (score !== null
         ? '<div class="score-row"><span class="note">판매 준비 완성도</span><span class="score">' + score + '<small style="font-size:13px;color:var(--muted);">/100</small></span></div>' +
-          '<div class="bar"><i style="width:' + score + '%"></i></div>'
+          '<div class="bar"><i style="width:' + score + '%"></i></div>' +
+          componentBreakdown(d.completeness)
         : "") +
       confNote +
       '<div class="grid2" style="margin-top:12px;">' +
@@ -417,6 +430,19 @@
   }
 
   function pct(v) { return typeof v === "number" ? Math.round(v * 100) + "%" : "—"; }
+
+  // P11: 완성도 점수의 구성요소 분해 — 무엇을 채우면 점수가 오르는지 보여준다.
+  function componentBreakdown(completeness) {
+    var components = completeness && completeness.components;
+    if (!components) return "";
+    var parts = Object.keys(components).map(function (name) {
+      var comp = components[name];
+      var full = comp.earned >= comp.weight;
+      return '<span class="chip ' + (full ? "ok" : "mut") + '">' +
+        esc(COMPONENT_KO[name] || name) + " " + comp.earned + "/" + comp.weight + "</span>";
+    });
+    return '<div class="reg-row" style="margin-top:4px;">' + parts.join("") + "</div>";
+  }
 
   function field(draftId, name, label, value, editable, listId) {
     return '<div class="field"><span>' + esc(label) + "</span>" +

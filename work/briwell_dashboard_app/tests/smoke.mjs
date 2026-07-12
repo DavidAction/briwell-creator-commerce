@@ -237,6 +237,14 @@ assert(files.client.includes("/file"), "partner upload file endpoint missing fro
 assert(files.css.includes(".kv-table"), "draft detail kv-table styling missing");
 // Operator detail keeps the not-legal-advice framing on regulatory info.
 assert(files.app.includes("클리어런스 아님"), "no-flag must not read as clearance in detail view");
+// P11: registered-partner browse panel (list was API-only before).
+assert(files.html.includes("등록된 파트너"), "partner list panel missing");
+assert(files.html.includes('id="partnersTable"'), "partner list table mount missing");
+assert(files.html.includes('id="loadPartnersButton"'), "partner list load button missing");
+assert(!files.html.includes('id="loadPartnersButton" data-write-action'), "partner list load is a read and must not carry the write badge");
+assert(files.app.includes("async function loadPartnersList"), "partner list loader missing");
+assert(files.app.includes("function renderPartnersList"), "partner list renderer missing");
+assert(files.app.includes("escapeHtml(item.contact_email"), "partner list must escape partner-supplied fields");
 
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");

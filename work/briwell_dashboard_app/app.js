@@ -290,6 +290,7 @@ function bindActions() {
   byId("approveDraftButton").addEventListener("click", () => reviewPartnerDraft("approved"));
   byId("rejectDraftButton").addEventListener("click", () => reviewPartnerDraft("rejected"));
   byId("loadAttentionQueueButton").addEventListener("click", loadAttentionQueue);
+  byId("loadPartnersButton").addEventListener("click", loadPartnersList);
   const hubPageBase = byId("hubPageBase");
   hubPageBase.value = localStorage.getItem("briwell.hubPageBase") || "";
   hubPageBase.addEventListener("change", () => {
@@ -2981,6 +2982,55 @@ function renderPartnerReviewQueue(items) {
       mount.querySelectorAll("tr").forEach((row) => row.classList.remove("row-selected"));
       button.closest("tr")?.classList.add("row-selected");
       loadPartnerDraftDetail(draftId);
+    });
+  });
+}
+
+// --- P11: registered partner list (browse + pick into the token form) --------
+
+async function loadPartnersList() {
+  const mount = byId("partnersTable");
+  mount.innerHTML = '<tr><td colspan="6" class="muted">불러오는 중…</td></tr>';
+  try {
+    const response = await window.BriwellApi.listPartners();
+    renderPartnersList(response.items || []);
+  } catch (error) {
+    mount.innerHTML = `<tr><td colspan="6" class="muted">${escapeHtml(
+      error.payload?.detail?.message || "파트너 목록을 불러오지 못했습니다 — API 연결을 확인하세요."
+    )}</td></tr>`;
+  }
+}
+
+function renderPartnersList(items) {
+  const mount = byId("partnersTable");
+  if (!items.length) {
+    mount.innerHTML =
+      '<tr><td colspan="6" class="muted">등록된 파트너가 없습니다 — 위에서 브랜드사를 등록하세요 (DB 미연결이면 목록이 비어 보입니다).</td></tr>';
+    return;
+  }
+  mount.innerHTML = items
+    .map((item) => {
+      const when = item.created_at ? String(item.created_at).slice(0, 10) : "—";
+      const status =
+        item.status === "active"
+          ? '<span class="badge green">active</span>'
+          : `<span class="badge red">${escapeHtml(item.status || "—")}</span>`;
+      return `<tr data-partner-id="${escapeHtml(item.id)}">
+        <td><button class="button" data-pick-partner="${escapeHtml(item.id)}">선택</button></td>
+        <td>${escapeHtml(item.company_name || "—")}</td>
+        <td>${escapeHtml(item.contact_name || "—")}</td>
+        <td>${escapeHtml(item.contact_email || "—")}</td>
+        <td>${status}</td>
+        <td>${escapeHtml(when)}</td>
+      </tr>`;
+    })
+    .join("");
+  mount.querySelectorAll("[data-pick-partner]").forEach((button) => {
+    button.addEventListener("click", () => {
+      byId("hubPartnerId").value = button.getAttribute("data-pick-partner");
+      mount.querySelectorAll("tr").forEach((row) => row.classList.remove("row-selected"));
+      button.closest("tr")?.classList.add("row-selected");
+      showToast("파트너 선택됨 · 허브 링크 발급 폼에 반영");
     });
   });
 }

@@ -8,22 +8,32 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook. The portable PostgreSQL runtime is NOT in git — rebuild per machine (EDB 17.x zip → `initdb` → see `outputs/briwell_postgresql_live_setup_review_v0.md`; helper scripts in `outputs/`).
 
-**Latest verified state (2026-07-12, hardening sprint):** backend `469 passed,
-26 skipped` (DB-off) and `495 passed` with `RUN_DB_TESTS=1` against the local
-portable Postgres (migrations 001–012 applied + verified); real-DB round trip
-`python -m scripts.verify_partner_hub_roundtrip` passes end to end (partner →
-token → upload → ingest worker → dedup → file serving → assemble → draft →
-approve → product_catalog); dashboard `node tests\smoke.mjs` passes; hub and
-dashboard verified in a real browser.
+**Latest verified state (2026-07-12, after P11+P12):** backend `478 passed,
+26 skipped` (DB-off) and `504 passed` with `RUN_DB_TESTS=1` — twice in a row —
+against the local portable Postgres (migrations 001–012 applied + verified);
+real-DB round trip `python -m scripts.verify_partner_hub_roundtrip` passes end
+to end (partner → token → upload → ingest worker → dedup → file serving →
+assemble → draft → approve → product_catalog); dashboard `node tests\smoke.mjs`
+passes; hub and dashboard verified in a real browser.
 
 **NEXT SESSION — blocked on David (do NOT attempt without input):** golden set
 (real Parnell catalogs) → live AI opening + accuracy measurement (P4), email
 notifications (sender account, P8), verified LATAM regulatory list expansion,
-domain/hosting, upload backup (R2). The David-input-free hardening sprint from
-`outputs/briwell_partner_hub_critical_review_v0.md` (P9, P1, P6+P2, P3, P5+P10,
-P7, P13) is **done** — see briefing 0.0.22.
+domain/hosting, upload backup (R2), HWP text extraction (needs a vetted
+library decision — hand-rolled OLE parsing was rejected as a security
+liability). Every David-input-free item from
+`outputs/briwell_partner_hub_critical_review_v0.md` (P1–P3, P5–P7, P9–P13;
+P4 and P8 are the David-blocked two) is **done** — see briefings
+0.0.22–0.0.23.
 
 **What shipped most recently (newest first):**
+-11. P12 document text extraction + P11 polish (briefing 0.0.23): stdlib-only
+   text extraction for docx/pptx/hwpx/xlsx (zip-bomb caps, DTD/entity guard,
+   fail-soft) wired into both live AI paths (.hwp stays metadata-only by
+   decision); dashboard registered-partner list panel; hub completeness
+   component breakdown + upload selection preserved across reloads; fixed a
+   latent DB-test isolation flaw (leftover queue jobs broke the next run).
+   Tests 469→478 (+DB 504 twice consecutively).
 -10. Partner Hub hardening sprint (briefing 0.0.22): real-DB verification with
    a round-trip script (`scripts/verify_partner_hub_roundtrip.py`, caught and
    fixed a pre-existing outreach enum-cast DB bug); token hardening (migration

@@ -902,6 +902,25 @@
           <section class="panel span-12">
             <div class="panel-heading">
               <div>
+                <h2>등록된 파트너</h2>
+                <p class="panel-subtitle">허브에 등록된 브랜드사 목록 · 행을 선택하면 위 링크 발급 폼에 파트너 ID가 채워집니다</p>
+              </div>
+              <span class="badge teal">파트너 조회</span>
+            </div>
+            <div class="button-row">
+              <button class="button" id="loadPartnersButton">파트너 목록 불러오기</button>
+            </div>
+            <div class="table-wrap" style="margin-top:12px;">
+              <table>
+                <thead><tr><th></th><th>회사명</th><th>담당자</th><th>이메일</th><th>상태</th><th>등록일</th></tr></thead>
+                <tbody id="partnersTable"><tr><td colspan="6" class="muted">아직 불러오지 않았습니다.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel span-12">
+            <div class="panel-heading">
+              <div>
                 <h2>제품 초안 검수 큐</h2>
                 <p class="panel-subtitle">파트너가 제출한 초안을 승인하면 제품 카탈로그에 등록됩니다 · 규제 신호는 참고용이며 법률 자문 아님</p>
               </div>

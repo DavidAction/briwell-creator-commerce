@@ -11,17 +11,35 @@ db_tests_only = pytest.mark.skipif(
 )
 
 
+def _claim_until(conn, job_id: int, job_types: list[str]):
+    """Claim FIFO until our own job comes up.
+
+    Other suites (e.g. the outreach dm_sent transition) legitimately leave
+    pending jobs behind in a shared dev database; claiming strictly-once
+    made this test fail on the SECOND full run against the same DB
+    (found 2026-07-12). Draining to our id keeps FIFO semantics under test
+    without demanding a pristine queue."""
+
+    from app.repositories.jobs import claim_next_job
+
+    for _ in range(50):
+        claimed = claim_next_job(conn, job_types=job_types)
+        if claimed is None or claimed["id"] == job_id:
+            return claimed
+    return None
+
+
 @db_tests_only
 def test_enqueue_and_claim_flips_status_to_processing() -> None:
     import psycopg
     from psycopg.rows import dict_row
 
     from app.core.config import settings
-    from app.repositories.jobs import claim_next_job, enqueue_job
+    from app.repositories.jobs import enqueue_job
 
     with psycopg.connect(settings.database_url, row_factory=dict_row) as conn:
         job_id = enqueue_job(conn, "audit_event.persist", {"foo": "bar"})
-        claimed = claim_next_job(conn, job_types=["audit_event.persist"])
+        claimed = _claim_until(conn, job_id, ["audit_event.persist"])
 
         assert claimed is not None
         assert claimed["id"] == job_id
@@ -118,17 +136,23 @@ def test_process_one_dispatches_to_registered_handler_and_marks_done() -> None:
             "actor_email": None,
             "payload": {},
         }
-        enqueue_job(conn, "audit_event.persist", payload)
+        job_id = enqueue_job(conn, "audit_event.persist", payload)
 
-        processed = process_one(conn, JOB_HANDLERS)
-
-        assert processed is True
+        # process_one drains FIFO; loop past any pending jobs another suite
+        # left in the shared dev DB until our own job has been handled.
+        processed_ours = False
+        for _ in range(50):
+            if not process_one(conn, JOB_HANDLERS):
+                break
+            with conn.cursor() as cur:
+                cur.execute("SELECT status FROM jobs WHERE id = %(id)s", {"id": job_id})
+                if cur.fetchone()["status"] != "pending":
+                    processed_ours = True
+                    break
+        assert processed_ours is True
 
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT status FROM jobs WHERE job_type = 'audit_event.persist' "
-                "ORDER BY id DESC LIMIT 1"
-            )
+            cur.execute("SELECT status FROM jobs WHERE id = %(id)s", {"id": job_id})
             row = cur.fetchone()
 
         assert row["status"] == "done"

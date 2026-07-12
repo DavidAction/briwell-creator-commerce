@@ -7,8 +7,10 @@ extraction requires BOTH ``PARTNER_AI_DRY_RUN=false`` and
 ``ALLOW_LIVE_PARTNER_AI_CALLS=true`` plus a Gemini key.
 
 Live mode sends photos and PDF catalogs as inlineData (Gemini reads them
-natively) and inlines CSV text; XLSX content extraction is a Phase 2 item and
-is surfaced honestly in the draft notes rather than silently skipped.
+natively) and inlines CSV text. ZIP-based documents (docx/pptx/hwpx/xlsx)
+are inlined as server-extracted text (P12, app/partners/text_extraction.py);
+a failed extraction is surfaced honestly in the draft notes rather than
+silently skipped.
 """
 
 import base64
@@ -241,10 +243,20 @@ def _upload_part(upload: dict[str, Any]) -> tuple[dict[str, Any] | None, str | N
         data = base64.b64encode(storage_path.read_bytes()).decode("ascii")
         return {"inlineData": {"mimeType": mime, "data": data}}, None
 
-    if kind == "data" and suffix == ".csv":
+    if suffix in {".csv", ".txt"}:
         text = storage_path.read_text(encoding="utf-8", errors="replace")[:MAX_INLINE_CSV_CHARS]
-        return {"text": f"[CSV {filename}]\n{text}"}, None
-    if kind == "data" and suffix == ".xlsx":
-        # XLSX text extraction is a Phase 2 item; say so instead of pretending.
-        return None, f"{filename} (xlsx 파싱은 Phase 2)"
+        return {"text": f"[{suffix} {filename}]\n{text}"}, None
+
+    # P12: ZIP-based documents (docx/pptx/hwpx/xlsx) get server-side text
+    # extraction; a failed extraction stays an honest skip, never a guess.
+    from app.partners.text_extraction import EXTRACTABLE_SUFFIXES, extract_document_text
+
+    if suffix in EXTRACTABLE_SUFFIXES:
+        extracted = extract_document_text(storage_path, filename)
+        if extracted is not None:
+            note = " — 일부 생략" if extracted["truncated"] else ""
+            return {
+                "text": f"[{suffix} {filename} 서버 추출 텍스트{note}]\n{extracted['text']}"
+            }, None
+        return None, f"{filename} (텍스트 추출 실패 — 수동 확인 필요)"
     return None, f"{filename} (지원되지 않는 형식)"
