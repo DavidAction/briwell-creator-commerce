@@ -71,6 +71,15 @@ def test_normalize_fuzzy_catches_typo_but_not_garbage() -> None:
     assert garbage["inci_name"] is None
 
 
+def test_normalize_fuzzy_catches_first_char_typo_in_curated_seed() -> None:
+    # The CosIng fuzzy pass is bucketed by first character for speed; the
+    # curated seed must still be scanned whole or a first-char typo regresses
+    # against the pre-CosIng matcher (found in the 2026-07-12 re-review).
+    typo = normalize_ingredient("Xiacinamide")
+    assert typo["match_status"] == "fuzzy"
+    assert typo["inci_name"] == "Niacinamide"
+
+
 def test_normalize_list_preserves_order_and_counts() -> None:
     result = normalize_ingredient_list(["Water", "  ", "Glycerin", "Mysteryol"])
     assert result["total"] == 3
@@ -640,7 +649,11 @@ def _wire_active_partner(monkeypatch) -> None:
     monkeypatch.setattr(
         hub_router.partners_repository,
         "get_active_by_token",
-        lambda token: {"id": "tok-1", "partner_id": PARTNER_ID},
+        lambda token: {
+            "id": "tok-1",
+            "partner_id": PARTNER_ID,
+            "expires_at": "2026-10-10T00:00:00Z",
+        },
     )
     monkeypatch.setattr(
         hub_router.partners_repository,
@@ -720,6 +733,8 @@ def test_hub_me_whitelists_fields(monkeypatch) -> None:
     body = response.json()
     assert body["hub"]["partner"]["company_name"] == "파넬"
     assert body["hub"]["disclaimer"] == REGULATORY_DISCLAIMER
+    # P1 follow-up: the partner sees when the link expires.
+    assert body["hub"]["link_expires_at"] == "2026-10-10T00:00:00Z"
     # v2: the AI analysis view is attached per upload, whitelisted.
     analysis = body["hub"]["uploads"][0]["analysis"]
     assert analysis["doc_type"] == "photo_asset"
@@ -1077,6 +1092,14 @@ def test_attention_queue_db_off_empty_and_labels(monkeypatch) -> None:
     items = response.json()["items"]
     assert items[0]["doc_type_label"] == "확인 필요"
     assert items[0]["company_name"] == "파넬"
+
+
+def test_attention_and_reanalyze_viewer_forbidden() -> None:
+    assert client.get("/partners/asset-profiles/attention", headers=VIEWER).status_code == 403
+    assert (
+        client.post(f"/partners/uploads/{UPLOAD_ID}/reanalyze", headers=VIEWER).status_code
+        == 403
+    )
 
 
 def test_reanalyze_db_off_validated_only() -> None:

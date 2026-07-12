@@ -82,9 +82,12 @@ def main() -> int:
     response = client.get("/partner-hub/me", headers=auth)
     if response.status_code != 200:
         fail("hub_me", f"{response.status_code} {response.text}")
-    if response.json()["hub"]["partner"]["company_name"] != company:
+    hub = response.json()["hub"]
+    if hub["partner"]["company_name"] != company:
         fail("hub_me", "company mismatch")
-    print("ok  hub /me via Authorization header")
+    if not hub.get("link_expires_at"):
+        fail("hub_me", "link_expires_at missing from hub payload")
+    print("ok  hub /me via Authorization header (expiry surfaced)")
 
     # 4. uploads (photo + pdf) ------------------------------------------------
     jpg = b"\xff\xd8\xff\xe0" + b"roundtrip-jpg" * 8

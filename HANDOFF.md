@@ -8,13 +8,17 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook. The portable PostgreSQL runtime is NOT in git — rebuild per machine (EDB 17.x zip → `initdb` → see `outputs/briwell_postgresql_live_setup_review_v0.md`; helper scripts in `outputs/`).
 
-**Latest verified state (2026-07-12, after P11+P12):** backend `478 passed,
-26 skipped` (DB-off) and `504 passed` with `RUN_DB_TESTS=1` — twice in a row —
-against the local portable Postgres (migrations 001–012 applied + verified);
-real-DB round trip `python -m scripts.verify_partner_hub_roundtrip` passes end
-to end (partner → token → upload → ingest worker → dedup → file serving →
+**Latest verified state (2026-07-12, after the adversarial re-review round,
+briefing 0.0.24):** backend `480 passed, 26 skipped` (DB-off) and `506 passed`
+with `RUN_DB_TESTS=1` against the local portable Postgres (migrations 001–012
+applied + verified); real-DB round trip
+`python -m scripts.verify_partner_hub_roundtrip` passes end to end (partner →
+token+expiry surfacing → upload → ingest worker → dedup → file serving →
 assemble → draft → approve → product_catalog); dashboard `node tests\smoke.mjs`
-passes; hub and dashboard verified in a real browser.
+passes; hub and dashboard verified in a real browser. The re-review found and
+fixed 7 issues (fuzzy first-char-typo regression, DTD-guard scan window, link
+expiry not shown to partners, popup-blocked file view, dynamic write-chip gap,
+demo fixture drift, missing RBAC tests).
 
 **NEXT SESSION — blocked on David (do NOT attempt without input):** golden set
 (real Parnell catalogs) → live AI opening + accuracy measurement (P4), email
@@ -27,6 +31,14 @@ P4 and P8 are the David-blocked two) is **done** — see briefings
 0.0.22–0.0.23.
 
 **What shipped most recently (newest first):**
+-12. Adversarial re-review round (briefing 0.0.24): all 0.0.22–23 artifacts
+   re-audited on David's instruction; 7 findings fixed with regression tests
+   (fuzzy matcher first-char typo regression, whole-part DTD/entity scan,
+   hub link-expiry surfacing via /me + footer, popup-blocked original-view
+   fallback, dynamic LIVE/PREVIEW chips, demo fixture parity + score/component
+   consistency, viewer-403 coverage for attention/reanalyze). Honest grade:
+   pilot readiness C+ -> B+; value proof still 0% until the Parnell golden
+   set opens the live AI path. Tests 478→480 (+DB 506).
 -11. P12 document text extraction + P11 polish (briefing 0.0.23): stdlib-only
    text extraction for docx/pptx/hwpx/xlsx (zip-bomb caps, DTD/entity guard,
    fail-soft) wired into both live AI paths (.hwp stays metadata-only by

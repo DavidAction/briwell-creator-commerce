@@ -105,7 +105,15 @@ def normalize_ingredient(raw_name: str) -> dict[str, Any]:
         return _matched(raw_name, cosing[key], "exact")
 
     best_name, best_ratio = None, 0.0
-    for candidate_key, canonical in _fuzzy_buckets().get(key[0], ()):
+    # First-char bucket over the big CosIng set, PLUS the full curated seed:
+    # bucketing alone would miss a typo in the first character (e.g.
+    # "Xiacinamide" -> Niacinamide, ratio 0.909), which the pre-CosIng
+    # matcher caught. The curated set is small, so scanning it whole is free.
+    bucket = _fuzzy_buckets().get(key[0], [])
+    curated_pairs = [
+        pair for pair in _CURATED_BY_KEY.items() if pair[0][:1] != key[:1]
+    ]
+    for candidate_key, canonical in [*bucket, *curated_pairs]:
         if abs(len(candidate_key) - len(key)) > 3:
             continue
         ratio = SequenceMatcher(None, key, candidate_key).ratio()

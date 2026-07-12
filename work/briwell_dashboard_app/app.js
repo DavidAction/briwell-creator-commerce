@@ -3164,7 +3164,18 @@ async function openPartnerUpload(uploadId) {
   try {
     const blob = await window.BriwellApi.fetchPartnerUploadBlob(uploadId);
     const objectUrl = URL.createObjectURL(blob);
-    window.open(objectUrl, "_blank", "noopener");
+    // window.open after an await can lose the user-gesture context and get
+    // popup-blocked; fall back to a download link, which never needs one.
+    const opened = window.open(objectUrl, "_blank", "noopener");
+    if (!opened) {
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `partner-upload-${uploadId}`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      showToast("팝업이 차단되어 파일로 내려받았습니다");
+    }
     setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
   } catch (error) {
     showToast(error.status === 404 ? "원본 파일이 없습니다" : "원본을 불러오지 못했습니다");
@@ -3224,6 +3235,8 @@ function renderAttentionQueue(items) {
       openPartnerUpload(button.getAttribute("data-open-upload-row"))
     );
   });
+  // Dynamically inserted write buttons must carry the LIVE/PREVIEW chip too.
+  updateWriteActionChips(Boolean(state.apiOnline));
 }
 
 async function reanalyzeUpload(uploadId) {

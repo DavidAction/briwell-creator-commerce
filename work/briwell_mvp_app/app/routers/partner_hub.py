@@ -561,8 +561,9 @@ def hub_token(
     )
 
 
-def _resolve_partner(token: str) -> dict[str, Any]:
-    """Token -> active partner, failing loudly. Suspension acts as a kill switch."""
+def _resolve_partner_token(token: str) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Token -> (active partner, token row), failing loudly. Suspension acts
+    as a kill switch; the token row carries expires_at for the hub UI."""
 
     if not database_enabled():
         raise _hub_unavailable()
@@ -573,7 +574,11 @@ def _resolve_partner(token: str) -> dict[str, Any]:
     if partner is None or partner["status"] != "active":
         raise _token_invalid()
     partners_repository.touch_last_seen(str(token_row["id"]))
-    return partner
+    return partner, token_row
+
+
+def _resolve_partner(token: str) -> dict[str, Any]:
+    return _resolve_partner_token(token)[0]
 
 
 def _is_uuid(value: str) -> bool:
@@ -686,7 +691,7 @@ def _sanitize_analysis(profile: dict[str, Any] | None) -> dict[str, Any] | None:
 def hub_me(token: str = Depends(hub_token)) -> dict[str, Any]:
     """Partner self-view. Read scope: own company, own uploads, own drafts."""
 
-    partner = _resolve_partner(token)
+    partner, token_row = _resolve_partner_token(token)
     partner_id = str(partner["id"])
     uploads = partners_repository.list_uploads_for_partner(partner_id)
     drafts = partners_repository.list_drafts_for_partner(partner_id)
@@ -706,6 +711,9 @@ def hub_me(token: str = Depends(hub_token)) -> dict[str, Any]:
                 "company_name": partner["company_name"],
                 "contact_name": partner.get("contact_name"),
             },
+            # P1 follow-up: the link expires — tell the partner when, so a
+            # dead link is never a surprise (rotation is one operator click).
+            "link_expires_at": token_row.get("expires_at"),
             "uploads": upload_views,
             "drafts": [_sanitize_draft(row) for row in drafts],
             "disclaimer": REGULATORY_DISCLAIMER,

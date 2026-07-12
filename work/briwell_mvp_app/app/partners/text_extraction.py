@@ -55,7 +55,9 @@ def _text_from_xml(data: bytes) -> list[str]:
     chunks: list[str] = []
     # Office XML parts never carry a DTD; a document that does is hostile
     # (entity-expansion / billion-laughs) — skip the part, keep the rest.
-    if b"<!DOCTYPE" in data[:2048] or b"<!ENTITY" in data[:2048]:
+    # Scan the whole part: a prolog can legally be pushed past any fixed
+    # prefix with comments/whitespace, and parts are already size-capped.
+    if b"<!DOCTYPE" in data or b"<!ENTITY" in data:
         return chunks
     try:
         root = ElementTree.fromstring(data)

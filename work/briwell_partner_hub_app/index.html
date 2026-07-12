@@ -162,7 +162,8 @@
     </div>
 
     <footer>이 링크는 귀사 전용입니다 — 외부에 공유하지 마세요. 링크 재발급·문의는
-      <b>Briwell 담당자에게 직접</b> 연락해 주세요.<br>
+      <b>Briwell 담당자에게 직접</b> 연락해 주세요.
+      <span id="link-expiry"></span><br>
       <span class="data-notice">올려주신 자료는 <b>제품 등록·검수 목적</b>으로만 사용되며,
       AI 분석 과정에서 외부 AI 처리 서비스(Anthropic·Google)로 전송될 수 있습니다.
       원본 파일은 감사(audit) 목적으로 보존되며, 자료 삭제를 원하시면 Briwell 담당자에게
@@ -292,6 +293,10 @@
     state.hub = hub;
     $("company").textContent = hub.partner.company_name || "파트너";
     $("footer-disclaimer").textContent = hub.disclaimer || "";
+    // P1 후속: 만료되는 링크는 만료일을 미리 알려준다 (죽은 링크 서프라이즈 방지).
+    $("link-expiry").textContent = hub.link_expires_at
+      ? " 이 링크는 " + String(hub.link_expires_at).slice(0, 10) + "까지 유효합니다."
+      : "";
     renderUploads(hub.uploads || []);
     renderDrafts(hub.drafts || []);
     show("view");
@@ -605,6 +610,7 @@
   function demoHub() {
     return {
       partner: { company_name: "파넬" },
+      link_expires_at: "2026-10-10T00:00:00Z",
       disclaimer: "규제 신호는 참고용 사전 스크리닝이며 법률 자문이 아닙니다. 수입·판매 전 반드시 각국 인허가 전문가 검토가 필요합니다.",
       uploads: [
         { id: "u1", kind: "pdf", original_filename: "cicamanide_catalog_2026.pdf", byte_size: 2400000, status: "extracted", uploaded_at: "2026-07-12T09:00:00Z",
@@ -628,7 +634,11 @@
           claims_candidates: ["진정 케어", "수분 보습", "저자극 테스트 완료"]
         },
         ai_meta: { mode: "dry_run", prompt_version: "partner_extract_v1", field_confidence: { product_name: 0.88, product_category: 0.84, ingredients_raw: 0.9 } },
-        completeness: { score: 78 },
+        completeness: { score: 85, components: {
+          basics: { weight: 20, earned: 20 }, ingredients: { weight: 30, earned: 30 },
+          images: { weight: 20, earned: 20 }, claims: { weight: 15, earned: 0 },
+          regulatory: { weight: 15, earned: 15 }
+        } },
         regulatory_flags: {
           by_country: { MX: { grade: "no_flag" }, PE: { grade: "no_flag" }, EC: { grade: "no_flag" } },
           flags: [],
