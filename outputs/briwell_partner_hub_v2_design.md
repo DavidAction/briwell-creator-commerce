@@ -108,7 +108,8 @@ partner_asset_profile (
   한도 초과 시 잡은 pending 유지(다음 날 재개), 파트너 UI에는 "분석 대기 중".
 - 정직성: confidence 임계(초기 0.7) 미만 → needs_review + 운영자 큐. 요약·추출값은 항상
   "AI 분석" 라벨. 실패는 failed + 사유 저장, 원본으로 언제든 재분석.
-- 모든 호출은 ai_invocation_log 기록(기존 관례).
+- 호출 감사: 이 레인은 model·prompt_version·usage를 **profile 자체에 기록**(자기완결 감사).
+  중앙 ai_invocation_log 통합은 라이브 개방 시점 항목(분석잡 FK 관례에 맞춰 배선).
 
 ## 4. AI 모델 — 2026-07-12 기준 최고 성능 구성 (David 지시로 재제안)
 

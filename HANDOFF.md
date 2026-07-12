@@ -8,9 +8,21 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook.
 
-**Latest verified state (re-run 2026-07-12):** backend `427 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
+**Latest verified state (re-run 2026-07-12):** backend `438 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-9. Partner Hub v2 (briefing 0.0.21): Newsreader display type (hub only, brand
+   candidate #2), a fourth 'etc' upload lane (docx/pptx/hwp/hwpx/txt — video
+   deferred), and auto AI ingestion: every stored upload queues a
+   partner_asset_ingest job (existing job queue) that classifies (8 types +
+   needs_review, language, confidence, KO summary) and extracts into
+   partner_asset_profile (migration 011). Provider-abstracted model config —
+   default Anthropic Claude Opus 4.8 + optional Fable 5 escalation (server-side
+   fallback to Opus 4.8 on refusals); Gemini path kept, Gemini 3.5 Pro
+   head-to-head planned after its 07-17 launch (switch = config change).
+   Dry-run gates ship closed; ANTHROPIC_API_KEY in render.yaml (sync:false,
+   safe empty). Tests 427->438. Before opening live AI: golden set from real
+   vendor catalogs, live-path verification, per-type extraction prompts.
 -8. Brand Partner Hub Phase 1 (briefing 0.0.20): David approved the 0.0.19 plan
    (name = Brand Partner Hub; uploads split into photo/pdf/data lanes). Migration
    010 + app/partners/ pipeline (extract -> INCI normalize -> validate -> regulatory

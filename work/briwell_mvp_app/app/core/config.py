@@ -167,6 +167,15 @@ class Settings:
         str(ROOT / "data" / "partner_uploads"),
     )
     partner_upload_max_bytes: int = int(os.getenv("PARTNER_UPLOAD_MAX_BYTES", "15000000"))
+    # v2 (design doc, David-approved 2026-07-12): provider-abstracted ingestion
+    # model. Default = Claude Opus 4.8 (structured-extraction leader as of
+    # 2026-07); escalation slot for Claude Fable 5 on hard documents (off by
+    # default). Head-to-head vs Gemini 3.5 Pro planned after its 07-17 launch —
+    # switching providers is a config change, not a code change.
+    partner_ai_provider: str = os.getenv("PARTNER_AI_PROVIDER", "anthropic").strip().lower()
+    partner_ai_model: str = os.getenv("PARTNER_AI_MODEL", "claude-opus-4-8").strip()
+    partner_ai_escalation_model: str = os.getenv("PARTNER_AI_ESCALATION_MODEL", "").strip()
+    anthropic_api_key: str = os.getenv("ANTHROPIC_API_KEY", "")
 
 
 settings = Settings()

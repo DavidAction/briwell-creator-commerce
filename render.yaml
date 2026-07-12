@@ -60,6 +60,20 @@ services:
         value: "false"
       - key: ALLOW_LIVE_PROVIDER_CALLS
         value: "true"
+      # --- Brand Partner Hub AI ingestion (briefing 0.0.21) ---
+      # Provider-abstracted; default = Anthropic Claude Opus 4.8 (Fable 5
+      # escalation via PARTNER_AI_ESCALATION_MODEL when opened). Ships in
+      # dry-run — open the dual gate only after the golden-set accuracy check.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: PARTNER_AI_PROVIDER
+        value: anthropic
+      - key: PARTNER_AI_MODEL
+        value: claude-opus-4-8
+      - key: PARTNER_AI_DRY_RUN
+        value: "true"
+      - key: ALLOW_LIVE_PARTNER_AI_CALLS
+        value: "false"
       - key: APIFY_API_TOKEN
         sync: false
       - key: APIFY_TIKTOK_ACTOR_ID

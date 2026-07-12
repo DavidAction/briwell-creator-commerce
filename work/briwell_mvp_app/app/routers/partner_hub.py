@@ -7,9 +7,10 @@ Two surfaces, mirroring the creator portal split:
   promotes a draft into the existing ``product_catalog`` — the human gate.
 * Partner side (token-gated, ``/partner-hub``): a brand client sees only its
   own data (field-whitelisted; ``internal_memo`` and other partners' data are
-  structurally excluded), uploads files in three separated lanes
-  (photo / pdf / data — David's decision), runs AI extraction (dry-run gated),
-  edits and submits drafts.
+  structurally excluded), uploads files in four separated lanes
+  (photo / pdf / data / etc — David's decisions, 2026-07-12), runs AI
+  extraction (dry-run gated), edits and submits drafts. Every stored upload
+  is auto-queued for AI ingestion (classify + extract → partner_asset_profile).
 
 DB-off behavior: operator endpoints keep the ``validated_not_persisted``
 convention; the partner side is a consumer surface and fails loudly with
@@ -17,6 +18,7 @@ convention; the partner side is a consumer surface and fails loudly with
 """
 
 import hashlib
+import logging
 import secrets
 from pathlib import Path
 from typing import Any, Literal
@@ -27,13 +29,17 @@ from pydantic import BaseModel, Field
 
 from app.core.auth import UserContext, require_roles
 from app.core.config import settings
-from app.core.db import database_enabled
+from app.core.db import connection, database_enabled
 from app.partners.extraction import PartnerAIGateClosed, run_extraction
+from app.partners.ingestion import DOC_TYPE_LABELS_KO
 from app.partners.ingredient_data import REGULATORY_DISCLAIMER
 from app.partners.pipeline import enrich_draft
 from app.partners.validation import SUPPORTED_CATEGORIES
 from app.repositories import partners as partners_repository
 from app.repositories import products as products_repository
+from app.repositories.jobs import enqueue_job
+
+logger = logging.getLogger("briwell")
 
 operator_router = APIRouter(prefix="/partners", tags=["partner-hub"])
 partner_router = APIRouter(prefix="/partner-hub", tags=["partner-hub"])
@@ -64,7 +70,13 @@ KIND_EXTENSIONS = {
     "photo": {".jpg", ".jpeg", ".png", ".webp"},
     "pdf": {".pdf"},
     "data": {".csv", ".xlsx"},
+    # v2 'etc' lane (David 2026-07-12): documents only — video deferred.
+    "etc": {".docx", ".pptx", ".hwp", ".hwpx", ".txt"},
 }
+
+# HWP 5.x is an OLE compound file; HWP 3.0 carries an ASCII signature.
+_OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+_HWP3_MAGIC = b"HWP Document File"
 
 
 def validate_upload_file(kind: str, filename: str, content: bytes) -> str | None:
@@ -73,7 +85,7 @@ def validate_upload_file(kind: str, filename: str, content: bytes) -> str | None
     suffix = Path(filename or "").suffix.lower()
     allowed = KIND_EXTENSIONS.get(kind)
     if allowed is None:
-        return "kind는 photo/pdf/data 중 하나여야 합니다."
+        return "kind는 photo/pdf/data/etc 중 하나여야 합니다."
     if suffix not in allowed:
         expected = ", ".join(sorted(allowed))
         return f"'{kind}' 레인은 {expected} 파일만 받습니다."
@@ -91,12 +103,16 @@ def validate_upload_file(kind: str, filename: str, content: bytes) -> str | None
         return "WEBP 형식이 아닙니다 (파일 내용 검사 실패)."
     if suffix == ".pdf" and not content.startswith(b"%PDF"):
         return "PDF 형식이 아닙니다 (파일 내용 검사 실패)."
-    if suffix == ".xlsx" and not content.startswith(b"PK\x03\x04"):
-        return "XLSX 형식이 아닙니다 (파일 내용 검사 실패)."
-    if suffix == ".csv":
+    if suffix in {".xlsx", ".docx", ".pptx", ".hwpx"} and not content.startswith(b"PK\x03\x04"):
+        return f"{suffix.lstrip('.').upper()} 형식이 아닙니다 (파일 내용 검사 실패)."
+    if suffix == ".hwp" and not (
+        content.startswith(_OLE_MAGIC) or content.startswith(_HWP3_MAGIC)
+    ):
+        return "HWP 형식이 아닙니다 (파일 내용 검사 실패)."
+    if suffix in {".csv", ".txt"}:
         head = content[:4096]
         if b"\x00" in head:
-            return "CSV 형식이 아닙니다 (이진 데이터가 포함됨)."
+            return f"{suffix.lstrip('.').upper()} 형식이 아닙니다 (이진 데이터가 포함됨)."
     return None
 
 
@@ -358,6 +374,24 @@ def _sanitize_draft(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _sanitize_analysis(profile: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Partner-facing view of the AI ingestion profile. Whitelist only —
+    model name, prompt version and raw error text stay internal."""
+
+    if profile is None:
+        return None
+    doc_type = str(profile.get("doc_type") or "pending")
+    return {
+        "doc_type": doc_type,
+        "doc_type_label": DOC_TYPE_LABELS_KO.get(doc_type, doc_type),
+        "status": profile.get("status"),
+        "confidence": float(profile["confidence"]) if profile.get("confidence") is not None else None,
+        "summary_ko": profile.get("summary_ko"),
+        "products_mentioned": list(profile.get("products_mentioned") or []),
+        "updated_at": profile.get("updated_at"),
+    }
+
+
 @partner_router.get("/me")
 def hub_me(token: str = Query(min_length=16, max_length=128)) -> dict[str, Any]:
     """Partner self-view. Read scope: own company, own uploads, own drafts."""
@@ -366,6 +400,15 @@ def hub_me(token: str = Query(min_length=16, max_length=128)) -> dict[str, Any]:
     partner_id = str(partner["id"])
     uploads = partners_repository.list_uploads_for_partner(partner_id)
     drafts = partners_repository.list_drafts_for_partner(partner_id)
+    profiles_by_upload = {
+        str(profile["upload_id"]): profile
+        for profile in partners_repository.list_asset_profiles_for_partner(partner_id)
+    }
+    upload_views = []
+    for row in uploads:
+        view = _sanitize_upload(row)
+        view["analysis"] = _sanitize_analysis(profiles_by_upload.get(str(row["id"])))
+        upload_views.append(view)
     return {
         "status": "ok",
         "hub": {
@@ -373,20 +416,37 @@ def hub_me(token: str = Query(min_length=16, max_length=128)) -> dict[str, Any]:
                 "company_name": partner["company_name"],
                 "contact_name": partner.get("contact_name"),
             },
-            "uploads": [_sanitize_upload(row) for row in uploads],
+            "uploads": upload_views,
             "drafts": [_sanitize_draft(row) for row in drafts],
             "disclaimer": REGULATORY_DISCLAIMER,
         },
     }
 
 
+def _enqueue_ingest(upload_id: str, partner_id: str) -> None:
+    """Create the pending profile and queue the ingestion job.
+
+    Failure here must never fail the upload — the original is stored and the
+    profile simply stays pending (honest '분석 대기' in the hub) until the
+    worker or a re-analysis picks it up."""
+
+    try:
+        partners_repository.upsert_asset_profile(
+            upload_id=upload_id, partner_id=partner_id, fields={"status": "pending"}
+        )
+        with connection() as conn:
+            enqueue_job(conn, "partner_asset_ingest", {"upload_id": upload_id})
+    except Exception:
+        logger.exception("partner_asset_ingest enqueue failed for upload %s", upload_id)
+
+
 @partner_router.post("/uploads")
 async def hub_upload(
     file: UploadFile,
-    kind: Literal["photo", "pdf", "data"] = Query(),
+    kind: Literal["photo", "pdf", "data", "etc"] = Query(),
     token: str = Query(min_length=16, max_length=128),
 ) -> dict[str, Any]:
-    """One file per call into one of the three separated lanes."""
+    """One file per call into one of the four separated lanes."""
 
     partner = _resolve_partner(token)
 
@@ -425,6 +485,8 @@ async def hub_upload(
             "storage_path": str(storage_path),
         }
     )
+    # v2: auto-ingestion — classify/extract in the background (job queue).
+    _enqueue_ingest(str(record["id"]), partner_id)
     return {"status": "persisted", "upload": _sanitize_upload(record)}
 
 

@@ -152,6 +152,15 @@ def get_uploads_for_partner(partner_id: str, upload_ids: list[str]) -> list[dict
     )
 
 
+def get_upload(upload_id: str) -> dict[str, Any] | None:
+    """Unscoped fetch for the ingestion worker (job payload carries the id)."""
+
+    return fetch_one(
+        "SELECT * FROM partner_upload WHERE id = %(upload_id)s",
+        {"upload_id": upload_id},
+    )
+
+
 def mark_uploads_status(upload_ids: list[str], status: str) -> None:
     if not upload_ids:
         return
@@ -165,6 +174,75 @@ def mark_uploads_status(upload_ids: list[str], status: str) -> None:
                 {"upload_ids": upload_ids, "status": status},
             )
         conn.commit()
+
+
+# --- asset profiles (migration 011, one per upload) -------------------------------
+
+_PROFILE_COLUMNS = (
+    "doc_type",
+    "language",
+    "confidence",
+    "summary_ko",
+    "extracted",
+    "products_mentioned",
+    "status",
+    "error",
+    "model",
+    "prompt_version",
+    "usage",
+)
+_PROFILE_JSONB_COLUMNS = {"extracted", "usage"}
+
+
+def upsert_asset_profile(
+    upload_id: str,
+    partner_id: str,
+    fields: dict[str, Any],
+) -> dict[str, Any]:
+    """Insert-or-update the single profile for an upload.
+
+    Only allowlisted columns are written; keys absent from ``fields`` keep
+    their current value on update (re-analysis replaces in place)."""
+
+    columns = [column for column in _PROFILE_COLUMNS if column in fields]
+    params: dict[str, Any] = {"upload_id": upload_id, "partner_id": partner_id}
+    placeholders: list[str] = []
+    for column in columns:
+        value = fields[column]
+        if column in _PROFILE_JSONB_COLUMNS and value is not None:
+            value = json.dumps(value)
+        params[column] = value
+        placeholders.append(
+            f"%({column})s::jsonb" if column in _PROFILE_JSONB_COLUMNS else f"%({column})s"
+        )
+
+    insert_columns = ", ".join(["upload_id", "partner_id", *columns])
+    insert_values = ", ".join(["%(upload_id)s", "%(partner_id)s", *placeholders])
+    update_clause = ", ".join(
+        [f'"{column}" = EXCLUDED."{column}"' for column in columns] + ["updated_at = now()"]
+    )
+    query = f"""
+        INSERT INTO partner_asset_profile ({insert_columns})
+        VALUES ({insert_values})
+        ON CONFLICT (upload_id) DO UPDATE SET {update_clause}
+        RETURNING *
+    """
+    created = fetch_one(query, params)
+    if created is None:
+        raise RuntimeError("partner_asset_profile upsert did not return a row.")
+    return created
+
+
+def list_asset_profiles_for_partner(partner_id: str) -> list[dict[str, Any]]:
+    return fetch_all(
+        """
+        SELECT upload_id, doc_type, status, confidence, summary_ko,
+               products_mentioned, updated_at
+        FROM partner_asset_profile
+        WHERE partner_id = %(partner_id)s
+        """,
+        {"partner_id": partner_id},
+    )
 
 
 # --- drafts ---------------------------------------------------------------------

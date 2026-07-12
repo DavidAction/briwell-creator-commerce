@@ -538,6 +538,23 @@ def test_hub_me_whitelists_fields(monkeypatch) -> None:
     )
     monkeypatch.setattr(
         hub_router.partners_repository,
+        "list_asset_profiles_for_partner",
+        lambda partner_id: [
+            {
+                "upload_id": UPLOAD_ID,
+                "doc_type": "photo_asset",
+                "status": "done",
+                "confidence": 0.91,
+                "summary_ko": "흰 배경 제품컷입니다.",
+                "products_mentioned": [],
+                "updated_at": "2026-07-12T10:05:00Z",
+                "model": "SECRET-MODEL2",
+                "error": "SECRET-ERROR",
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
         "list_drafts_for_partner",
         lambda partner_id: [
             {
@@ -561,10 +578,16 @@ def test_hub_me_whitelists_fields(monkeypatch) -> None:
     body = response.json()
     assert body["hub"]["partner"]["company_name"] == "파넬"
     assert body["hub"]["disclaimer"] == REGULATORY_DISCLAIMER
+    # v2: the AI analysis view is attached per upload, whitelisted.
+    analysis = body["hub"]["uploads"][0]["analysis"]
+    assert analysis["doc_type"] == "photo_asset"
+    assert analysis["doc_type_label"] == "제품 사진"
+    assert analysis["confidence"] == 0.91
     raw = response.text
     assert "MUST NOT LEAK" not in raw
     assert "SECRET-PATH" not in raw
     assert "SECRET-MODEL" not in raw
+    assert "SECRET-ERROR" not in raw
     assert "internal-contact@vendor.test" not in raw
     assert "deadbeef" not in raw
 
@@ -577,6 +600,7 @@ def test_upload_happy_path_stores_and_sanitizes(monkeypatch, tmp_path) -> None:
         SimpleNamespace(partner_upload_max_bytes=15_000_000, partner_upload_dir=str(tmp_path)),
     )
     recorded: dict = {}
+    enqueued: dict = {}
 
     def fake_record(payload: dict) -> dict:
         recorded.update(payload)
@@ -590,6 +614,13 @@ def test_upload_happy_path_stores_and_sanitizes(monkeypatch, tmp_path) -> None:
         }
 
     monkeypatch.setattr(hub_router.partners_repository, "record_upload", fake_record)
+    monkeypatch.setattr(
+        hub_router,
+        "_enqueue_ingest",
+        lambda upload_id, partner_id: enqueued.update(
+            {"upload_id": upload_id, "partner_id": partner_id}
+        ),
+    )
     response = client.post(
         f"/partner-hub/uploads?kind=photo&token={TOKEN}",
         files={"file": ("product.jpg", JPG_BYTES, "image/jpeg")},
@@ -604,6 +635,8 @@ def test_upload_happy_path_stores_and_sanitizes(monkeypatch, tmp_path) -> None:
     assert len(stored) == 1
     assert stored[0].read_bytes() == JPG_BYTES
     assert recorded["partner_id"] == PARTNER_ID
+    # v2: every stored upload is queued for AI ingestion.
+    assert enqueued == {"upload_id": UPLOAD_ID, "partner_id": PARTNER_ID}
 
 
 def test_upload_rejected_lane_mismatch(monkeypatch, tmp_path) -> None:
@@ -768,3 +801,175 @@ def test_draft_locked_after_approval_409(monkeypatch) -> None:
     )
     assert response.status_code == 409
     assert response.json()["detail"]["code"] == "DRAFT_LOCKED"
+
+
+# ---------------------------------------------------------------------------
+# v2: the 'etc' lane accepts documents only (David 2026-07-12 — video deferred)
+# ---------------------------------------------------------------------------
+
+OLE_BYTES = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"0" * 64
+ZIP_BYTES = b"PK\x03\x04" + b"0" * 64
+
+
+def test_etc_lane_accepts_documents() -> None:
+    assert hub_router.validate_upload_file("etc", "intro.docx", ZIP_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "deck.pptx", ZIP_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "소개서.hwp", OLE_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "소개서.hwpx", ZIP_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "notes.txt", "메모입니다".encode("utf-8")) is None
+
+
+def test_etc_lane_rejects_video_and_bad_magic() -> None:
+    # Video stays out until David opts in (design §2).
+    assert hub_router.validate_upload_file("etc", "clip.mp4", b"\x00\x00\x00\x18ftyp") is not None
+    assert hub_router.validate_upload_file("etc", "malware.exe", b"MZ") is not None
+    # Correct extension, wrong content.
+    assert hub_router.validate_upload_file("etc", "fake.docx", b"NOTAZIP0") is not None
+    assert hub_router.validate_upload_file("etc", "fake.hwp", b"NOTOLE00") is not None
+    assert hub_router.validate_upload_file("etc", "binary.txt", b"a\x00b") is not None
+
+
+# ---------------------------------------------------------------------------
+# v2: AI ingestion — classification, gates, orchestrator
+# ---------------------------------------------------------------------------
+
+from app.partners import ingestion  # noqa: E402
+
+
+def test_classify_dry_run_is_deterministic_and_hint_based() -> None:
+    photo = {"kind": "photo", "original_filename": "shot.jpg", "sha256": "aa"}
+    assert ingestion.classify_upload(photo)["doc_type"] == "photo_asset"
+
+    catalog = {"kind": "pdf", "original_filename": "2026_Catalog_Spring.pdf", "sha256": "bb"}
+    first = ingestion.classify_upload(catalog)
+    second = ingestion.classify_upload(catalog)
+    assert first == second
+    assert first["doc_type"] == "product_catalog"
+    assert first["mode"] == "dry_run"
+    assert "드라이런" in first["summary_ko"]
+
+    inci = {"kind": "data", "original_filename": "전성분_inci.csv", "sha256": "cc"}
+    assert ingestion.classify_upload(inci)["doc_type"] == "ingredient_list"
+    price = {"kind": "data", "original_filename": "공급가표.xlsx", "sha256": "dd"}
+    assert ingestion.classify_upload(price)["doc_type"] == "price_list"
+    other = {"kind": "etc", "original_filename": "zzz.txt", "sha256": "ee"}
+    assert ingestion.classify_upload(other)["doc_type"] == "other"
+
+
+def test_ingestion_live_gates_closed_by_default() -> None:
+    assert ingestion.live_gates_open() is False
+
+
+def test_ingestion_gates_require_provider_key(monkeypatch) -> None:
+    monkeypatch.setattr(
+        ingestion,
+        "settings",
+        SimpleNamespace(
+            partner_ai_dry_run=False,
+            allow_live_partner_ai_calls=True,
+            partner_ai_provider="anthropic",
+            anthropic_api_key="",
+            gemini_api_key="ignored",
+        ),
+    )
+    assert ingestion.live_gates_open() is False
+
+
+def test_partner_ai_defaults_are_anthropic_opus() -> None:
+    from app.core.config import settings as app_settings
+
+    assert app_settings.partner_ai_provider == "anthropic"
+    assert app_settings.partner_ai_model == "claude-opus-4-8"
+    assert app_settings.partner_ai_escalation_model == ""
+
+
+def test_job_handler_registered() -> None:
+    from app.workers.job_handlers import JOB_HANDLERS
+
+    assert "partner_asset_ingest" in JOB_HANDLERS
+
+
+def _wire_ingestion_repo(monkeypatch, upload: dict | None) -> list[dict]:
+    calls: list[dict] = []
+
+    monkeypatch.setattr("app.repositories.partners.get_upload", lambda upload_id: upload)
+
+    def fake_upsert(upload_id: str, partner_id: str, fields: dict) -> dict:
+        calls.append(dict(fields))
+        return {"upload_id": upload_id, "partner_id": partner_id, **fields}
+
+    monkeypatch.setattr("app.repositories.partners.upsert_asset_profile", fake_upsert)
+    return calls
+
+
+def test_run_asset_ingestion_happy_path(monkeypatch) -> None:
+    upload = {
+        "id": UPLOAD_ID,
+        "partner_id": PARTNER_ID,
+        "kind": "pdf",
+        "original_filename": "catalog.pdf",
+        "sha256": "abc",
+        "storage_path": "missing.pdf",
+    }
+    calls = _wire_ingestion_repo(monkeypatch, upload)
+    profile = ingestion.run_asset_ingestion(UPLOAD_ID)
+    assert calls[0] == {"status": "processing"}
+    assert calls[-1]["status"] == "done"
+    assert calls[-1]["doc_type"] == "product_catalog"
+    assert calls[-1]["extracted"]["schema_version"] == 1
+    assert calls[-1]["prompt_version"] == ingestion.PROMPT_VERSION
+    assert profile["status"] == "done"
+
+
+def test_run_asset_ingestion_low_confidence_live_needs_review(monkeypatch) -> None:
+    upload = {
+        "id": UPLOAD_ID,
+        "partner_id": PARTNER_ID,
+        "kind": "pdf",
+        "original_filename": "scan.pdf",
+        "sha256": "abc",
+    }
+    calls = _wire_ingestion_repo(monkeypatch, upload)
+    monkeypatch.setattr(
+        ingestion,
+        "classify_upload",
+        lambda u: {
+            "doc_type": "ingredient_list",
+            "language": "ko",
+            "confidence": 0.4,
+            "summary_ko": "판독이 어려운 스캔본",
+            "products_mentioned": [],
+            "mode": "live",
+            "model": "claude-opus-4-8",
+            "usage": None,
+        },
+    )
+    ingestion.run_asset_ingestion(UPLOAD_ID)
+    assert calls[-1]["doc_type"] == "needs_review"
+    assert calls[-1]["extracted"] is None
+
+
+def test_run_asset_ingestion_failure_marks_failed(monkeypatch) -> None:
+    upload = {"id": UPLOAD_ID, "partner_id": PARTNER_ID, "kind": "pdf", "sha256": "x"}
+    calls = _wire_ingestion_repo(monkeypatch, upload)
+
+    def boom(u):
+        raise RuntimeError("provider exploded")
+
+    monkeypatch.setattr(ingestion, "classify_upload", boom)
+    try:
+        ingestion.run_asset_ingestion(UPLOAD_ID)
+        raise AssertionError("expected the ingestion error to propagate")
+    except RuntimeError:
+        pass
+    assert calls[-1]["status"] == "failed"
+    assert "provider exploded" in calls[-1]["error"]
+
+
+def test_run_asset_ingestion_unknown_upload(monkeypatch) -> None:
+    _wire_ingestion_repo(monkeypatch, None)
+    try:
+        ingestion.run_asset_ingestion(UPLOAD_ID)
+        raise AssertionError("expected ValueError for unknown upload")
+    except ValueError:
+        pass

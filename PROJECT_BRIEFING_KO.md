@@ -463,6 +463,43 @@ AI가 분석·분류·저장·가공해 업무를 획기적으로 줄이는 **�
    후, xlsx 파싱·완성도 스코어 정식화·Supabase 계정 전환·R2는 Phase 2~3(기획서 §10).
    배포 시 허브 페이지 오리진 CORS 등록(DEPLOY_RENDER.md 반영됨).
 
+## 0.0.21 파트너 허브 v2 — Newsreader·기타 레인·AI 자동 인제스천 (2026-07-12) — 테스트 438 통과/26 스킵
+
+v2 설계(`outputs/briwell_partner_hub_v2_design.md`)를 David 확정대로 구현. 결정 4건:
+①서체 후보 2번 **Newsreader**(허브 한정) ②기타 레인 **문서만** ③분석은 **업로드 즉시 자동**
+④모델은 "26-07-12 기준 최고 성능" 재제안 → **Claude Opus 4.8 기본 + Fable 5 에스컬레이션**
+확정(Gemini 3.5 Pro는 07-17 출시 예정·미출시라 **출시 후 골든셋 맞대결**로 재평가, 교체는
+config 1줄. 3.5 Flash는 속도 티어라 부적합 판정).
+
+1. **서체**: 허브 디스플레이 계층(로고·h1·카드 제목·점수) Fraunces → Newsreader, 본문 Noto
+   Sans KR 유지. 허브 한정 — 브랜드 전체 전개는 서체 최종 확정 때.
+2. **기타(etc) 레인**: docx·pptx·hwp·hwpx·txt (화이트리스트+매직바이트 — OOXML=PK,
+   HWP 5.x=OLE compound·3.0=ASCII 시그니처, txt=NUL 검사). 영상은 보류(결정 기록).
+3. **AI 인제스천**(마이그레이션 011 + `app/partners/ingestion.py`): 업로드 저장 즉시
+   `partner_asset_ingest` 잡 등록(기존 006 잡큐 재사용, 렌더는 OUTBOX_WORKER_ENABLED=true) →
+   분류(유형 8종+needs_review·언어·신뢰도·KO 요약·언급 제품) → 유형별 추출 →
+   `partner_asset_profile` 저장(업로드당 1개, 재분석 교체). 인큐 실패해도 업로드는 성공
+   (pending="분석 대기" 정직 표시). live 신뢰도 0.7 미만 → needs_review(추측 금지).
+   model·usage·prompt_version은 프로필 자체 기록(중앙 invocation_log 통합은 라이브 개방 시).
+4. **프로바이더 추상화**: `PARTNER_AI_PROVIDER`(기본 anthropic)·`PARTNER_AI_MODEL`(기본
+   claude-opus-4-8)·`PARTNER_AI_ESCALATION_MODEL`(기본 꺼짐, fable-5 지정 시 저신뢰 문서만
+   재시도 + refusal 대비 서버사이드 fallbacks→Opus 4.8). Anthropic 경로는 공식 SDK +
+   structured outputs(JSON 스키마 강제), PDF/이미지 네이티브, csv/txt 텍스트 인라인,
+   docx/pptx/hwp는 파일명 기준 분류에 그침을 요약에 명시(전처리 파서는 후속). Gemini 경로
+   유지(config 전환). 듀얼 게이트 관례 동일 — 드라이런 기본, 라이브는 골든셋 측정 후.
+   의존성 `anthropic>=0.92.0` 추가. render.yaml·.env.example·DEPLOY_RENDER에
+   ANTHROPIC_API_KEY(sync:false·비워도 안전) 반영.
+5. **허브 UI**: 4레인 그리드(반응형 2×2→1열), 업로드 표에 "AI 분석" 열(유형 배지+신뢰도%·
+   분석 중·확인 필요·분석 실패)과 KO 요약 노트. `/partner-hub/me`가 업로드별 analysis를
+   화이트리스트로 동봉(model·error 내부 유지).
+6. **테스트**: +11 (etc 레인 수용/거부·매직바이트, 드라이런 분류 결정성·힌트 매핑, 게이트
+   기본 폐쇄·프로바이더 키 검사, 오케스트레이터 해피패스/저신뢰 needs_review/실패 기록/
+   미존재 업로드, 설정 기본값, 잡핸들러 등록, /me analysis 화이트리스트, 업로드 인큐) =
+   **438 통과/26 스킵**. 실브라우저: 4레인·Newsreader·분석 배지·요약 렌더 확인, 콘솔 0.
+7. **남은 것**: 라이브 개방 전 골든셋(파넬 실자료) 정확도 측정 — 그 시점에 Anthropic 라이브
+   경로(fallbacks 파라미터 포함) 실검증 + 유형별 라이브 추출 프롬프트 확정. 07-17 이후
+   Gemini 3.5 Pro 맞대결. docx/pptx/hwp 텍스트 추출 전처리. 운영자 needs_review 큐 화면.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

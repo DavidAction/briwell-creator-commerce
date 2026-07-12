@@ -25,6 +25,7 @@ REQUIRED_TABLES = {
     "partner_upload",
     "partner_product_draft",
     "partner_review_decision",
+    "partner_asset_profile",
 }
 
 REQUIRED_ENUMS = {

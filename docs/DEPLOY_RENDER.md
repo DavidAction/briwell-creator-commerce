@@ -62,6 +62,7 @@ first deploy and update the timestamp.
    | `OIDC_JWKS_URL` | step 1.5 |
    | `CORS_ALLOWED_ORIGINS` | dashboard origin(s), e.g. `https://briwell-dashboard.vercel.app` — no localhost. Once the creator portal (`work/briwell_portal_app`) and brand partner hub (`work/briwell_partner_hub_app`) pages are hosted, add their origins here too or `GET /portal/me` / the partner hub API calls will be blocked by the browser |
    | `GEMINI_API_KEY` | Google AI Studio |
+   | `ANTHROPIC_API_KEY` | leave empty until partner-hub live AI opens — ingestion ships dry-run (`PARTNER_AI_DRY_RUN=true`), so nothing breaks without it |
    | `BACKUP_RESTORE_TESTED_AT` | step 2 timestamp |
    | `APIFY_API_TOKEN`, `DATA365_API_KEY`, `BRIGHTDATA_API_KEY`, `TIKAPI_API_KEY` | leave empty (unused lanes) |
    | `SHOPIFY_*` (`SHOP_DOMAIN`, `ADMIN_API_TOKEN`, `WEBHOOK_SECRET`, `FX_RATES`) | leave empty until the Shopify store exists — receivers fail closed (503), which is safe |
