@@ -161,11 +161,22 @@ def test_portal_me_happy_path_returns_sanitized_view(monkeypatch) -> None:
             }
         ],
     )
+    # Mock mirrors the REAL creator_commission_balance view columns
+    # (migration 008) so this test fails if the view contract drifts.
     monkeypatch.setattr(
         portal_router.commerce_repository,
         "creator_balances",
         lambda creator_id: [
-            {"creator_id": creator_id, "currency": "MXN", "net_amount": "240.00"}
+            {
+                "creator_id": creator_id,
+                "currency": "MXN",
+                "balance_amount": "240.00",
+                "balance_usd": "12.96",
+                "accrual_count": 1,
+                "reversal_count": 0,
+                "adjustment_count": 0,
+                "last_entry_at": now,
+            }
         ],
     )
 
@@ -182,6 +193,7 @@ def test_portal_me_happy_path_returns_sanitized_view(monkeypatch) -> None:
     assert portal["codes"][0]["code"] == "GLOW10"
     assert portal["movements"][0]["amount"] == "240.00"
     assert portal["balances"][0]["currency"] == "MXN"
+    assert portal["balances"][0]["balance_amount"] == "240.00"
 
     # Field whitelist: internal identifiers, emails and memos never leak.
     raw = response.text

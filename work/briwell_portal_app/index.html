@@ -6,6 +6,7 @@
 <title>Briwell — Tu portal</title>
 <meta name="description" content="Tu portal de creadora Briwell: tu código, tus ventas registradas y tu comisión — siempre visibles.">
 <meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%230E7C71' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%232FD0BC'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -117,6 +118,8 @@
   }
 
   var CCY = { MXN: "es-MX", PEN: "es-PE", USD: "en-US" };
+  var SYM = { MXN: "$", PEN: "S/ ", USD: "$" };
+  function sym(currency) { return SYM[currency] || "$"; }
   function money(amount, currency) {
     var n = Number(amount || 0);
     try {
@@ -136,7 +139,8 @@
 
     if (portal.balances && portal.balances.length) {
       $("balances").innerHTML = portal.balances.map(function (b) {
-        return '<div class="bal">$' + money(b.net_amount || b.balance || b.amount, b.currency) +
+        // balance_amount mirrors the creator_commission_balance view.
+        return '<div class="bal">' + sym(b.currency) + money(b.balance_amount, b.currency) +
                ' <small>' + (b.currency || "") + "</small></div>";
       }).join("");
     }
@@ -166,7 +170,7 @@
         var sign = n >= 0 ? "+" : "−";
         return '<div class="mov"><span><span class="what">' + (TYPE_ES[m.entry_type] || m.entry_type) +
                '</span><span class="when">' + when(m.created_at) + '</span></span>' +
-               '<span class="amt ' + cls + '">' + sign + "$" + money(Math.abs(n), m.currency) +
+               '<span class="amt ' + cls + '">' + sign + sym(m.currency) + money(Math.abs(n), m.currency) +
                " " + (m.currency || "") + "</span></div>";
       }).join("");
     }
@@ -183,7 +187,7 @@
     document.body.insertAdjacentHTML("beforeend", '<span class="demo-tag">DEMO</span>');
     render({
       creator: { display_name: "Valentina", username: "valen.glow", country: "MX" },
-      balances: [{ currency: "MXN", net_amount: "4820.00" }],
+      balances: [{ currency: "MXN", balance_amount: "4820.00" }],
       codes: [{ code: "GLOW10", status: "active", commission_rate: "0.15" }],
       movements: [
         { entry_type: "accrual", amount: "310.00", currency: "MXN", created_at: "2026-07-11T18:00:00Z" },

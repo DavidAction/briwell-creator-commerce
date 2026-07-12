@@ -98,9 +98,16 @@ def _sanitize_movement(row: dict[str, Any]) -> dict[str, Any]:
 
 
 def _sanitize_balance(row: dict[str, Any]) -> dict[str, Any]:
-    sanitized = dict(row)
-    sanitized.pop("creator_id", None)
-    return sanitized
+    # Explicit whitelist mirroring the creator_commission_balance view
+    # (migration 008): balance_amount/balance_usd + entry counts.
+    return {
+        "currency": row.get("currency"),
+        "balance_amount": str(row.get("balance_amount")) if row.get("balance_amount") is not None else None,
+        "balance_usd": str(row.get("balance_usd")) if row.get("balance_usd") is not None else None,
+        "accrual_count": row.get("accrual_count"),
+        "reversal_count": row.get("reversal_count"),
+        "last_entry_at": row.get("last_entry_at"),
+    }
 
 
 @router.get("/me")
