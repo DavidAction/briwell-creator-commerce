@@ -11,6 +11,12 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 **Latest verified state (re-run 2026-07-12):** backend `379 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
+-7. Vendor portal plan v0 (briefing 0.0.19, NO CODE YET): brand clients upload
+   catalogs/ingredients, AI structures them (extract -> INCI normalize -> validate ->
+   regulatory signal -> completeness score), operator approves into product_catalog.
+   Full plan + global benchmarking (Akeneo SDM, Salsify, UMMA, CosIng, COFEPRIS/
+   DIGEMID/Decision 833) in outputs/briwell_vendor_portal_plan_v0.md. Awaiting
+   David's decisions on the 7 points in its §9 before Phase 1 implementation.
 -6. Dashboard portal-link panel + CORS DELETE fix (briefing 0.0.18): the settlement
    screen now issues/rotates and revokes portal links (write-confirm gated), assembles
    the `?t=` personal link with a copy button, and refuses to fabricate tokens offline
