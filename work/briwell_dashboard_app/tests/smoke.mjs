@@ -210,6 +210,34 @@ assert(files.app.includes("escapeHtml(draft.product_name"), "review queue must e
 // Same token honesty rules as the creator portal panel.
 assert(files.app.includes("실제 허브 링크로 동작하지 않습니다"), "DB-off hub token must be flagged as non-working");
 
+// --- Partner hub operator loop (P5+P10, critical review v0) ---
+assert(files.html.includes("초안 상세 · 원본 대조"), "draft detail panel missing");
+assert(files.html.includes('id="draftDetailPanel"'), "draft detail mount missing");
+assert(files.html.includes("AI 분석 주의 큐"), "attention queue panel missing");
+assert(files.html.includes('id="attentionQueueTable"'), "attention queue table mount missing");
+assert(files.html.includes('id="loadAttentionQueueButton"'), "attention queue load button missing");
+assert(!files.html.includes('id="loadAttentionQueueButton" data-write-action'), "attention-queue load is a read and must not carry the write badge");
+["fetchPartnerDraftDetail", "fetchAttentionProfiles", "reanalyzePartnerUpload", "fetchPartnerUploadBlob"].forEach((method) => {
+  assert(files.client.includes(method), `${method} API client method missing`);
+});
+[
+  "async function loadPartnerDraftDetail",
+  "function renderDraftDetail",
+  "async function openPartnerUpload",
+  "async function loadAttentionQueue",
+  "function renderAttentionQueue",
+  "async function reanalyzeUpload",
+].forEach((fn) => {
+  assert(files.app.includes(fn), `${fn} missing`);
+});
+// Re-analysis is a real write (queues a job) and must carry the write badge;
+// original-file viewing goes through the authenticated blob endpoint.
+assert(files.app.includes('data-reanalyze="${escapeHtml(item.upload_id)}" data-write-action'), "reanalyze button must carry the write-action badge");
+assert(files.client.includes("/file"), "partner upload file endpoint missing from client");
+assert(files.css.includes(".kv-table"), "draft detail kv-table styling missing");
+// Operator detail keeps the not-legal-advice framing on regulatory info.
+assert(files.app.includes("클리어런스 아님"), "no-flag must not read as clearance in detail view");
+
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");
 assert(files.app.includes("bearerTokenInput"), "settings save must include the bearer token");

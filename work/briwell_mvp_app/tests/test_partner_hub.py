@@ -1,3 +1,5 @@
+import io
+import zipfile
 from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
@@ -26,6 +28,16 @@ TOKEN = "b" * 32
 
 JPG_BYTES = b"\xff\xd8\xff\xe0" + b"0" * 64
 PDF_BYTES = b"%PDF-1.7\n" + b"0" * 64
+
+
+def _zip_bytes(*names: str) -> bytes:
+    """A real (readable) ZIP container, as OOXML validation now parses it."""
+
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        for name in names or ("[Content_Types].xml",):
+            archive.writestr(name, "stub")
+    return buffer.getvalue()
 
 
 def _dry_run_draft(**overrides):
@@ -65,6 +77,47 @@ def test_normalize_list_preserves_order_and_counts() -> None:
     assert result["matched"] == 2
     assert result["unmatched"] == 1
     assert [item["position"] for item in result["items"]] == [1, 2, 3]
+
+
+# ---------------------------------------------------------------------------
+# P3: CosIng inventory layer under the curated seed
+# ---------------------------------------------------------------------------
+
+
+def test_cosing_seed_ships_the_full_inventory() -> None:
+    from app.partners.cosing_data import cosing_entries
+
+    entries = cosing_entries()
+    # The official 2020-12 export carries ~28.7k unique INCI names; a sharp
+    # drop would mean the repo seed file was truncated.
+    assert len(entries) > 25_000
+    assert "COCAMIDOPROPYL BETAINE" in entries
+
+
+def test_cosing_fallback_matches_uncurated_ingredient() -> None:
+    # Not in the curated seed; previously unmatched, now resolved by CosIng.
+    result = normalize_ingredient("Cocamidopropyl Betaine")
+    assert result["match_status"] == "exact"
+    assert result["inci_name"] == "COCAMIDOPROPYL BETAINE"
+    assert result["functions"]  # CosIng publishes functions for it
+
+
+def test_curated_seed_wins_over_cosing() -> None:
+    # CosIng lists AQUA as its own INCI name, but the curated alias mapping
+    # (Aqua -> Water) must keep winning — curated canon is authoritative.
+    result = normalize_ingredient("Aqua")
+    assert result["match_status"] == "alias"
+    assert result["inci_name"] == "Water"
+    # And the curated canonical keeps its curated casing/functions.
+    assert normalize_ingredient("Niacinamide")["inci_name"] == "Niacinamide"
+
+
+def test_normalize_list_reports_dictionary_meta() -> None:
+    result = normalize_ingredient_list(["Water"])
+    meta = result["dictionary"]
+    assert meta["curated"] > 50
+    assert meta["cosing"] > 25_000
+    assert meta["cosing_version"].startswith("cosing-inventory")
 
 
 # ---------------------------------------------------------------------------
@@ -389,6 +442,97 @@ def test_review_reject_records_reason(monkeypatch) -> None:
 
 
 # ---------------------------------------------------------------------------
+# P1 token hardening: sha256 at rest, expiry, Authorization header transport
+# ---------------------------------------------------------------------------
+
+
+def test_hash_token_is_sha256_hex() -> None:
+    import hashlib
+
+    from app.repositories import partners as partners_repository
+
+    assert partners_repository.hash_token(TOKEN) == hashlib.sha256(
+        TOKEN.encode("utf-8")
+    ).hexdigest()
+
+
+def test_get_active_by_token_queries_digest_and_expiry(monkeypatch) -> None:
+    from app.repositories import partners as partners_repository
+
+    captured: dict = {}
+
+    def fake_fetch_one(query: str, params: dict) -> None:
+        captured["query"] = query
+        captured["params"] = params
+        return None
+
+    monkeypatch.setattr(partners_repository, "fetch_one", fake_fetch_one)
+    partners_repository.get_active_by_token(TOKEN)
+    # The plaintext token never reaches SQL — only its digest does.
+    assert captured["params"] == {"token_sha256": partners_repository.hash_token(TOKEN)}
+    assert TOKEN not in captured["query"]
+    assert "token_sha256" in captured["query"]
+    assert "expires_at > now()" in captured["query"]
+
+
+def test_issue_token_passes_ttl_and_returns_expiry(monkeypatch) -> None:
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_partner_by_id",
+        lambda partner_id: {"id": partner_id, "company_name": "파넬", "status": "active"},
+    )
+    captured: dict = {}
+
+    def fake_issue(partner_id: str, token: str, ttl_days: int) -> dict:
+        captured.update({"partner_id": partner_id, "token": token, "ttl_days": ttl_days})
+        return {"id": "tok-1", "expires_at": "2026-10-10T00:00:00Z"}
+
+    monkeypatch.setattr(hub_router.partners_repository, "issue_token", fake_issue)
+    response = client.post("/partners/tokens", headers=ADMIN, json={"partner_id": PARTNER_ID})
+    assert response.status_code == 200
+    body = response.json()
+    assert captured["ttl_days"] == 90
+    assert body["expires_at"] == "2026-10-10T00:00:00Z"
+    assert body["token"] == captured["token"]
+
+
+def test_hub_accepts_authorization_header(monkeypatch) -> None:
+    seen: dict = {}
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+
+    def fake_get_active(token: str) -> dict:
+        seen["token"] = token
+        return {"id": "tok-1", "partner_id": PARTNER_ID}
+
+    monkeypatch.setattr(hub_router.partners_repository, "get_active_by_token", fake_get_active)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_partner_by_id",
+        lambda partner_id: {"id": partner_id, "company_name": "파넬", "status": "active"},
+    )
+    monkeypatch.setattr(hub_router.partners_repository, "touch_last_seen", lambda token_id: None)
+    monkeypatch.setattr(
+        hub_router.partners_repository, "list_uploads_for_partner", lambda partner_id: []
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository, "list_drafts_for_partner", lambda partner_id: []
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository, "list_asset_profiles_for_partner", lambda partner_id: []
+    )
+    response = client.get("/partner-hub/me", headers={"Authorization": f"Bearer {TOKEN}"})
+    assert response.status_code == 200
+    assert seen["token"] == TOKEN
+
+
+def test_hub_token_missing_everywhere_422() -> None:
+    response = client.get("/partner-hub/me")
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "PARTNER_TOKEN_MISSING"
+
+
+# ---------------------------------------------------------------------------
 # partner-facing surface: honest failure + token gate
 # ---------------------------------------------------------------------------
 
@@ -473,9 +617,7 @@ def test_upload_validation_accepts_each_lane() -> None:
     assert hub_router.validate_upload_file("photo", "a.jpg", JPG_BYTES) is None
     assert hub_router.validate_upload_file("pdf", "catalog.pdf", PDF_BYTES) is None
     assert hub_router.validate_upload_file("data", "inci.csv", b"name,inci\nserum,Water") is None
-    assert (
-        hub_router.validate_upload_file("data", "spec.xlsx", b"PK\x03\x04" + b"0" * 32) is None
-    )
+    assert hub_router.validate_upload_file("data", "spec.xlsx", _zip_bytes()) is None
 
 
 def test_upload_validation_enforces_size_cap(monkeypatch, tmp_path) -> None:
@@ -613,6 +755,9 @@ def test_upload_happy_path_stores_and_sanitizes(monkeypatch, tmp_path) -> None:
             "uploaded_at": "2026-07-12T10:00:00Z",
         }
 
+    monkeypatch.setattr(
+        hub_router.partners_repository, "get_upload_by_sha", lambda partner_id, sha256: None
+    )
     monkeypatch.setattr(hub_router.partners_repository, "record_upload", fake_record)
     monkeypatch.setattr(
         hub_router,
@@ -804,18 +949,196 @@ def test_draft_locked_after_approval_409(monkeypatch) -> None:
 
 
 # ---------------------------------------------------------------------------
+# P5+P10: operator draft detail, attention queue, re-analyze
+# ---------------------------------------------------------------------------
+
+
+def test_draft_detail_db_off_503_and_viewer_403() -> None:
+    assert client.get(f"/partners/drafts/{DRAFT_ID}", headers=VIEWER).status_code == 403
+    response = client.get(f"/partners/drafts/{DRAFT_ID}", headers=OPERATOR)
+    assert response.status_code == 503
+    assert response.json()["detail"]["code"] == "PARTNER_HUB_UNAVAILABLE"
+
+
+def test_draft_detail_unknown_and_invalid_id_404(monkeypatch) -> None:
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(hub_router.partners_repository, "get_draft", lambda draft_id: None)
+    assert client.get(f"/partners/drafts/{DRAFT_ID}", headers=OPERATOR).status_code == 404
+    assert client.get("/partners/drafts/not-a-uuid", headers=OPERATOR).status_code == 404
+
+
+def test_draft_detail_returns_sources_profiles_and_decisions(monkeypatch) -> None:
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_draft",
+        lambda draft_id: {
+            "id": draft_id,
+            "partner_id": PARTNER_ID,
+            "source_upload_ids": [UPLOAD_ID],
+            "draft": {"product_name": "수분 세럼"},
+            "ai_meta": {"mode": "dry_run"},
+            "completeness": {"score": 80},
+            "regulatory_flags": {"by_country": {}},
+            "status": "partner_confirmed",
+            "promoted_product_id": None,
+            "created_at": "2026-07-12T10:00:00Z",
+            "updated_at": "2026-07-12T10:05:00Z",
+        },
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_partner_by_id",
+        lambda partner_id: {"id": partner_id, "company_name": "파넬", "status": "active"},
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_uploads_for_partner",
+        lambda partner_id, upload_ids: [
+            {
+                "id": UPLOAD_ID,
+                "kind": "pdf",
+                "original_filename": "catalog.pdf",
+                "byte_size": 100,
+                "status": "extracted",
+                "uploaded_at": "2026-07-12T09:00:00Z",
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_profiles_for_uploads",
+        lambda upload_ids: [
+            {
+                "upload_id": UPLOAD_ID,
+                "doc_type": "product_catalog",
+                "status": "done",
+                "confidence": 0.9,
+                "summary_ko": "카탈로그입니다.",
+                "products_mentioned": ["수분 세럼"],
+                "extracted": {"schema_version": 1},
+                "error": None,
+                "model": "claude-opus-4-8",
+                "prompt_version": "partner_ingest_v1",
+                "updated_at": "2026-07-12T09:10:00Z",
+            }
+        ],
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "list_review_decisions",
+        lambda draft_id: [
+            {
+                "decision": "rejected",
+                "reason": "성분 재확인",
+                "decided_by": "ops@briwell.test",
+                "decided_at": "2026-07-11T10:00:00Z",
+            }
+        ],
+    )
+    response = client.get(f"/partners/drafts/{DRAFT_ID}", headers=OPERATOR)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["draft"]["draft"]["product_name"] == "수분 세럼"
+    assert body["partner"]["company_name"] == "파넬"
+    assert body["source_uploads"][0]["profile"]["doc_type_label"] == "제품 카탈로그"
+    assert body["decisions"][0]["decision"] == "rejected"
+    assert body["disclaimer"] == REGULATORY_DISCLAIMER
+
+
+def test_attention_queue_db_off_empty_and_labels(monkeypatch) -> None:
+    response = client.get("/partners/asset-profiles/attention", headers=OPERATOR)
+    assert response.status_code == 200
+    assert response.json()["items"] == []
+
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "list_attention_profiles",
+        lambda: [
+            {
+                "upload_id": UPLOAD_ID,
+                "partner_id": PARTNER_ID,
+                "doc_type": "needs_review",
+                "status": "done",
+                "confidence": 0.4,
+                "summary_ko": "판독 어려움",
+                "error": None,
+                "model": None,
+                "updated_at": "2026-07-12T09:00:00Z",
+                "original_filename": "scan.pdf",
+                "kind": "pdf",
+                "uploaded_at": "2026-07-12T08:00:00Z",
+                "company_name": "파넬",
+            }
+        ],
+    )
+    response = client.get("/partners/asset-profiles/attention", headers=OPERATOR)
+    items = response.json()["items"]
+    assert items[0]["doc_type_label"] == "확인 필요"
+    assert items[0]["company_name"] == "파넬"
+
+
+def test_reanalyze_db_off_validated_only() -> None:
+    response = client.post(f"/partners/uploads/{UPLOAD_ID}/reanalyze", headers=OPERATOR)
+    assert response.status_code == 200
+    assert response.json()["status"] == "validated_not_persisted"
+
+
+def test_reanalyze_resets_profile_and_enqueues(monkeypatch) -> None:
+    from contextlib import contextmanager
+
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_upload",
+        lambda upload_id: {"id": upload_id, "partner_id": PARTNER_ID},
+    )
+    calls: dict = {}
+
+    def fake_upsert(upload_id: str, partner_id: str, fields: dict) -> dict:
+        calls["upsert"] = (upload_id, partner_id, fields)
+        return {"upload_id": upload_id}
+
+    monkeypatch.setattr(hub_router.partners_repository, "upsert_asset_profile", fake_upsert)
+
+    @contextmanager
+    def fake_connection():
+        yield "conn"
+
+    monkeypatch.setattr(hub_router, "connection", fake_connection)
+    monkeypatch.setattr(
+        hub_router,
+        "enqueue_job",
+        lambda conn, job_type, payload: calls.setdefault("job", (job_type, payload)) or 7,
+    )
+    response = client.post(f"/partners/uploads/{UPLOAD_ID}/reanalyze", headers=OPERATOR)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "queued"
+    assert calls["upsert"] == (UPLOAD_ID, PARTNER_ID, {"status": "pending", "error": None})
+    assert calls["job"] == ("partner_asset_ingest", {"upload_id": UPLOAD_ID})
+
+
+def test_reanalyze_unknown_upload_404(monkeypatch) -> None:
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    monkeypatch.setattr(hub_router.partners_repository, "get_upload", lambda upload_id: None)
+    response = client.post(f"/partners/uploads/{UPLOAD_ID}/reanalyze", headers=OPERATOR)
+    assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
 # v2: the 'etc' lane accepts documents only (David 2026-07-12 — video deferred)
 # ---------------------------------------------------------------------------
 
 OLE_BYTES = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"0" * 64
-ZIP_BYTES = b"PK\x03\x04" + b"0" * 64
 
 
 def test_etc_lane_accepts_documents() -> None:
-    assert hub_router.validate_upload_file("etc", "intro.docx", ZIP_BYTES) is None
-    assert hub_router.validate_upload_file("etc", "deck.pptx", ZIP_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "intro.docx", _zip_bytes()) is None
+    assert hub_router.validate_upload_file("etc", "deck.pptx", _zip_bytes()) is None
     assert hub_router.validate_upload_file("etc", "소개서.hwp", OLE_BYTES) is None
-    assert hub_router.validate_upload_file("etc", "소개서.hwpx", ZIP_BYTES) is None
+    assert hub_router.validate_upload_file("etc", "소개서.hwpx", _zip_bytes()) is None
     assert hub_router.validate_upload_file("etc", "notes.txt", "메모입니다".encode("utf-8")) is None
 
 
@@ -827,6 +1150,333 @@ def test_etc_lane_rejects_video_and_bad_magic() -> None:
     assert hub_router.validate_upload_file("etc", "fake.docx", b"NOTAZIP0") is not None
     assert hub_router.validate_upload_file("etc", "fake.hwp", b"NOTOLE00") is not None
     assert hub_router.validate_upload_file("etc", "binary.txt", b"a\x00b") is not None
+
+
+# ---------------------------------------------------------------------------
+# P2: macro rejection + unreadable containers + per-partner dedup
+# ---------------------------------------------------------------------------
+
+
+def test_ooxml_with_macro_rejected_in_every_zip_lane() -> None:
+    macro_doc = _zip_bytes("word/document.xml", "word/vbaProject.bin")
+    for kind, filename in (
+        ("etc", "quote.docx"),
+        ("etc", "deck.pptx"),
+        ("etc", "intro.hwpx"),
+        ("data", "spec.xlsx"),
+    ):
+        message = hub_router.validate_upload_file(kind, filename, macro_doc)
+        assert message is not None and "매크로" in message
+
+
+def test_ooxml_macro_detection_is_case_insensitive() -> None:
+    macro_doc = _zip_bytes("xl/VBAProject.BIN")
+    assert hub_router.validate_upload_file("data", "spec.xlsx", macro_doc) is not None
+
+
+def test_ooxml_unreadable_zip_rejected() -> None:
+    # PK magic but not a parseable archive: claimed OOXML, fails inspection.
+    message = hub_router.validate_upload_file("etc", "broken.docx", b"PK\x03\x04" + b"0" * 64)
+    assert message is not None and "압축" in message
+
+
+def test_ooxml_without_macro_accepted() -> None:
+    clean = _zip_bytes("word/document.xml")
+    assert hub_router.validate_upload_file("etc", "quote.docx", clean) is None
+
+
+def test_upload_same_sha_deduplicated(monkeypatch, tmp_path) -> None:
+    _wire_active_partner(monkeypatch)
+    monkeypatch.setattr(
+        hub_router,
+        "settings",
+        SimpleNamespace(partner_upload_max_bytes=15_000_000, partner_upload_dir=str(tmp_path)),
+    )
+    existing = {
+        "id": UPLOAD_ID,
+        "kind": "photo",
+        "original_filename": "product.jpg",
+        "byte_size": len(JPG_BYTES),
+        "status": "uploaded",
+        "uploaded_at": "2026-07-12T10:00:00Z",
+    }
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_upload_by_sha",
+        lambda partner_id, sha256: existing,
+    )
+
+    def must_not_record(payload: dict) -> dict:
+        raise AssertionError("duplicate upload must not create a new record")
+
+    monkeypatch.setattr(hub_router.partners_repository, "record_upload", must_not_record)
+    monkeypatch.setattr(
+        hub_router,
+        "_enqueue_ingest",
+        lambda upload_id, partner_id: (_ for _ in ()).throw(
+            AssertionError("duplicate upload must not re-enqueue ingestion")
+        ),
+    )
+    response = client.post(
+        f"/partner-hub/uploads?kind=photo&token={TOKEN}",
+        files={"file": ("product_again.jpg", JPG_BYTES, "image/jpeg")},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "duplicate"
+    assert body["upload"]["id"] == UPLOAD_ID
+    # No new file lands on disk for a duplicate.
+    assert list(tmp_path.glob("**/*.jpg")) == []
+
+
+# ---------------------------------------------------------------------------
+# P6: authenticated file serving (partner ownership + operator RBAC)
+# ---------------------------------------------------------------------------
+
+
+def _stored_upload_row(tmp_path, filename: str = "제품사진.jpg") -> dict:
+    stored = tmp_path / "stored.jpg"
+    stored.write_bytes(JPG_BYTES)
+    return {
+        "id": UPLOAD_ID,
+        "partner_id": PARTNER_ID,
+        "kind": "photo",
+        "original_filename": filename,
+        "storage_path": str(stored),
+    }
+
+
+def test_partner_file_serving_happy_path(monkeypatch, tmp_path) -> None:
+    _wire_active_partner(monkeypatch)
+    row = _stored_upload_row(tmp_path)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_uploads_for_partner",
+        lambda partner_id, upload_ids: [row] if upload_ids == [UPLOAD_ID] else [],
+    )
+    response = client.get(
+        f"/partner-hub/uploads/{UPLOAD_ID}/file",
+        headers={"Authorization": f"Bearer {TOKEN}"},
+    )
+    assert response.status_code == 200
+    assert response.content == JPG_BYTES
+    assert response.headers["content-type"] == "image/jpeg"
+    assert response.headers["content-disposition"].startswith("attachment;")
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["cache-control"] == "private, no-store"
+
+
+def test_partner_file_serving_other_partners_upload_404(monkeypatch) -> None:
+    _wire_active_partner(monkeypatch)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_uploads_for_partner",
+        lambda partner_id, upload_ids: [],
+    )
+    response = client.get(f"/partner-hub/uploads/{UPLOAD_ID}/file?token={TOKEN}")
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "UPLOAD_NOT_FOUND"
+
+
+def test_partner_file_serving_invalid_uuid_404(monkeypatch) -> None:
+    _wire_active_partner(monkeypatch)
+    response = client.get(f"/partner-hub/uploads/not-a-uuid/file?token={TOKEN}")
+    assert response.status_code == 404
+
+
+def test_partner_file_serving_missing_file_404(monkeypatch, tmp_path) -> None:
+    _wire_active_partner(monkeypatch)
+    row = _stored_upload_row(tmp_path)
+    row["storage_path"] = str(tmp_path / "gone.jpg")
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "get_uploads_for_partner",
+        lambda partner_id, upload_ids: [row],
+    )
+    response = client.get(f"/partner-hub/uploads/{UPLOAD_ID}/file?token={TOKEN}")
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "FILE_MISSING"
+
+
+def test_operator_file_serving_rbac_and_happy_path(monkeypatch, tmp_path) -> None:
+    response = client.get(f"/partners/uploads/{UPLOAD_ID}/file", headers=VIEWER)
+    assert response.status_code == 403
+
+    # DB off: honest 503 rather than pretending the file store works.
+    response = client.get(f"/partners/uploads/{UPLOAD_ID}/file", headers=OPERATOR)
+    assert response.status_code == 503
+
+    monkeypatch.setattr(hub_router, "database_enabled", lambda: True)
+    row = _stored_upload_row(tmp_path)
+    monkeypatch.setattr(hub_router.partners_repository, "get_upload", lambda upload_id: row)
+    response = client.get(f"/partners/uploads/{UPLOAD_ID}/file", headers=OPERATOR)
+    assert response.status_code == 200
+    assert response.content == JPG_BYTES
+
+
+# ---------------------------------------------------------------------------
+# P7: assemble — catalog/ingredient/price profiles -> N drafts
+# ---------------------------------------------------------------------------
+
+from app.partners.assemble import assemble_proposals  # noqa: E402
+
+
+def _profile(upload_id: str, doc_type: str, extracted: dict | None, mentioned=()) -> dict:
+    return {
+        "upload_id": upload_id,
+        "doc_type": doc_type,
+        "status": "done",
+        "extracted": extracted,
+        "products_mentioned": list(mentioned),
+    }
+
+
+def _assemble_fixture_profiles() -> list[dict]:
+    return [
+        _profile(
+            "u-cat",
+            "product_catalog",
+            {
+                "schema_version": 1,
+                "products": [
+                    {"product_name": "수분 진정 세럼", "size": "50ml"},
+                    {"product_name": "데일리 선스크린 SPF50+", "size": ""},
+                ],
+            },
+        ),
+        _profile(
+            "u-inci",
+            "ingredient_list",
+            {
+                "schema_version": 1,
+                "products": [
+                    {
+                        "product_name": "수분 진정 세럼",
+                        "ingredients_raw": ["Water", "Glycerin", "Niacinamide"],
+                    }
+                ],
+            },
+        ),
+        _profile(
+            "u-price",
+            "price_list",
+            {
+                "schema_version": 1,
+                "rows": [{"product_name": "데일리 선스크린 SPF50+", "size": "50ml"}],
+            },
+        ),
+        _profile("u-photo", "photo_asset", {"schema_version": 1}, mentioned=["수분 진정 세럼"]),
+    ]
+
+
+def test_assemble_merges_profiles_by_product_name() -> None:
+    result = assemble_proposals(_assemble_fixture_profiles(), "파넬", existing_draft_names=[])
+    assert result["catalog_profile_count"] == 1
+    assert result["skipped_existing"] == []
+    proposals = {p["draft"]["product_name"]: p for p in result["proposals"]}
+    assert set(proposals) == {"수분 진정 세럼", "데일리 선스크린 SPF50+"}
+
+    serum = proposals["수분 진정 세럼"]
+    assert serum["draft"]["ingredients_raw"] == ["Water", "Glycerin", "Niacinamide"]
+    assert serum["draft"]["size"] == "50ml"
+    assert serum["photo_count"] == 1
+    assert set(serum["source_upload_ids"]) == {"u-cat", "u-inci", "u-photo"}
+    assert serum["draft"]["brand_name"] == "파넬"
+    # Honesty: assemble never guesses the category.
+    assert serum["draft"]["product_category"] == ""
+    assert "자동 조립" in serum["draft"]["notes"]
+
+    sunscreen = proposals["데일리 선스크린 SPF50+"]
+    assert sunscreen["draft"]["size"] == "50ml"  # filled from the price list
+    assert sunscreen["photo_count"] == 0
+    assert set(sunscreen["source_upload_ids"]) == {"u-cat", "u-price"}
+
+
+def test_assemble_skips_existing_drafts_and_ignores_non_catalog_products() -> None:
+    result = assemble_proposals(
+        _assemble_fixture_profiles(), "파넬", existing_draft_names=["수분 진정 세럼"]
+    )
+    names = [p["draft"]["product_name"] for p in result["proposals"]]
+    assert names == ["데일리 선스크린 SPF50+"]
+    assert result["skipped_existing"] == ["수분 진정 세럼"]
+
+    # An ingredient list alone must not invent a product draft.
+    only_inci = [
+        _profile(
+            "u-inci",
+            "ingredient_list",
+            {"schema_version": 1, "products": [{"product_name": "유령 제품", "ingredients_raw": ["Water"]}]},
+        )
+    ]
+    result = assemble_proposals(only_inci, "파넬", existing_draft_names=[])
+    assert result["proposals"] == []
+    assert result["catalog_profile_count"] == 0
+
+
+def test_hub_assemble_endpoint_creates_enriched_drafts(monkeypatch) -> None:
+    _wire_active_partner(monkeypatch)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "list_done_profiles_for_partner",
+        lambda partner_id: _assemble_fixture_profiles(),
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "list_drafts_for_partner",
+        lambda partner_id: [
+            {"draft": {"product_name": "데일리 선스크린 SPF50+"}, "status": "ai_draft"}
+        ],
+    )
+    created: list = []
+    marked: dict = {}
+
+    def fake_create(payload: dict) -> dict:
+        created.append(payload)
+        return {
+            "id": f"draft-{len(created)}",
+            "draft": payload["draft"],
+            "ai_meta": payload["ai_meta"],
+            "completeness": payload["completeness"],
+            "regulatory_flags": payload["regulatory_flags"],
+            "status": "ai_draft",
+            "updated_at": "2026-07-12T10:00:00Z",
+        }
+
+    monkeypatch.setattr(hub_router.partners_repository, "create_draft", fake_create)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "mark_uploads_status",
+        lambda upload_ids, status: marked.setdefault("call", (tuple(upload_ids), status)),
+    )
+    response = client.post(f"/partner-hub/assemble?token={TOKEN}")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["created"]) == 1
+    assert body["created"][0]["draft"]["product_name"] == "수분 진정 세럼"
+    assert body["created"][0]["ai_meta"]["mode"] == "assembled"
+    assert body["skipped_existing"] == ["데일리 선스크린 SPF50+"]
+    assert created[0]["completeness"]["score"] > 0
+    assert marked["call"] == (("u-cat", "u-inci", "u-photo"), "extracted")
+
+
+def test_hub_assemble_without_catalog_profiles_422(monkeypatch) -> None:
+    _wire_active_partner(monkeypatch)
+    monkeypatch.setattr(
+        hub_router.partners_repository,
+        "list_done_profiles_for_partner",
+        lambda partner_id: [],
+    )
+    monkeypatch.setattr(
+        hub_router.partners_repository, "list_drafts_for_partner", lambda partner_id: []
+    )
+    response = client.post(f"/partner-hub/assemble?token={TOKEN}")
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "ASSEMBLE_NO_CATALOG"
+
+
+def test_hub_assemble_without_database_503() -> None:
+    response = client.post(f"/partner-hub/assemble?token={TOKEN}")
+    assert response.status_code == 503
 
 
 # ---------------------------------------------------------------------------

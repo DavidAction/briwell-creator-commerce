@@ -6,37 +6,34 @@ This document is for external development teams and AI coding tools continuing t
 
 Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; latest state lives in the numbered `0.0.x` sections, most recent = highest number).
 
-**Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook.
+**Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook. The portable PostgreSQL runtime is NOT in git — rebuild per machine (EDB 17.x zip → `initdb` → see `outputs/briwell_postgresql_live_setup_review_v0.md`; helper scripts in `outputs/`).
 
-**Latest verified state (re-run 2026-07-12):** backend `438 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
+**Latest verified state (2026-07-12, hardening sprint):** backend `469 passed,
+26 skipped` (DB-off) and `495 passed` with `RUN_DB_TESTS=1` against the local
+portable Postgres (migrations 001–012 applied + verified); real-DB round trip
+`python -m scripts.verify_partner_hub_roundtrip` passes end to end (partner →
+token → upload → ingest worker → dedup → file serving → assemble → draft →
+approve → product_catalog); dashboard `node tests\smoke.mjs` passes; hub and
+dashboard verified in a real browser.
 
-**NEXT SESSION — David-approved work order (2026-07-12, no David input needed;
-execute in this order, full detail in `outputs/briwell_partner_hub_critical_review_v0.md`):**
-1. P9 real-DB verification: boot the local portable Postgres, apply migrations
-   010–011 via bootstrap, run the full round trip (partner → token → upload →
-   ingest worker → draft → approve → product_catalog).
-2. P1 token hardening: brand_partner_token expiry (default 90d) + sha256-at-rest;
-   hub sends the token via Authorization header and strips `?t=` from the URL
-   (history.replaceState); backend accepts header or query.
-3. P6+P2 files: authenticated file-serving endpoints (operator RBAC + partner
-   token, attachment disposition, nosniff), photo previews in the hub, reject
-   OOXML uploads containing `vbaProject.bin` (macros), same-sha dedup per partner.
-4. P3 data: download the public CosIng CSV (no David input — open data), ship as
-   a repo data file + lazy loader merged over the curated seed in
-   `app/partners/ingredient_data.py`; keep tests deterministic.
-5. P5+P10 operator loop: dashboard draft detail view (full draft + source files),
-   needs_review/failed profile queue, re-analyze endpoint + button.
-6. P7 assemble: combine catalog/ingredient/price asset profiles into N product
-   drafts through the existing enrich pipeline (hub button + tests).
-7. P13 + wrap-up: in-product data-processing notice in the hub footer, briefing
-   0.0.22, this file, full suites + browser verification, commit.
-
-Blocked on David (do NOT attempt): golden set (real Parnell catalogs), live AI
-opening (ANTHROPIC_API_KEY), email notifications (sender account), legal
-verification of regulatory lists, any design/typeface decisions beyond what
-briefing 0.0.21 records.
+**NEXT SESSION — blocked on David (do NOT attempt without input):** golden set
+(real Parnell catalogs) → live AI opening + accuracy measurement (P4), email
+notifications (sender account, P8), verified LATAM regulatory list expansion,
+domain/hosting, upload backup (R2). The David-input-free hardening sprint from
+`outputs/briwell_partner_hub_critical_review_v0.md` (P9, P1, P6+P2, P3, P5+P10,
+P7, P13) is **done** — see briefing 0.0.22.
 
 **What shipped most recently (newest first):**
+-10. Partner Hub hardening sprint (briefing 0.0.22): real-DB verification with
+   a round-trip script (`scripts/verify_partner_hub_roundtrip.py`, caught and
+   fixed a pre-existing outreach enum-cast DB bug); token hardening (migration
+   012 — sha256-at-rest, 90d expiry, Authorization-header transport + URL strip);
+   authenticated file serving + hub photo previews + OOXML macro (vbaProject.bin)
+   rejection + per-partner same-sha dedup; CosIng inventory seed (28,703 INCI
+   names, data/cosing_ingredients.csv, curated seed always wins); operator loop
+   (draft detail + source-file cross-check view, needs_review/failed attention
+   queue, re-analyze endpoint/button); assemble (catalog→N drafts hub button);
+   in-product data-processing notice in the hub footer. Tests 438→469 (+DB 495).
 -9. Partner Hub v2 (briefing 0.0.21): Newsreader display type (hub only, brand
    candidate #2), a fourth 'etc' upload lane (docx/pptx/hwp/hwpx/txt — video
    deferred), and auto AI ingestion: every stored upload queues a

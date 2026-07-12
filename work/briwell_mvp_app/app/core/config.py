@@ -167,6 +167,8 @@ class Settings:
         str(ROOT / "data" / "partner_uploads"),
     )
     partner_upload_max_bytes: int = int(os.getenv("PARTNER_UPLOAD_MAX_BYTES", "15000000"))
+    # P1 hardening: hub tokens are stored as SHA-256 digests and expire.
+    partner_token_ttl_days: int = int(os.getenv("PARTNER_TOKEN_TTL_DAYS", "90"))
     # v2 (design doc, David-approved 2026-07-12): provider-abstracted ingestion
     # model. Default = Claude Opus 4.8 (structured-extraction leader as of
     # 2026-07); escalation slot for Claude Fable 5 on hard documents (off by

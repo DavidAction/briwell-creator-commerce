@@ -5,6 +5,7 @@ readers always require partner_id so ownership is enforced at the query
 level, not just in the router.
 """
 
+import hashlib
 import json
 from typing import Any
 
@@ -45,10 +46,19 @@ def list_partners() -> list[dict[str, Any]]:
     )
 
 
-# --- tokens (mirrors app/repositories/portal.py) --------------------------------
+# --- tokens (mirrors app/repositories/portal.py; hardened per migration 012) ----
 
-def issue_token(partner_id: str, token: str) -> dict[str, Any]:
-    """Revoke any active tokens for the partner, then persist the new one."""
+def hash_token(token: str) -> str:
+    """SHA-256 at rest: only this digest is ever persisted or queried."""
+
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def issue_token(partner_id: str, token: str, ttl_days: int) -> dict[str, Any]:
+    """Revoke any active tokens for the partner, then persist the new one.
+
+    Stores the SHA-256 digest (never the plaintext) and stamps expires_at;
+    the caller returns the plaintext to the operator exactly once."""
 
     revoke_query = """
         UPDATE brand_partner_token
@@ -56,14 +66,24 @@ def issue_token(partner_id: str, token: str) -> dict[str, Any]:
         WHERE partner_id = %(partner_id)s AND status = 'active'
     """
     insert_query = """
-        INSERT INTO brand_partner_token (partner_id, token)
-        VALUES (%(partner_id)s, %(token)s)
+        INSERT INTO brand_partner_token (partner_id, token_sha256, expires_at)
+        VALUES (
+            %(partner_id)s, %(token_sha256)s,
+            now() + make_interval(days => %(ttl_days)s)
+        )
         RETURNING *
     """
     with connection() as conn:
         with conn.cursor() as cur:
             cur.execute(revoke_query, {"partner_id": partner_id})
-            cur.execute(insert_query, {"partner_id": partner_id, "token": token})
+            cur.execute(
+                insert_query,
+                {
+                    "partner_id": partner_id,
+                    "token_sha256": hash_token(token),
+                    "ttl_days": ttl_days,
+                },
+            )
             row = cur.fetchone()
         conn.commit()
     if row is None:
@@ -72,13 +92,17 @@ def issue_token(partner_id: str, token: str) -> dict[str, Any]:
 
 
 def get_active_by_token(token: str) -> dict[str, Any] | None:
+    """Digest lookup; a NULL or past expires_at is invalid (fail closed)."""
+
     return fetch_one(
         """
         SELECT * FROM brand_partner_token
-        WHERE token = %(token)s AND status = 'active'
+        WHERE token_sha256 = %(token_sha256)s
+          AND status = 'active'
+          AND expires_at > now()
         LIMIT 1
         """,
-        {"token": token},
+        {"token_sha256": hash_token(token)},
     )
 
 
@@ -158,6 +182,20 @@ def get_upload(upload_id: str) -> dict[str, Any] | None:
     return fetch_one(
         "SELECT * FROM partner_upload WHERE id = %(upload_id)s",
         {"upload_id": upload_id},
+    )
+
+
+def get_upload_by_sha(partner_id: str, sha256: str) -> dict[str, Any] | None:
+    """Per-partner dedup lookup (P2): identical bytes -> the earliest record."""
+
+    return fetch_one(
+        """
+        SELECT * FROM partner_upload
+        WHERE partner_id = %(partner_id)s AND sha256 = %(sha256)s
+        ORDER BY uploaded_at ASC
+        LIMIT 1
+        """,
+        {"partner_id": partner_id, "sha256": sha256},
     )
 
 
@@ -242,6 +280,56 @@ def list_asset_profiles_for_partner(partner_id: str) -> list[dict[str, Any]]:
         WHERE partner_id = %(partner_id)s
         """,
         {"partner_id": partner_id},
+    )
+
+
+def list_done_profiles_for_partner(partner_id: str) -> list[dict[str, Any]]:
+    """Full done-profile rows for assemble (P7), oldest first so catalog
+    ordering follows upload order."""
+
+    return fetch_all(
+        """
+        SELECT * FROM partner_asset_profile
+        WHERE partner_id = %(partner_id)s AND status = 'done'
+        ORDER BY updated_at ASC
+        """,
+        {"partner_id": partner_id},
+    )
+
+
+def get_profiles_for_uploads(upload_ids: list[str]) -> list[dict[str, Any]]:
+    """Full profile rows for the operator detail view (internal fields
+    included — the operator side may see model/prompt/error)."""
+
+    if not upload_ids:
+        return []
+    return fetch_all(
+        """
+        SELECT * FROM partner_asset_profile
+        WHERE upload_id = ANY(%(upload_ids)s::uuid[])
+        """,
+        {"upload_ids": upload_ids},
+    )
+
+
+def list_attention_profiles() -> list[dict[str, Any]]:
+    """Operator attention queue (P5/P10): honest low-confidence
+    classifications (needs_review) and failed ingestions, newest first."""
+
+    return fetch_all(
+        """
+        SELECT pr.upload_id, pr.doc_type, pr.status, pr.confidence,
+               pr.summary_ko, pr.error, pr.model, pr.updated_at,
+               u.original_filename, u.kind, u.uploaded_at,
+               p.id AS partner_id, p.company_name
+        FROM partner_asset_profile pr
+        JOIN partner_upload u ON u.id = pr.upload_id
+        JOIN brand_partner p ON p.id = pr.partner_id
+        WHERE pr.status = 'failed' OR pr.doc_type = 'needs_review'
+        ORDER BY pr.updated_at DESC
+        LIMIT 100
+        """,
+        {},
     )
 
 
@@ -369,6 +457,18 @@ def finalize_draft(
             "status": status,
             "promoted_product_id": promoted_product_id,
         },
+    )
+
+
+def list_review_decisions(draft_id: str) -> list[dict[str, Any]]:
+    return fetch_all(
+        """
+        SELECT decision, reason, decided_by, decided_at
+        FROM partner_review_decision
+        WHERE draft_id = %(draft_id)s
+        ORDER BY decided_at DESC
+        """,
+        {"draft_id": draft_id},
     )
 
 

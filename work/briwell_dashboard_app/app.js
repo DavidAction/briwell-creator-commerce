@@ -289,6 +289,7 @@ function bindActions() {
   byId("loadReviewQueueButton").addEventListener("click", loadPartnerReviewQueue);
   byId("approveDraftButton").addEventListener("click", () => reviewPartnerDraft("approved"));
   byId("rejectDraftButton").addEventListener("click", () => reviewPartnerDraft("rejected"));
+  byId("loadAttentionQueueButton").addEventListener("click", loadAttentionQueue);
   const hubPageBase = byId("hubPageBase");
   hubPageBase.value = localStorage.getItem("briwell.hubPageBase") || "";
   hubPageBase.addEventListener("change", () => {
@@ -2975,11 +2976,228 @@ function renderPartnerReviewQueue(items) {
     .join("");
   mount.querySelectorAll("[data-pick-draft]").forEach((button) => {
     button.addEventListener("click", () => {
-      byId("reviewDraftId").value = button.getAttribute("data-pick-draft");
+      const draftId = button.getAttribute("data-pick-draft");
+      byId("reviewDraftId").value = draftId;
       mount.querySelectorAll("tr").forEach((row) => row.classList.remove("row-selected"));
       button.closest("tr")?.classList.add("row-selected");
+      loadPartnerDraftDetail(draftId);
     });
   });
+}
+
+// --- P5: draft detail + source-file cross-check ------------------------------
+
+async function loadPartnerDraftDetail(draftId) {
+  const mount = byId("draftDetailPanel");
+  mount.innerHTML = '<span class="muted">초안 상세를 불러오는 중…</span>';
+  try {
+    const detail = await window.BriwellApi.fetchPartnerDraftDetail(draftId);
+    renderDraftDetail(detail);
+  } catch (error) {
+    mount.innerHTML = `<span class="muted">${escapeHtml(
+      error.payload?.detail?.message || "초안 상세를 불러오지 못했습니다 — API/DB 연결을 확인하세요."
+    )}</span>`;
+  }
+}
+
+function renderDraftDetail(detail) {
+  const mount = byId("draftDetailPanel");
+  const draft = detail.draft?.draft || {};
+  const meta = detail.draft || {};
+  const completeness = meta.completeness || {};
+  const reg = meta.regulatory_flags || {};
+  const aiMeta = meta.ai_meta || {};
+
+  const fieldRows = [
+    ["제품명", draft.product_name],
+    ["브랜드", draft.brand_name],
+    ["카테고리", draft.product_category],
+    ["용량/규격", draft.size],
+    ["확정 클레임", (draft.key_claims_allowed || []).join(" · ")],
+    ["클레임 후보", (draft.claims_candidates || []).join(" · ")],
+    ["판매 국가", (draft.country_availability || []).join(", ")],
+    ["메모", draft.notes],
+  ]
+    .map(
+      ([label, value]) =>
+        `<tr><th style="width:120px;">${escapeHtml(label)}</th><td>${escapeHtml(value || "—")}</td></tr>`
+    )
+    .join("");
+
+  const ingredients = draft.ingredients_raw || [];
+  const componentRows = Object.entries(completeness.components || {})
+    .map(
+      ([name, comp]) =>
+        `<span class="badge">${escapeHtml(name)} ${comp.earned}/${comp.weight}</span>`
+    )
+    .join(" ");
+
+  const regRows = (reg.flags || [])
+    .map(
+      (flag) =>
+        `<div>· ${escapeHtml(flag.country)} — ${escapeHtml(flag.ingredient)}: ${escapeHtml(
+          flag.detail
+        )} <small class="muted">(${escapeHtml(flag.source_ref || "")})</small></div>`
+    )
+    .join("");
+
+  const sourceRows = (detail.source_uploads || [])
+    .map((upload) => {
+      const profile = upload.profile;
+      const analysis = profile
+        ? `${escapeHtml(profile.doc_type_label || profile.doc_type)} · ${escapeHtml(
+            profile.status
+          )}${typeof profile.confidence === "number" ? ` · ${Math.round(profile.confidence * 100)}%` : ""}` +
+          (profile.summary_ko ? `<br><small class="muted">${escapeHtml(profile.summary_ko)}</small>` : "") +
+          (profile.error ? `<br><small class="muted">오류: ${escapeHtml(profile.error)}</small>` : "")
+        : '<span class="muted">프로필 없음</span>';
+      return `<tr>
+        <td>${escapeHtml(upload.original_filename)}</td>
+        <td>${escapeHtml(upload.kind)}</td>
+        <td>${analysis}</td>
+        <td><button class="button" data-open-upload="${escapeHtml(upload.id)}">원본 보기</button></td>
+      </tr>`;
+    })
+    .join("");
+
+  const decisionRows = (detail.decisions || [])
+    .map(
+      (decision) =>
+        `<div>· ${escapeHtml(decision.decision)} — ${escapeHtml(decision.decided_by || "")} ${escapeHtml(
+          String(decision.decided_at || "").slice(0, 16)
+        )}${decision.reason ? ` · ${escapeHtml(decision.reason)}` : ""}</div>`
+    )
+    .join("");
+
+  mount.innerHTML = `
+    <div class="form-grid">
+      <div>
+        <h3 style="margin:0 0 6px;">${escapeHtml(detail.partner?.company_name || "—")} · ${escapeHtml(
+          draft.product_name || "(제품명 없음)"
+        )} <span class="badge">${escapeHtml(meta.status || "")}</span></h3>
+        <table class="kv-table"><tbody>${fieldRows}</tbody></table>
+        <p style="margin:8px 0 4px;"><strong>전성분 (${ingredients.length})</strong></p>
+        <div class="result-box active" style="max-height:140px; overflow:auto;">${escapeHtml(
+          ingredients.join(", ") || "없음"
+        )}</div>
+      </div>
+      <div>
+        <p style="margin:0 0 4px;"><strong>완성도 ${
+          typeof completeness.score === "number" ? `${completeness.score}/100` : "—"
+        }</strong></p>
+        <div>${componentRows || '<span class="muted">—</span>'}</div>
+        <p style="margin:10px 0 4px;"><strong>규제 신호</strong></p>
+        ${regRows || '<span class="muted">시드 룰 매칭 없음 (클리어런스 아님)</span>'}
+        <p class="muted" style="font-size:12px; margin-top:6px;">${escapeHtml(detail.disclaimer || "")}</p>
+        <p style="margin:10px 0 4px;"><strong>AI 메타</strong> <span class="muted">${escapeHtml(
+          aiMeta.mode || "—"
+        )}${aiMeta.model ? ` · ${escapeHtml(aiMeta.model)}` : ""}${
+          aiMeta.prompt_version ? ` · ${escapeHtml(aiMeta.prompt_version)}` : ""
+        }</span></p>
+        <p style="margin:10px 0 4px;"><strong>결정 이력</strong></p>
+        ${decisionRows || '<span class="muted">아직 없음</span>'}
+      </div>
+    </div>
+    <p style="margin:12px 0 4px;"><strong>원본 파일 (${(detail.source_uploads || []).length})</strong></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>파일</th><th>구분</th><th>AI 분석</th><th></th></tr></thead>
+        <tbody>${sourceRows || '<tr><td colspan="4" class="muted">연결된 원본이 없습니다.</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  mount.querySelectorAll("[data-open-upload]").forEach((button) => {
+    button.addEventListener("click", () => openPartnerUpload(button.getAttribute("data-open-upload")));
+  });
+}
+
+async function openPartnerUpload(uploadId) {
+  try {
+    const blob = await window.BriwellApi.fetchPartnerUploadBlob(uploadId);
+    const objectUrl = URL.createObjectURL(blob);
+    window.open(objectUrl, "_blank", "noopener");
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  } catch (error) {
+    showToast(error.status === 404 ? "원본 파일이 없습니다" : "원본을 불러오지 못했습니다");
+  }
+}
+
+// --- P5/P10: needs_review·failed attention queue + re-analysis ----------------
+
+async function loadAttentionQueue() {
+  const mount = byId("attentionQueueTable");
+  mount.innerHTML = '<tr><td colspan="7" class="muted">불러오는 중…</td></tr>';
+  try {
+    const response = await window.BriwellApi.fetchAttentionProfiles();
+    renderAttentionQueue(response.items || []);
+  } catch (error) {
+    mount.innerHTML = `<tr><td colspan="7" class="muted">${escapeHtml(
+      error.payload?.detail?.message || "주의 큐를 불러오지 못했습니다 — API 연결을 확인하세요."
+    )}</td></tr>`;
+  }
+}
+
+function renderAttentionQueue(items) {
+  const mount = byId("attentionQueueTable");
+  if (!items.length) {
+    mount.innerHTML =
+      '<tr><td colspan="7" class="muted">주의가 필요한 분석이 없습니다 — 확인 필요·실패 프로필이 생기면 여기 나타납니다.</td></tr>';
+    return;
+  }
+  mount.innerHTML = items
+    .map((item) => {
+      const status =
+        item.status === "failed"
+          ? '<span class="badge red">실패</span>'
+          : `<span class="badge amber">${escapeHtml(item.doc_type_label || item.doc_type)}</span>`;
+      const when = item.updated_at ? String(item.updated_at).slice(0, 16).replace("T", " ") : "—";
+      return `<tr>
+        <td>${escapeHtml(item.company_name || "—")}</td>
+        <td>${escapeHtml(item.original_filename || "—")}<br><small class="muted">${escapeHtml(
+          item.summary_ko || ""
+        )}</small></td>
+        <td>${escapeHtml(item.doc_type_label || item.doc_type || "—")}</td>
+        <td>${status}</td>
+        <td>${escapeHtml(item.error || "—")}</td>
+        <td>${escapeHtml(when)}</td>
+        <td class="button-row">
+          <button class="button" data-reanalyze="${escapeHtml(item.upload_id)}" data-write-action>재분석</button>
+          <button class="button" data-open-upload-row="${escapeHtml(item.upload_id)}">원본</button>
+        </td>
+      </tr>`;
+    })
+    .join("");
+  mount.querySelectorAll("[data-reanalyze]").forEach((button) => {
+    button.addEventListener("click", () => reanalyzeUpload(button.getAttribute("data-reanalyze")));
+  });
+  mount.querySelectorAll("[data-open-upload-row]").forEach((button) => {
+    button.addEventListener("click", () =>
+      openPartnerUpload(button.getAttribute("data-open-upload-row"))
+    );
+  });
+}
+
+async function reanalyzeUpload(uploadId) {
+  try {
+    const response = await window.BriwellApi.reanalyzePartnerUpload(uploadId);
+    showResult("attentionQueueResult", response);
+    if (response.status === "queued") {
+      showToast("재분석 큐에 등록됨 · 워커 처리 후 갱신하세요");
+    } else if (response.status === "validated_not_persisted") {
+      showToast("DB 미연결 — 재분석은 서버 DB 모드에서만 실행됩니다");
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("attentionQueueResult", error.payload);
+      return;
+    }
+    showResult(
+      "attentionQueueResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "재분석은 서버에서만 실행됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
 }
 
 async function reviewPartnerDraft(decision) {

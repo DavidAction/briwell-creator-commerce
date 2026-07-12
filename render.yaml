@@ -74,6 +74,9 @@ services:
         value: "true"
       - key: ALLOW_LIVE_PARTNER_AI_CALLS
         value: "false"
+      # P1 hardening: hub tokens are sha256-at-rest and expire (days).
+      - key: PARTNER_TOKEN_TTL_DAYS
+        value: "90"
       - key: APIFY_API_TOKEN
         sync: false
       - key: APIFY_TIKTOK_ACTOR_ID

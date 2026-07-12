@@ -45,6 +45,7 @@
   .chip.warn { color:var(--warn); background:rgba(217,164,65,0.16); }
   .chip.bad { color:var(--bad); background:rgba(178,59,59,0.1); }
   .chip.mut { color:var(--muted); background:rgba(12,46,47,0.06); }
+  .thumb { width:44px; height:44px; object-fit:cover; border-radius:8px; border:1px solid var(--line); display:block; background:rgba(12,46,47,0.05); }
   .bar { height:8px; border-radius:999px; background:rgba(12,46,47,0.08); overflow:hidden; margin:6px 0 4px; }
   .bar i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, var(--aqua), var(--aqua-b)); }
   .score-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
@@ -147,9 +148,12 @@
       <div id="uploads"><div class="empty">아직 올린 파일이 없습니다 — 위에서 자료를 올려 주세요.</div></div>
       <div class="actions">
         <button class="btn aqua" id="extract-btn" disabled>선택한 파일로 AI 초안 생성</button>
+        <button class="btn ghost" id="assemble-btn">분석된 프로필로 일괄 초안 생성</button>
       </div>
       <div class="note" style="margin-top:8px;">AI가 만든 초안은 <b>파트너님이 확인·수정한 뒤 제출</b>해야
-        검수 대상이 됩니다. 잘못 읽은 내용은 자유롭게 고쳐 주세요.</div>
+        검수 대상이 됩니다. 잘못 읽은 내용은 자유롭게 고쳐 주세요.
+        <b>일괄 생성</b>은 분석이 끝난 카탈로그의 제품 목록에 성분표·가격표·사진을 자동으로
+        연결해 제품별 초안을 한 번에 만듭니다 (이미 초안이 있는 제품은 건너뜀).</div>
     </div>
 
     <div class="card" id="drafts-card">
@@ -159,6 +163,10 @@
 
     <footer>이 링크는 귀사 전용입니다 — 외부에 공유하지 마세요. 링크 재발급·문의는
       <b>Briwell 담당자에게 직접</b> 연락해 주세요.<br>
+      <span class="data-notice">올려주신 자료는 <b>제품 등록·검수 목적</b>으로만 사용되며,
+      AI 분석 과정에서 외부 AI 처리 서비스(Anthropic·Google)로 전송될 수 있습니다.
+      원본 파일은 감사(audit) 목적으로 보존되며, 자료 삭제를 원하시면 Briwell 담당자에게
+      요청해 주세요.</span><br>
       <span id="footer-disclaimer"></span></footer>
   </div>
 </div>
@@ -170,6 +178,15 @@
   var DEMO = qs.get("demo") === "1";
   var TOKEN = qs.get("t") || qs.get("token") || "";
   var API = (qs.get("api") || "http://127.0.0.1:8030").replace(/\/$/, "");
+
+  // P1 하드닝: 토큰은 메모리에만 두고 주소창·히스토리·프록시 로그에서 제거.
+  // 이후 모든 API 호출은 Authorization 헤더로 나간다 (URL 쿼리 미사용).
+  if (TOKEN) {
+    qs.delete("t");
+    qs.delete("token");
+    var cleanUrl = location.pathname + (qs.toString() ? "?" + qs.toString() : "") + location.hash;
+    try { history.replaceState(null, "", cleanUrl); } catch (e) { /* file:// 등에서는 생략 */ }
+  }
 
   var CATEGORY_KO = {
     sunscreen: "선스크린", calming_serum: "카밍 세럼", cleanser: "클렌저",
@@ -206,7 +223,7 @@
     return '<span class="chip ok">' + esc(a.doc_type_label || a.doc_type) + pctText + "</span>";
   }
 
-  var state = { hub: null, busy: false };
+  var state = { hub: null, busy: false, previews: {} };
 
   var $ = function (id) { return document.getElementById(id); };
   function show(id) {
@@ -238,7 +255,11 @@
   }
 
   function api(path, options) {
-    return fetch(API + path + (path.indexOf("?") >= 0 ? "&" : "?") + "token=" + encodeURIComponent(TOKEN), options)
+    options = options || {};
+    var headers = options.headers || {};
+    headers["Authorization"] = "Bearer " + TOKEN;
+    options.headers = headers;
+    return fetch(API + path, options)
       .then(function (res) {
         return res.text().then(function (text) {
           var body = null;
@@ -282,17 +303,41 @@
       var summary = u.analysis && u.analysis.summary_ko
         ? '<span class="file-note">' + esc(u.analysis.summary_ko) + "</span>"
         : "";
+      var preview = u.kind === "photo"
+        ? '<img class="thumb" data-preview="' + esc(u.id) + '" alt="' + esc(u.original_filename) + ' 미리보기">'
+        : "";
       return '<tr><td><input type="checkbox" class="pick" value="' + esc(u.id) + '"' + (used ? "" : " checked") + '></td>' +
+        '<td>' + preview + '</td>' +
         '<td>' + esc(u.original_filename) + summary + '</td>' +
         '<td><span class="chip mut">' + (KIND_KO[u.kind] || esc(u.kind)) + '</span></td>' +
         '<td>' + fmtBytes(u.byte_size) + '</td>' +
         '<td>' + analysisChip(u.analysis) + '</td>' +
         '<td>' + (used ? '<span class="chip ok">초안 생성됨</span>' : '<span class="chip warn">대기</span>') + '</td></tr>';
     }).join("");
-    $("uploads").innerHTML = '<table><thead><tr><th></th><th>파일</th><th>구분</th><th>크기</th><th>AI 분석</th><th>상태</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    $("uploads").innerHTML = '<table><thead><tr><th></th><th></th><th>파일</th><th>구분</th><th>크기</th><th>AI 분석</th><th>상태</th></tr></thead><tbody>' + rows + '</tbody></table>';
     syncExtractButton();
     Array.prototype.forEach.call(document.querySelectorAll(".pick"), function (el) {
       el.addEventListener("change", syncExtractButton);
+    });
+    loadPreviews();
+  }
+
+  // P6: 사진 원본은 인증된 파일 엔드포인트에서 Authorization 헤더로 받아
+  // object URL로만 표시한다 (토큰이 URL에 실리지 않음). 실패는 조용히 비워둠.
+  function loadPreviews() {
+    if (DEMO) return;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-preview]"), function (img) {
+      var id = img.getAttribute("data-preview");
+      if (state.previews[id]) { img.src = state.previews[id]; return; }
+      fetch(API + "/partner-hub/uploads/" + encodeURIComponent(id) + "/file", {
+        headers: { "Authorization": "Bearer " + TOKEN }
+      }).then(function (res) {
+        if (!res.ok) throw new Error("preview " + res.status);
+        return res.blob();
+      }).then(function (blob) {
+        state.previews[id] = URL.createObjectURL(blob);
+        img.src = state.previews[id];
+      }).catch(function () { img.removeAttribute("data-preview"); });
     });
   }
 
@@ -455,7 +500,7 @@
   function uploadFiles(kind, files) {
     if (DEMO) { toast("데모 모드에서는 업로드되지 않습니다"); return; }
     var note = $("upload-note");
-    var done = 0, failed = [];
+    var done = 0, dup = 0, failed = [];
     note.textContent = "업로드 중… (0/" + files.length + ")";
     var chain = Promise.resolve();
     files.forEach(function (file) {
@@ -463,7 +508,11 @@
         var form = new FormData();
         form.append("file", file, file.name);
         return api("/partner-hub/uploads?kind=" + encodeURIComponent(kind), { method: "POST", body: form })
-          .then(function () { done += 1; note.textContent = "업로드 중… (" + done + "/" + files.length + ")"; })
+          .then(function (body) {
+            if (body && body.status === "duplicate") { dup += 1; }
+            else { done += 1; }
+            note.textContent = "업로드 중… (" + (done + dup) + "/" + files.length + ")";
+          })
           .catch(function (e) {
             var reason = e && e.body && e.body.detail && e.body.detail.message ? e.body.detail.message : "업로드 실패";
             failed.push(file.name + ": " + reason);
@@ -471,8 +520,11 @@
       });
     });
     chain.then(function () {
-      note.textContent = failed.length
-        ? "완료 " + done + "건 · 거부 " + failed.length + "건 — " + failed.join(" / ")
+      var parts = ["완료 " + done + "건"];
+      if (dup) parts.push("중복 " + dup + "건 (이미 올린 파일 — 기존 기록 유지)");
+      if (failed.length) parts.push("거부 " + failed.length + "건 — " + failed.join(" / "));
+      note.textContent = failed.length || dup
+        ? parts.join(" · ")
         : "업로드 완료 (" + done + "건) — 아래에서 파일을 선택해 AI 초안을 만들어 주세요.";
       loadHub();
     });
@@ -497,6 +549,28 @@
       state.busy = false;
       syncExtractButton();
       toast("초안 생성 실패 — 잠시 후 다시 시도해 주세요");
+    });
+  });
+
+  $("assemble-btn").addEventListener("click", function () {
+    if (DEMO) { toast("데모 모드에서는 실행되지 않습니다"); return; }
+    if (state.busy) return;
+    state.busy = true;
+    $("assemble-btn").disabled = true;
+    api("/partner-hub/assemble", { method: "POST" }).then(function (body) {
+      state.busy = false;
+      $("assemble-btn").disabled = false;
+      var made = (body.created || []).length;
+      var skipped = (body.skipped_existing || []).length;
+      var parts = ["일괄 초안 " + made + "건 생성"];
+      if (skipped) parts.push("기존 초안 " + skipped + "건 건너뜀");
+      toast(made ? parts.join(" · ") + " — 아래에서 확인해 주세요" : "새로 만들 제품이 없습니다" + (skipped ? " (이미 초안 " + skipped + "건 존재)" : ""));
+      loadHub();
+    }).catch(function (e) {
+      state.busy = false;
+      $("assemble-btn").disabled = false;
+      var reason = e && e.body && e.body.detail && e.body.detail.message;
+      toast(reason || "일괄 생성 실패 — 잠시 후 다시 시도해 주세요");
     });
   });
 

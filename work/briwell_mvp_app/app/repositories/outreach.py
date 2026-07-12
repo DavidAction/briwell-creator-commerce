@@ -176,7 +176,11 @@ def update_status(
     query = """
         UPDATE outreach
         SET
-          status = %(status)s,
+          -- Explicit cast: %(status)s is also compared against text literals
+          -- in the CASE arms below, and without the cast PostgreSQL deduces
+          -- conflicting types for the one parameter (text vs outreach_status)
+          -- and rejects the statement (found by the 2026-07-12 real-DB run).
+          status = %(status)s::outreach_status,
           response_summary = COALESCE(%(response_summary)s, response_summary),
           proposed_terms = COALESCE(%(proposed_terms)s::jsonb, proposed_terms),
           sent_at = CASE

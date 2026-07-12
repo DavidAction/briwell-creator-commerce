@@ -1847,6 +1847,27 @@ tbody tr.row-selected {
   width: calc(100% - 28px);
 }
 
+/* P5: operator draft-detail key/value table */
+.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.kv-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 4px 8px 4px 0;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.kv-table td {
+  padding: 4px 0;
+  overflow-wrap: anywhere;
+}
+
 .result-box {
   display: none;
   margin-top: 12px;

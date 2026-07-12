@@ -18,18 +18,23 @@ convention; the partner side is a consumer surface and fails loudly with
 """
 
 import hashlib
+import io
 import logging
 import secrets
+import zipfile
 from pathlib import Path
 from typing import Any, Literal
-from uuid import uuid4
+from urllib.parse import quote
+from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, UploadFile
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from app.core.auth import UserContext, require_roles
 from app.core.config import settings
 from app.core.db import connection, database_enabled
+from app.partners import assemble as assemble_module
 from app.partners.extraction import PartnerAIGateClosed, run_extraction
 from app.partners.ingestion import DOC_TYPE_LABELS_KO
 from app.partners.ingredient_data import REGULATORY_DISCLAIMER
@@ -78,6 +83,24 @@ KIND_EXTENSIONS = {
 _OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 _HWP3_MAGIC = b"HWP Document File"
 
+# OOXML-family formats are ZIP containers; a macro-enabled document carries
+# a vbaProject.bin part. Operators end up opening these files, so macro
+# documents are rejected at the door (P2 — macro-free versions re-upload fine).
+_ZIP_CONTAINER_SUFFIXES = {".docx", ".pptx", ".xlsx", ".hwpx"}
+
+
+def _zip_container_rejection(content: bytes) -> str | None:
+    try:
+        with zipfile.ZipFile(io.BytesIO(content)) as archive:
+            if any(name.lower().endswith("vbaproject.bin") for name in archive.namelist()):
+                return (
+                    "매크로(vbaProject.bin)가 포함된 문서는 보안상 받을 수 없습니다 — "
+                    "매크로를 제거한 버전으로 다시 올려 주세요."
+                )
+    except (zipfile.BadZipFile, zipfile.LargeZipFile):
+        return "문서의 압축 구조를 읽을 수 없습니다 (파일 내용 검사 실패)."
+    return None
+
 
 def validate_upload_file(kind: str, filename: str, content: bytes) -> str | None:
     """Return a Korean rejection message, or None when the file is acceptable."""
@@ -103,8 +126,12 @@ def validate_upload_file(kind: str, filename: str, content: bytes) -> str | None
         return "WEBP 형식이 아닙니다 (파일 내용 검사 실패)."
     if suffix == ".pdf" and not content.startswith(b"%PDF"):
         return "PDF 형식이 아닙니다 (파일 내용 검사 실패)."
-    if suffix in {".xlsx", ".docx", ".pptx", ".hwpx"} and not content.startswith(b"PK\x03\x04"):
-        return f"{suffix.lstrip('.').upper()} 형식이 아닙니다 (파일 내용 검사 실패)."
+    if suffix in _ZIP_CONTAINER_SUFFIXES:
+        if not content.startswith(b"PK\x03\x04"):
+            return f"{suffix.lstrip('.').upper()} 형식이 아닙니다 (파일 내용 검사 실패)."
+        rejection = _zip_container_rejection(content)
+        if rejection:
+            return rejection
     if suffix == ".hwp" and not (
         content.startswith(_OLE_MAGIC) or content.startswith(_HWP3_MAGIC)
     ):
@@ -174,12 +201,15 @@ def issue_partner_token(
             status_code=404,
             detail={"code": "PARTNER_NOT_FOUND", "message": "partner_id does not exist."},
         )
-    created = partners_repository.issue_token(payload.partner_id, token)
+    created = partners_repository.issue_token(
+        payload.partner_id, token, settings.partner_token_ttl_days
+    )
     return {
         "status": "persisted",
         "token": token,
         "token_id": str(created["id"]),
         "partner_id": payload.partner_id,
+        "expires_at": created.get("expires_at"),
     }
 
 
@@ -192,6 +222,35 @@ def revoke_partner_tokens(
         return {"status": "validated_not_persisted", "revoked": 0}
     revoked = partners_repository.revoke_for_partner(partner_id)
     return {"status": "persisted", "revoked": revoked}
+
+
+@operator_router.get("/uploads/{upload_id}/file")
+def operator_download_upload(
+    upload_id: str,
+    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+) -> Response:
+    """Operator views any partner's original during review (P5/P6)."""
+
+    if not database_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "PARTNER_HUB_UNAVAILABLE",
+                "message": "File serving requires persistence (USE_DATABASE=true).",
+            },
+        )
+    if not _is_uuid(upload_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    row = partners_repository.get_upload(upload_id)
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    return _serve_upload(row)
 
 
 @operator_router.get("/review-queue")
@@ -214,6 +273,157 @@ def review_queue(
         for row in partners_repository.list_review_queue()
     ]
     return {"items": items, "disclaimer": REGULATORY_DISCLAIMER}
+
+
+@operator_router.get("/drafts/{draft_id}")
+def operator_draft_detail(
+    draft_id: str,
+    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+) -> dict[str, Any]:
+    """Everything an operator needs to actually review (P5): the full draft,
+    the source files with their AI profiles, and the decision history."""
+
+    if not database_enabled():
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "PARTNER_HUB_UNAVAILABLE",
+                "message": "Draft detail requires persistence (USE_DATABASE=true).",
+            },
+        )
+    if not _is_uuid(draft_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "DRAFT_NOT_FOUND", "message": "draft_id does not exist."},
+        )
+    draft_row = partners_repository.get_draft(draft_id)
+    if draft_row is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "DRAFT_NOT_FOUND", "message": "draft_id does not exist."},
+        )
+    partner_id = str(draft_row["partner_id"])
+    partner = partners_repository.get_partner_by_id(partner_id)
+    upload_ids = [str(uid) for uid in draft_row.get("source_upload_ids") or []]
+    uploads = partners_repository.get_uploads_for_partner(partner_id, upload_ids)
+    profiles_by_upload = {
+        str(profile["upload_id"]): profile
+        for profile in partners_repository.get_profiles_for_uploads(upload_ids)
+    }
+    source_uploads = []
+    for row in uploads:
+        profile = profiles_by_upload.get(str(row["id"]))
+        source_uploads.append(
+            {
+                "id": str(row["id"]),
+                "kind": row["kind"],
+                "original_filename": row["original_filename"],
+                "byte_size": row["byte_size"],
+                "status": row["status"],
+                "uploaded_at": row["uploaded_at"],
+                "profile": (
+                    {
+                        "doc_type": profile["doc_type"],
+                        "doc_type_label": DOC_TYPE_LABELS_KO.get(
+                            str(profile["doc_type"]), str(profile["doc_type"])
+                        ),
+                        "status": profile["status"],
+                        # NUMERIC arrives as Decimal and would serialize as a
+                        # string; the UI needs a number (same rule as /me).
+                        "confidence": (
+                            float(profile["confidence"])
+                            if profile["confidence"] is not None
+                            else None
+                        ),
+                        "summary_ko": profile["summary_ko"],
+                        "products_mentioned": list(profile["products_mentioned"] or []),
+                        "extracted": profile["extracted"],
+                        "error": profile["error"],
+                        "model": profile["model"],
+                        "prompt_version": profile["prompt_version"],
+                        "updated_at": profile["updated_at"],
+                    }
+                    if profile is not None
+                    else None
+                ),
+            }
+        )
+    return {
+        "draft": {
+            "id": str(draft_row["id"]),
+            "partner_id": partner_id,
+            "draft": draft_row["draft"],
+            "ai_meta": draft_row["ai_meta"],
+            "completeness": draft_row["completeness"],
+            "regulatory_flags": draft_row["regulatory_flags"],
+            "status": draft_row["status"],
+            "promoted_product_id": (
+                str(draft_row["promoted_product_id"])
+                if draft_row.get("promoted_product_id")
+                else None
+            ),
+            "created_at": draft_row["created_at"],
+            "updated_at": draft_row["updated_at"],
+        },
+        "partner": {
+            "id": partner_id,
+            "company_name": partner["company_name"] if partner else None,
+        },
+        "source_uploads": source_uploads,
+        "decisions": partners_repository.list_review_decisions(draft_id),
+        "disclaimer": REGULATORY_DISCLAIMER,
+    }
+
+
+@operator_router.get("/asset-profiles/attention")
+def attention_profiles(
+    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+) -> dict[str, Any]:
+    """needs_review + failed ingestion profiles across all partners (P5/P10)."""
+
+    if not database_enabled():
+        return {"items": []}
+    items = []
+    for row in partners_repository.list_attention_profiles():
+        item = dict(row)
+        item["upload_id"] = str(row["upload_id"])
+        item["partner_id"] = str(row["partner_id"])
+        item["doc_type_label"] = DOC_TYPE_LABELS_KO.get(str(row["doc_type"]), str(row["doc_type"]))
+        if item.get("confidence") is not None:
+            item["confidence"] = float(item["confidence"])
+        items.append(item)
+    return {"items": items}
+
+
+@operator_router.post("/uploads/{upload_id}/reanalyze")
+def reanalyze_upload(
+    upload_id: str,
+    _user: UserContext = Depends(require_roles("admin", "operator", "campaign_manager")),
+) -> dict[str, Any]:
+    """Manual recovery for failed/needs_review profiles (P10): reset the
+    profile to pending and queue a fresh partner_asset_ingest job."""
+
+    if not database_enabled():
+        return {"status": "validated_not_persisted", "upload_id": upload_id}
+    if not _is_uuid(upload_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    row = partners_repository.get_upload(upload_id)
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    partners_repository.upsert_asset_profile(
+        upload_id=upload_id,
+        partner_id=str(row["partner_id"]),
+        fields={"status": "pending", "error": None},
+    )
+    with connection() as conn:
+        job_id = enqueue_job(conn, "partner_asset_ingest", {"upload_id": upload_id})
+    return {"status": "queued", "upload_id": upload_id, "job_id": job_id}
 
 
 @operator_router.post("/review/{draft_id}")
@@ -326,6 +536,31 @@ def _token_invalid() -> HTTPException:
     )
 
 
+def hub_token(
+    token: str | None = Query(default=None, min_length=16, max_length=128),
+    authorization: str | None = Header(default=None),
+) -> str:
+    """Partner hub credential, P1 hardening: the hub page sends the token as
+    ``Authorization: Bearer`` (keeps it out of URLs and proxy/server logs);
+    the ``?token=`` query form stays accepted so freshly shared links and
+    older clients keep working."""
+
+    if authorization:
+        scheme, _, value = authorization.partition(" ")
+        value = value.strip()
+        if scheme.lower() == "bearer" and 16 <= len(value) <= 128:
+            return value
+    if token:
+        return token
+    raise HTTPException(
+        status_code=422,
+        detail={
+            "code": "PARTNER_TOKEN_MISSING",
+            "message": "Provide the hub token via Authorization: Bearer or ?token=.",
+        },
+    )
+
+
 def _resolve_partner(token: str) -> dict[str, Any]:
     """Token -> active partner, failing loudly. Suspension acts as a kill switch."""
 
@@ -339,6 +574,61 @@ def _resolve_partner(token: str) -> dict[str, Any]:
         raise _token_invalid()
     partners_repository.touch_last_seen(str(token_row["id"]))
     return partner
+
+
+def _is_uuid(value: str) -> bool:
+    try:
+        UUID(value)
+    except (ValueError, TypeError):
+        return False
+    return True
+
+
+# Served content types are whitelisted by suffix — the stored content_type is
+# client-supplied and must not drive the response header.
+_SERVE_MIME = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+    ".pdf": "application/pdf",
+    ".csv": "text/csv",
+    ".txt": "text/plain; charset=utf-8",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+}
+
+
+def _serve_upload(row: dict[str, Any]) -> Response:
+    """Stream a stored original back to an authenticated caller (P6).
+
+    Always attachment-disposed with nosniff so a malicious upload cannot
+    execute in the browser context; previews fetch the bytes and render them
+    from an object URL instead of navigating here."""
+
+    storage_path = Path(str(row["storage_path"]))
+    if not storage_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "FILE_MISSING",
+                "message": "원본 파일이 저장소에 없습니다 — 운영자에게 문의해 주세요.",
+            },
+        )
+    suffix = Path(str(row["original_filename"])).suffix.lower()
+    quoted = quote(str(row["original_filename"]))
+    return Response(
+        content=storage_path.read_bytes(),
+        media_type=_SERVE_MIME.get(suffix, "application/octet-stream"),
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="upload{suffix}"; filename*=UTF-8\'\'{quoted}'
+            ),
+            "Cache-Control": "private, no-store",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 def _sanitize_upload(row: dict[str, Any]) -> dict[str, Any]:
@@ -393,7 +683,7 @@ def _sanitize_analysis(profile: dict[str, Any] | None) -> dict[str, Any] | None:
 
 
 @partner_router.get("/me")
-def hub_me(token: str = Query(min_length=16, max_length=128)) -> dict[str, Any]:
+def hub_me(token: str = Depends(hub_token)) -> dict[str, Any]:
     """Partner self-view. Read scope: own company, own uploads, own drafts."""
 
     partner = _resolve_partner(token)
@@ -444,7 +734,7 @@ def _enqueue_ingest(upload_id: str, partner_id: str) -> None:
 async def hub_upload(
     file: UploadFile,
     kind: Literal["photo", "pdf", "data", "etc"] = Query(),
-    token: str = Query(min_length=16, max_length=128),
+    token: str = Depends(hub_token),
 ) -> dict[str, Any]:
     """One file per call into one of the four separated lanes."""
 
@@ -468,6 +758,15 @@ async def hub_upload(
         )
 
     partner_id = str(partner["id"])
+    sha256 = hashlib.sha256(data).hexdigest()
+
+    # P2: same-sha dedup per partner — re-uploading an identical file returns
+    # the existing record instead of storing a copy and paying for a second
+    # AI analysis. The response says so honestly (status=duplicate).
+    existing = partners_repository.get_upload_by_sha(partner_id, sha256)
+    if existing is not None:
+        return {"status": "duplicate", "upload": _sanitize_upload(existing)}
+
     suffix = Path(filename).suffix.lower()
     storage_dir = Path(settings.partner_upload_dir) / partner_id
     storage_dir.mkdir(parents=True, exist_ok=True)
@@ -481,13 +780,38 @@ async def hub_upload(
             "original_filename": filename,
             "content_type": file.content_type or "application/octet-stream",
             "byte_size": len(data),
-            "sha256": hashlib.sha256(data).hexdigest(),
+            "sha256": sha256,
             "storage_path": str(storage_path),
         }
     )
     # v2: auto-ingestion — classify/extract in the background (job queue).
     _enqueue_ingest(str(record["id"]), partner_id)
     return {"status": "persisted", "upload": _sanitize_upload(record)}
+
+
+@partner_router.get("/uploads/{upload_id}/file")
+def hub_download_upload(
+    upload_id: str,
+    token: str = Depends(hub_token),
+) -> Response:
+    """Partner re-views its own original (photo previews, document download).
+
+    Ownership is enforced by the partner-scoped query — an upload id from a
+    different partner behaves exactly like a nonexistent one (404)."""
+
+    partner = _resolve_partner(token)
+    if not _is_uuid(upload_id):
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    uploads = partners_repository.get_uploads_for_partner(str(partner["id"]), [upload_id])
+    if not uploads:
+        raise HTTPException(
+            status_code=404,
+            detail={"code": "UPLOAD_NOT_FOUND", "message": "upload_id does not exist."},
+        )
+    return _serve_upload(uploads[0])
 
 
 class ExtractRequest(BaseModel):
@@ -497,7 +821,7 @@ class ExtractRequest(BaseModel):
 @partner_router.post("/uploads/extract")
 def hub_extract(
     payload: ExtractRequest,
-    token: str = Query(min_length=16, max_length=128),
+    token: str = Depends(hub_token),
 ) -> dict[str, Any]:
     """Run the AI pipeline over selected uploads and create a draft."""
 
@@ -545,6 +869,65 @@ def hub_extract(
     }
 
 
+@partner_router.post("/assemble")
+def hub_assemble(token: str = Depends(hub_token)) -> dict[str, Any]:
+    """Assemble (P7): one click turns the partner's analyzed profiles into
+    N product drafts — catalog products enriched with matching ingredient
+    lists, price rows and photo mentions, all through the same pipeline as
+    manual extraction. Idempotent: already-drafted product names are skipped."""
+
+    partner = _resolve_partner(token)
+    partner_id = str(partner["id"])
+    profiles = partners_repository.list_done_profiles_for_partner(partner_id)
+    existing_names = [
+        str((row.get("draft") or {}).get("product_name") or "")
+        for row in partners_repository.list_drafts_for_partner(partner_id)
+        if row.get("status") != "rejected"
+    ]
+    result = assemble_module.assemble_proposals(
+        profiles, str(partner["company_name"]), existing_names
+    )
+    if result["catalog_profile_count"] == 0:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "ASSEMBLE_NO_CATALOG",
+                "message": (
+                    "조립할 카탈로그 분석 프로필이 없습니다 — 카탈로그 업로드의 "
+                    "AI 분석이 완료된 뒤 다시 시도해 주세요."
+                ),
+            },
+        )
+
+    created = []
+    touched_upload_ids: set[str] = set()
+    for proposal in result["proposals"]:
+        enriched = enrich_draft(proposal["draft"], proposal["photo_count"])
+        row = partners_repository.create_draft(
+            {
+                "partner_id": partner_id,
+                "source_upload_ids": proposal["source_upload_ids"],
+                "draft": proposal["draft"],
+                "ai_meta": {
+                    "mode": "assembled",
+                    "prompt_version": assemble_module.PROMPT_VERSION,
+                    "upload_count": len(proposal["source_upload_ids"]),
+                },
+                "completeness": enriched["completeness"],
+                "regulatory_flags": enriched["regulatory"],
+            }
+        )
+        created.append(_sanitize_draft(row))
+        touched_upload_ids.update(proposal["source_upload_ids"])
+    if touched_upload_ids:
+        partners_repository.mark_uploads_status(sorted(touched_upload_ids), "extracted")
+    return {
+        "status": "persisted",
+        "created": created,
+        "skipped_existing": result["skipped_existing"],
+    }
+
+
 class DraftUpdateRequest(BaseModel):
     draft: dict[str, Any]
     action: Literal["save", "submit"] = "save"
@@ -554,7 +937,7 @@ class DraftUpdateRequest(BaseModel):
 def hub_update_draft(
     draft_id: str,
     payload: DraftUpdateRequest,
-    token: str = Query(min_length=16, max_length=128),
+    token: str = Depends(hub_token),
 ) -> dict[str, Any]:
     """Partner edits or submits a draft. Submission requires no blocking issues."""
 

@@ -133,6 +133,29 @@
     fetchPartnerReviewQueue: () => request("/partners/review-queue"),
     reviewPartnerDraft: (draftId, body) =>
       request(`/partners/review/${encodeURIComponent(draftId)}`, { method: "POST", body }),
+    fetchPartnerDraftDetail: (draftId) =>
+      request(`/partners/drafts/${encodeURIComponent(draftId)}`),
+    fetchAttentionProfiles: () => request("/partners/asset-profiles/attention"),
+    reanalyzePartnerUpload: (uploadId) =>
+      request(`/partners/uploads/${encodeURIComponent(uploadId)}/reanalyze`, {
+        method: "POST",
+        body: {},
+      }),
+    // Binary fetch for stored partner originals (P6): same auth headers as
+    // every other call; callers turn the blob into an object URL.
+    fetchPartnerUploadBlob: async (uploadId) => {
+      const config = readConfig();
+      const response = await fetch(
+        `${config.apiBase}/partners/uploads/${encodeURIComponent(uploadId)}/file`,
+        { headers: headers(config) }
+      );
+      if (!response.ok) {
+        const error = new Error(`file fetch failed with ${response.status}`);
+        error.status = response.status;
+        throw error;
+      }
+      return response.blob();
+    },
     runRecentPostsScreen: (body) =>
       request("/analysis-jobs/run-recent-posts-screen", { method: "POST", body }),
     saveImportQualityLog: (body) =>

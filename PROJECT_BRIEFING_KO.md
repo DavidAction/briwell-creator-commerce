@@ -500,6 +500,67 @@ config 1줄. 3.5 Flash는 속도 티어라 부적합 판정).
    경로(fallbacks 파라미터 포함) 실검증 + 유형별 라이브 추출 프롬프트 확정. 07-17 이후
    Gemini 3.5 Pro 맞대결. docx/pptx/hwp 텍스트 추출 전처리. 운영자 needs_review 큐 화면.
 
+## 0.0.22 파트너 허브 경화 스프린트 — 실DB 검증·보안·데이터·루프 완성 (2026-07-12) — 테스트 469 통과/26 스킵 (DB포함 495)
+
+비판 리뷰(`outputs/briwell_partner_hub_critical_review_v0.md`)의 David 승인 작업 순서를
+전부 실행. David 입력 0건 — 코드·공개데이터만으로 가능한 항목만.
+
+1. **P9 실DB 검증**: 이 컴퓨터에 포터블 PostgreSQL 17.10 재구축(EDB 공식 바이너리,
+   `work/` gitignore 경로 — 새 컴퓨터마다 로컬 구축 필요, `outputs/start_briwell_postgres_portable.ps1`).
+   마이그레이션 001–012 + 시드 전체 적용·검증 통과. **왕복 검증 스크립트**
+   `scripts/verify_partner_hub_roundtrip.py` 신설: 파트너 등록 → 토큰 → 업로드 → 인제스천
+   워커 → (dedup·파일서빙·assemble) → 초안 → 제출 → 운영자 승인 → product_catalog 실존
+   확인까지 실DB에서 전부 통과. 이 과정에서 **기존 DB-모드 버그 1건 발견·수정**:
+   `app/repositories/outreach.py` update_status의 enum 파라미터 모호성(text vs
+   outreach_status — psycopg AmbiguousParameter, RUN_DB_TESTS 재실행으로 노출) →
+   `::outreach_status` 명시 캐스트.
+2. **P1 토큰 경화** (마이그레이션 012): brand_partner_token **sha256-at-rest**(평문 저장
+   폐지 — 발급 응답에서만 1회 노출), **expires_at 기본 90일**(`PARTNER_TOKEN_TTL_DAYS`,
+   조회는 `expires_at > now()` fail-closed). 허브는 로드 즉시 `history.replaceState`로
+   주소창·히스토리에서 `?t=` 제거 후 **Authorization: Bearer 헤더**로만 호출(백엔드는
+   헤더·쿼리 모두 수용 — 새 링크 첫 진입은 쿼리). 마이그레이션이 평문 시절 활성 토큰을
+   전부 revoke(재발급 1클릭). render.yaml·.env.example에 TTL 반영.
+3. **P6+P2 파일**: 인증 파일 서빙 2종 — 파트너 `GET /partner-hub/uploads/{id}/file`(토큰,
+   소유권은 쿼리 스코프 강제) + 운영자 `GET /partners/uploads/{id}/file`(RBAC). 항상
+   `Content-Disposition: attachment`+`nosniff`+`no-store`, MIME은 확장자 화이트리스트
+   (클라이언트 제공 content_type 불신). 허브 업로드 표에 **사진 미리보기**(blob→objectURL,
+   토큰이 URL에 안 실림). **OOXML 매크로 차단**: docx/pptx/xlsx/hwpx ZIP을 실제 파싱해
+   `vbaProject.bin` 포함 시 거부(대소문자 무시), 파싱 불가 ZIP도 거부. **동일 sha256
+   파트너별 dedup**: 같은 파일 재업로드 시 기존 기록 반환(`status: duplicate` — 저장·재분석
+   비용 0), 허브가 "중복 n건" 정직 표기.
+4. **P3 성분 데이터**: EU CosIng 인벤토리 **28,703종**을 리포 시드로
+   (`data/cosing_ingredients.csv` 1.7MB, 생성기 `scripts/build_cosing_seed.py`). 출처 정직
+   기록: 신규 CosIng 사이트가 벌크 CSV 익명 제공을 중단해 **공식 CSV의 Internet Archive
+   스냅샷(2020-12-30, 데이터 2020-12-15)** 사용 — 소스 URL·sha256·스냅샷 시각을 생성기와
+   파일 헤더에 명기. `app/partners/cosing_data.py` 지연 로더(첫 정규화 때만 로드, 파일
+   없으면 큐레이션 사전 단독으로 정직 동작). 정규화는 2계층: **큐레이션 시드 항상 우선**
+   (철자·한글 별칭·기능) → CosIng 폴백, 퍼지는 첫 글자 버킷으로 28k에서도 빠름. 정규화
+   결과에 dictionary 메타(큐레이션/cosing 수·버전) 동봉. 규제 룰은 큐레이션 유지(검증된
+   LATAM 목록 확장은 별도 — 법적 검증 채널 필요, David).
+5. **P5+P10 운영자 루프**: `GET /partners/drafts/{id}` **초안 상세**(전체 초안 + 원본
+   파일별 AI 프로필(운영자는 model·error·extracted까지) + 결정 이력) — 대시보드 검수 큐에서
+   행 선택 시 "초안 상세 · 원본 대조" 패널 렌더(완성도 구성요소 분해·규제 신호·전성분·
+   원본 보기 버튼=blob 새 탭). `GET /partners/asset-profiles/attention` —
+   **needs_review·failed 주의 큐**(회사·파일·오류·재분석/원본 버튼). `POST
+   /partners/uploads/{id}/reanalyze` — 프로필 pending 리셋 + 잡 재인큐(실패 프로필 수동
+   SQL 없이 복구). NUMERIC confidence는 float 직렬화(문자열 %truncation 버그 실브라우저에서
+   발견·수정).
+6. **P7 assemble**: `POST /partner-hub/assemble` + `app/partners/assemble.py` — done
+   프로필에서 **카탈로그가 제품 열거를 소유**(성분표/가격표/사진은 이름 키 매칭으로 보강만,
+   제품 발명 금지), 제품별 초안을 기존 enrich 파이프라인으로 N건 생성. 카테고리는 추측하지
+   않고 빈 값(advisory). 이미 초안 있는 제품명은 스킵(반복 클릭 멱등). 허브 "분석된
+   프로필로 일괄 초안 생성" 버튼 — 실브라우저에서 카탈로그 1부 → 초안 2건 생성 확인.
+7. **P13 고지**: 허브 푸터에 제품 내 데이터 처리 고지(용도 한정·외부 AI 처리 가능성
+   (Anthropic·Google)·원본 보존·삭제 요청 경로).
+8. **검증**: 백엔드 **469 통과/26 스킵**(0.0.21 대비 +31), RUN_DB_TESTS=1 실DB 포함
+   **495 통과/0 실패**, 대시보드 스모크 통과(신규 패널 고정 어서션 추가), 왕복 스크립트
+   전 단계 통과, 실브라우저 검증(허브: 토큰 URL 제거·미리보기 blob 로드·assemble 2건·고지
+   문구 / 대시보드: 검수 큐→상세 패널→쓰기 확인 모달→재분석 queued→워커 처리→주의 큐
+   비움). 로컬 `.env`는 DB 모드로 전환(55432 포터블).
+9. **남은 것(변동 없음, 전부 David 입력 필요)**: 골든셋(파넬 실자료) → 라이브 AI 개방·
+   정확도 실측, 이메일 알림(발신 계정), 검증된 LATAM 규제 목록, 도메인/호스팅, 업로드
+   외부 백업(R2). P8(알림)은 발신 계정 없이는 불가라 이번 스프린트에서 제외.
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

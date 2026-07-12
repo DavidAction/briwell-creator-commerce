@@ -6,7 +6,9 @@ database and the seed cannot drift from the matcher. Sources:
 * Dictionary: hand-curated subset of the EU CosIng inventory (public open
   data, ec.europa.eu/growth/tools-databases/cosing) covering the ingredients
   that dominate K-beauty INCI lists. Extend freely; the matcher treats this
-  as the canonical spelling.
+  as the canonical spelling. Since P3 the full CosIng inventory (~28,700
+  names, data/cosing_ingredients.csv via app/partners/cosing_data.py) sits
+  underneath as a fallback layer — this curated seed always wins.
 * Regulatory rules: conservative starter set of substances that are
   prohibited or restricted in cosmetics across our launch markets (MX/PE/EC),
   anchored to Andean Decision 833 (which adopts EU Annex II/III-style lists,
