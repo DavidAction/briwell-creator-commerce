@@ -282,6 +282,18 @@ function bindActions() {
   portalPageBase.addEventListener("change", () => {
     localStorage.setItem("briwell.portalPageBase", portalPageBase.value.trim());
   });
+
+  byId("createPartnerButton").addEventListener("click", createPartner);
+  byId("issueHubTokenButton").addEventListener("click", issueHubToken);
+  byId("revokeHubTokenButton").addEventListener("click", revokeHubTokens);
+  byId("loadReviewQueueButton").addEventListener("click", loadPartnerReviewQueue);
+  byId("approveDraftButton").addEventListener("click", () => reviewPartnerDraft("approved"));
+  byId("rejectDraftButton").addEventListener("click", () => reviewPartnerDraft("rejected"));
+  const hubPageBase = byId("hubPageBase");
+  hubPageBase.value = localStorage.getItem("briwell.hubPageBase") || "";
+  hubPageBase.addEventListener("change", () => {
+    localStorage.setItem("briwell.hubPageBase", hubPageBase.value.trim());
+  });
   byId("runOperationsPipelineButton").addEventListener("click", runOperationsPipeline);
 
   byId("loadCreatorCsvButton").addEventListener("click", loadCreatorCsv);
@@ -2768,16 +2780,21 @@ async function revokePortalTokens() {
   }
 }
 
-function appendPortalLinkRow(token) {
-  const box = byId("portalTokenResult");
-  const base = byId("portalPageBase").value.trim();
+function appendPortalLinkRow(
+  token,
+  resultId = "portalTokenResult",
+  baseInputId = "portalPageBase",
+  linkLabel = "크리에이터 포털 개인 링크"
+) {
+  const box = byId(resultId);
+  const base = byId(baseInputId).value.trim();
   const link = base ? `${base}${base.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}` : "";
   const row = document.createElement("div");
   row.className = "portal-link-row";
   const input = document.createElement("input");
   input.readOnly = true;
   input.value = link || token;
-  input.setAttribute("aria-label", link ? "크리에이터 포털 개인 링크" : "포털 토큰");
+  input.setAttribute("aria-label", link ? linkLabel : "접근 토큰");
   const copyButton = document.createElement("button");
   copyButton.type = "button";
   copyButton.className = "button";
@@ -2787,23 +2804,215 @@ function appendPortalLinkRow(token) {
   row.appendChild(copyButton);
   box.appendChild(row);
   if (!base) {
-    appendPortalLinkNote("포털 페이지 주소를 입력하면 완성된 개인 링크로 복사할 수 있습니다.");
+    appendPortalLinkNote(
+      "페이지 주소를 입력하면 완성된 개인 링크로 복사할 수 있습니다.",
+      resultId
+    );
   }
 }
 
-function appendPortalLinkNote(text) {
+function appendPortalLinkNote(text, resultId = "portalTokenResult") {
   const note = document.createElement("p");
   note.className = "portal-link-note";
   note.textContent = text;
-  byId("portalTokenResult").appendChild(note);
+  byId(resultId).appendChild(note);
 }
 
 function copyPortalLink(input) {
-  const done = () => showToast("복사됨 · 해당 크리에이터에게만 전달하세요");
+  const done = () => showToast("복사됨 · 해당 상대에게만 전달하세요");
   if (navigator.clipboard?.writeText) {
     navigator.clipboard.writeText(input.value).then(done, () => fallbackCopy(input, done));
   } else {
     fallbackCopy(input, done);
+  }
+}
+
+// --- Brand Partner Hub (operator side) --------------------------------------
+
+async function createPartner() {
+  const payload = {
+    company_name: byId("partnerCompanyName").value.trim(),
+    contact_name: byId("partnerContactName").value.trim() || null,
+    contact_email: byId("partnerContactEmail").value.trim() || null,
+    internal_memo: byId("partnerInternalMemo").value.trim() || null,
+  };
+  if (!payload.company_name) {
+    showToast("회사명이 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.createPartner(payload);
+    showResult("createPartnerResult", response);
+    if (response.status === "persisted") {
+      showToast(`파트너 ${payload.company_name} 등록 완료`);
+      if (response.partner?.id) byId("hubPartnerId").value = response.partner.id;
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("createPartnerResult", error.payload);
+      return;
+    }
+    showResult(
+      "createPartnerResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "파트너 등록은 서버에서만 수행됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
+}
+
+async function issueHubToken() {
+  const partnerId = byId("hubPartnerId").value.trim();
+  if (!partnerId) {
+    showToast("파트너 ID가 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.issueHubToken({ partner_id: partnerId });
+    showResult("hubTokenResult", response);
+    if (response.status === "persisted") {
+      appendPortalLinkRow(response.token, "hubTokenResult", "hubPageBase", "브랜드 파트너 허브 링크");
+      showToast("허브 링크 발급 완료 · 이전 링크는 즉시 무효");
+    } else if (response.status === "validated_not_persisted") {
+      appendPortalLinkNote(
+        "이 토큰은 DB에 저장되지 않아 실제 허브 링크로 동작하지 않습니다.",
+        "hubTokenResult"
+      );
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("hubTokenResult", error.payload);
+      return;
+    }
+    showResult(
+      "hubTokenResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "허브 토큰은 서버에서만 발급됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
+}
+
+async function revokeHubTokens() {
+  const partnerId = byId("hubPartnerId").value.trim();
+  if (!partnerId) {
+    showToast("파트너 ID가 필요합니다");
+    return;
+  }
+  try {
+    const response = await window.BriwellApi.revokeHubTokens(partnerId);
+    showResult("hubTokenResult", response);
+    if (response.status === "persisted") {
+      showToast(`허브 링크 ${response.revoked ?? 0}건 폐기 · 기존 링크 즉시 무효`);
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("hubTokenResult", error.payload);
+      return;
+    }
+    showResult(
+      "hubTokenResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "허브 토큰 폐기는 서버에서만 수행됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
+  }
+}
+
+const HUB_GRADE_LABELS = {
+  no_flag: "신호 없음",
+  restricted_candidate: "제한 후보",
+  blocked_candidate: "금지 후보",
+};
+
+function worstRegulatoryGrade(regulatoryFlags) {
+  const grades = Object.values(regulatoryFlags?.by_country || {}).map((entry) => entry.grade);
+  if (grades.includes("blocked_candidate")) return "blocked_candidate";
+  if (grades.includes("restricted_candidate")) return "restricted_candidate";
+  if (grades.length) return "no_flag";
+  return null;
+}
+
+async function loadPartnerReviewQueue() {
+  const mount = byId("reviewQueueTable");
+  mount.innerHTML = '<tr><td colspan="7" class="muted">불러오는 중…</td></tr>';
+  try {
+    const response = await window.BriwellApi.fetchPartnerReviewQueue();
+    renderPartnerReviewQueue(response.items || []);
+  } catch (error) {
+    mount.innerHTML = `<tr><td colspan="7" class="muted">${escapeHtml(
+      error.payload?.detail?.message || "검수 큐를 불러오지 못했습니다 — API 연결을 확인하세요."
+    )}</td></tr>`;
+  }
+}
+
+function renderPartnerReviewQueue(items) {
+  const mount = byId("reviewQueueTable");
+  if (!items.length) {
+    mount.innerHTML =
+      '<tr><td colspan="7" class="muted">검수 대기 초안이 없습니다 — 파트너 제출을 기다리는 중.</td></tr>';
+    return;
+  }
+  mount.innerHTML = items
+    .map((item) => {
+      const draft = item.draft || {};
+      const score = item.completeness?.score;
+      const grade = worstRegulatoryGrade(item.regulatory_flags);
+      const when = item.updated_at ? String(item.updated_at).slice(0, 10) : "—";
+      return `<tr data-draft-id="${escapeHtml(item.draft_id)}">
+        <td><button class="button" data-pick-draft="${escapeHtml(item.draft_id)}">선택</button></td>
+        <td>${escapeHtml(item.company_name || "—")}</td>
+        <td>${escapeHtml(draft.product_name || "(제품명 없음)")}</td>
+        <td>${escapeHtml(draft.product_category || "—")}</td>
+        <td>${typeof score === "number" ? `${score}/100` : "—"}</td>
+        <td>${grade ? escapeHtml(HUB_GRADE_LABELS[grade] || grade) : "—"}</td>
+        <td>${escapeHtml(when)}</td>
+      </tr>`;
+    })
+    .join("");
+  mount.querySelectorAll("[data-pick-draft]").forEach((button) => {
+    button.addEventListener("click", () => {
+      byId("reviewDraftId").value = button.getAttribute("data-pick-draft");
+      mount.querySelectorAll("tr").forEach((row) => row.classList.remove("row-selected"));
+      button.closest("tr")?.classList.add("row-selected");
+    });
+  });
+}
+
+async function reviewPartnerDraft(decision) {
+  const draftId = byId("reviewDraftId").value.trim();
+  if (!draftId) {
+    showToast("검수 큐에서 초안을 먼저 선택하세요");
+    return;
+  }
+  const payload = { decision, reason: byId("reviewReason").value.trim() || null };
+  try {
+    const response = await window.BriwellApi.reviewPartnerDraft(draftId, payload);
+    showResult("reviewDraftResult", response);
+    if (response.status === "persisted") {
+      showToast(
+        decision === "approved"
+          ? "승인 완료 · 제품 카탈로그에 등록됨"
+          : "반려 완료 · 파트너 허브에 반영됨"
+      );
+      byId("reviewDraftId").value = "";
+      loadPartnerReviewQueue();
+    }
+  } catch (error) {
+    if (error.cancelled) {
+      showResult("reviewDraftResult", error.payload);
+      return;
+    }
+    showResult(
+      "reviewDraftResult",
+      error.payload || {
+        status: "api_unreachable",
+        message: "검수 결정은 서버에서만 기록됩니다. API 연결 후 다시 시도하세요.",
+      }
+    );
   }
 }
 

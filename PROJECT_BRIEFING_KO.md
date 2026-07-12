@@ -424,6 +424,45 @@ AI가 분석·분류·저장·가공해 업무를 획기적으로 줄이는 **�
 - 결정 포인트 7개가 문서 §9에 정리됨(범위·저장소·접근 A/B안·1호 벤더·규제 신호 시점·UI 방향·
   명칭). **David 피드백·결정 후 Phase 1 착수.**
 
+## 0.0.20 브랜드 파트너 허브 Phase 1 구현 (2026-07-12) — 테스트 427 통과/26 스킵
+
+0.0.19 기획을 David가 승인(명칭 = **브랜드 파트너 허브**, 업로드 = **사진/PDF/자료 3레인 분리**,
+나머지 권장안 채택)하여 Phase 1 전체 구현. 브랜드사가 자료를 올리면 AI가 구조화하고 운영자
+승인으로 기존 product_catalog에 등록되는 셀프서브 온보딩 파이프라인.
+
+1. **백엔드**: 마이그레이션 010(brand_partner·brand_partner_token·partner_upload·
+   partner_product_draft·partner_review_decision — 토큰은 009 포털 패턴 복제, 원본 파일 영구
+   보존), `app/partners/` 파이프라인 5모듈(추출→INCI 정규화→검증→규제 신호→완성도 스코어),
+   `app/routers/partner_hub.py` 이중 표면:
+   - 운영자(`/partners`, RBAC): 등록 / 토큰 발급·회전·폐기 / 검수 큐 / 승인·반려. 승인 시
+     초안 → product_catalog 승격(미지원 카테고리 422), 결정은 partner_review_decision에 기록
+     (인간 게이트 감사 추적).
+   - 파트너(`/partner-hub`, 토큰 게이트): me / uploads(레인별 확장자+매직바이트+크기 검증,
+     sha256 기록, 실행 불가 경로 저장) / extract / draft 저장·제출. 필드 화이트리스트로
+     internal_memo·타사 데이터·storage_path·모델명 구조적 차단. DB off는 소비자 표면이라
+     503 PARTNER_HUB_UNAVAILABLE(포털 관례), 편집 가능 필드 화이트리스트로 임의 키 주입 차단.
+2. **AI 파이프라인**: 듀얼 게이트(`PARTNER_AI_DRY_RUN` 기본 true + `ALLOW_LIVE_PARTNER_AI_CALLS`)
+   — 드라이런은 업로드 해시 기반 결정적 샘플. 라이브는 Gemini 멀티모달(사진·PDF inlineData,
+   CSV 텍스트, xlsx는 Phase 2로 정직하게 표기). INCI 사전(~80종, CosIng 부분집합)과 규제 룰
+   (MX/PE/EC 보수적 시드, 출처 기록)은 **코드 시드**(`ingredient_data.py`) — 설계의 DB 테이블
+   대신 채택(무DB 동작·드리프트 차단). 미매칭 성분은 추측 없이 unmatched로 정직 표기하되,
+   규제 스크리닝은 raw 문자열도 검사해 사전 미스 뒤에 숨지 못하게 함. 모든 규제 결과에
+   "법률 자문 아님" 문구 동봉(비협상 제약 6).
+3. **프런트**: `work/briwell_partner_hub_app/index.html` — 자기완결 KO 데스크톱 우선, The Well
+   아이덴티티. 3분리 업로드 레인, AI 초안 생성, 초안 편집(확신도 표시·완성도 바·규제 칩·검증
+   이슈), 제출. `?demo=1` 데모, 에러 상태 2종(무효 링크/점검 중). 대시보드에 "파트너 허브"
+   화면 추가(등록·링크 발급/폐기·검수 큐·승인/반려, 전부 쓰기 확인 게이트, 파트너 문자열
+   escapeHtml).
+4. **테스트**: 47개 신규(파이프라인 단위·RBAC·DB-off 관례·업로드 검증·격리/누출 방지·검수
+   플로우) + CORS 회귀 1 = **427 통과/26 스킵**, 대시보드 스모크 통과(파트너 허브 단정 ~20개).
+5. **자가 검증에서 잡은 것**: 로컬 CORS 기본값·`.env`·`.env.example`에 포털(8072)·허브(8073)
+   오리진 누락 — 브라우저 실검증에서 net::ERR_FAILED로 발견, 셋 다 수정 + 회귀 테스트.
+   (conftest가 BRIWELL_SKIP_DOTENV라 테스트만으론 안 잡혔음 — 실브라우저 검증의 가치.)
+   업로드 저장 경로 `data/partner_uploads/`는 .gitignore 추가. 의존성 python-multipart 추가.
+6. **남은 것**: 실 카탈로그 골든셋(1호 벤더 자료 필요 — David), 라이브 AI 개방은 골든셋 측정
+   후, xlsx 파싱·완성도 스코어 정식화·Supabase 계정 전환·R2는 Phase 2~3(기획서 §10).
+   배포 시 허브 페이지 오리진 CORS 등록(DEPLOY_RENDER.md 반영됨).
+
 ## 0.0.8 트렌드 탭 설계 결정 + 컴플라이언스 판단 (2026-07-07) — 코드 미작성
 
 **A. 트렌드 신호 탭 (크리에이터 서치 하위) — 설계·미리보기 승인 대기, 아직 구현 안 함**

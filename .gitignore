@@ -22,6 +22,9 @@ work/postgresql-*-binaries.zip
 work/db_backups/
 work/postgres_server.log
 
+# Partner hub uploads (originals stay on disk/DB, never in git)
+work/briwell_mvp_app/data/partner_uploads/
+
 # Runtime logs and local process files
 *.log
 *.pid

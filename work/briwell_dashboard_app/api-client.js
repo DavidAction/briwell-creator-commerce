@@ -125,6 +125,14 @@
     issuePortalToken: (body) => request("/portal/tokens", { method: "POST", body }),
     revokePortalTokens: (creatorId) =>
       request(`/portal/tokens/${encodeURIComponent(creatorId)}`, { method: "DELETE" }),
+    createPartner: (body) => request("/partners", { method: "POST", body }),
+    listPartners: () => request("/partners"),
+    issueHubToken: (body) => request("/partners/tokens", { method: "POST", body }),
+    revokeHubTokens: (partnerId) =>
+      request(`/partners/tokens/${encodeURIComponent(partnerId)}`, { method: "DELETE" }),
+    fetchPartnerReviewQueue: () => request("/partners/review-queue"),
+    reviewPartnerDraft: (draftId, body) =>
+      request(`/partners/review/${encodeURIComponent(draftId)}`, { method: "POST", body }),
     runRecentPostsScreen: (body) =>
       request("/analysis-jobs/run-recent-posts-screen", { method: "POST", body }),
     saveImportQualityLog: (body) =>

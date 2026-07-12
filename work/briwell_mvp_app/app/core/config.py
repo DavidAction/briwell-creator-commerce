@@ -53,11 +53,16 @@ class Settings:
         for algorithm in os.getenv("OIDC_ALLOWED_ALGORITHMS", "ES256,RS256").split(",")
         if algorithm.strip()
     )
+    # Development defaults cover every local page that talks to the API:
+    # dashboard (8070), Vite (5173), creator portal (8072), partner hub (8073).
+    # Production sets CORS_ALLOWED_ORIGINS explicitly and the readiness gate
+    # rejects localhost entries there.
     cors_allowed_origins: tuple[str, ...] = tuple(
         origin.strip()
         for origin in os.getenv(
             "CORS_ALLOWED_ORIGINS",
-            "http://127.0.0.1:8070,http://localhost:8070,http://127.0.0.1:5173,http://localhost:5173",
+            "http://127.0.0.1:8070,http://localhost:8070,http://127.0.0.1:5173,http://localhost:5173"
+            ",http://127.0.0.1:8072,http://localhost:8072,http://127.0.0.1:8073,http://localhost:8073",
         ).split(",")
         if origin.strip()
     )
@@ -146,6 +151,22 @@ class Settings:
         "ALLOW_LIVE_NEWS_RSS_CALLS",
         "false",
     ).strip().lower() in {"1", "true", "yes"}
+    # Brand Partner Hub (migration 010). Same dual live-gate shape as the
+    # other lanes: extraction is deterministic dry-run unless BOTH flags open.
+    partner_ai_dry_run: bool = os.getenv("PARTNER_AI_DRY_RUN", "true").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    allow_live_partner_ai_calls: bool = os.getenv(
+        "ALLOW_LIVE_PARTNER_AI_CALLS",
+        "false",
+    ).strip().lower() in {"1", "true", "yes"}
+    partner_upload_dir: str = os.getenv(
+        "PARTNER_UPLOAD_DIR",
+        str(ROOT / "data" / "partner_uploads"),
+    )
+    partner_upload_max_bytes: int = int(os.getenv("PARTNER_UPLOAD_MAX_BYTES", "15000000"))
 
 
 settings = Settings()

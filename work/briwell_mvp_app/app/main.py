@@ -29,6 +29,7 @@ from app.routers import (
     ops,
     operations,
     outreach,
+    partner_hub,
     performance,
     portal,
     products,
@@ -182,6 +183,8 @@ app.include_router(products.router)
 app.include_router(providers.router)
 app.include_router(settlements.router)
 app.include_router(portal.router)
+app.include_router(partner_hub.operator_router)
+app.include_router(partner_hub.partner_router)
 app.include_router(commerce.router)
 app.include_router(shopify_webhooks.router)
 app.include_router(trends.router)

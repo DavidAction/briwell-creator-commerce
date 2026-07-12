@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briwell — 브랜드 파트너 허브</title>
+<meta name="description" content="브랜드 파트너 허브: 카탈로그·제품 사진·성분 자료를 올리면 AI가 초안을 만들고, Briwell 검수 후 카탈로그에 등록됩니다.">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%230E7C71' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%232FD0BC'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --paper:#F5F2EA; --ink:#0C2E2F; --muted:#5C6E6A; --aqua:#0E7C71; --aqua-b:#2FD0BC; --gold:#D9A441; --line:rgba(12,46,47,0.14); --card:#FFFFFF; --ok:#127A4F; --warn:#9A6A12; --bad:#B23B3B; }
+  body { background:var(--paper); color:var(--ink); font-family:"Noto Sans KR",sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh; }
+  .shell { max-width:960px; margin:0 auto; padding:26px 20px 72px; }
+  header { display:flex; justify-content:space-between; align-items:center; padding:4px 2px 22px; }
+  .logo { font-family:Fraunces,serif; font-weight:600; font-size:20px; display:flex; align-items:center; gap:8px; }
+  .logo em { font-style:italic; color:var(--aqua); }
+  header small { font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:16px; box-shadow:0 10px 24px rgba(12,46,47,0.07); }
+  h1 { font-family:Fraunces,serif; font-weight:600; font-size:26px; line-height:1.3; }
+  h1 em { font-style:italic; color:var(--aqua); }
+  .sub { font-size:13.5px; color:var(--muted); margin-top:6px; line-height:1.7; }
+  .k { font-size:11px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--aqua); margin-bottom:10px; }
+  .lanes { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+  .lane { border:1.5px dashed var(--line); border-radius:12px; padding:16px; text-align:center; background:rgba(245,242,234,0.5); }
+  .lane b { display:block; font-size:14.5px; margin-bottom:2px; }
+  .lane small { display:block; font-size:11.5px; color:var(--muted); margin-bottom:12px; line-height:1.5; }
+  .lane input[type=file] { display:none; }
+  .btn { font-size:13px; font-weight:700; color:var(--paper); background:var(--ink); border:none; border-radius:999px; padding:9px 20px; cursor:pointer; }
+  .btn.aqua { background:var(--aqua); }
+  .btn.ghost { background:transparent; color:var(--ink); border:1.5px solid var(--line); }
+  .btn:disabled { opacity:0.45; cursor:default; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:6px 8px; border-bottom:1px solid var(--line); }
+  td { padding:9px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  .chip { display:inline-block; font-size:11px; font-weight:700; border-radius:999px; padding:3px 10px; }
+  .chip.ok { color:var(--ok); background:rgba(18,122,79,0.1); }
+  .chip.warn { color:var(--warn); background:rgba(217,164,65,0.16); }
+  .chip.bad { color:var(--bad); background:rgba(178,59,59,0.1); }
+  .chip.mut { color:var(--muted); background:rgba(12,46,47,0.06); }
+  .bar { height:8px; border-radius:999px; background:rgba(12,46,47,0.08); overflow:hidden; margin:6px 0 4px; }
+  .bar i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, var(--aqua), var(--aqua-b)); }
+  .score-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .score { font-family:Fraunces,serif; font-weight:600; font-size:26px; }
+  .field { margin-bottom:12px; }
+  .field span { display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px; }
+  .field input, .field textarea { width:100%; border:1px solid var(--line); border-radius:9px; padding:9px 11px; font-family:inherit; font-size:13.5px; color:var(--ink); background:#fff; }
+  .field textarea { min-height:96px; resize:vertical; line-height:1.6; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  .ing-chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .issues { margin-top:8px; font-size:12.5px; line-height:1.7; }
+  .issues .blk { color:var(--bad); font-weight:700; }
+  .issues .adv { color:var(--warn); }
+  .reg-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .disclaimer { font-size:11.5px; color:var(--muted); line-height:1.7; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
+  .draft-head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .draft-title { font-family:Fraunces,serif; font-weight:600; font-size:19px; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .note { font-size:12.5px; color:var(--muted); line-height:1.7; }
+  .empty { text-align:center; color:var(--muted); font-size:13.5px; padding:20px 6px; line-height:1.7; }
+  footer { text-align:center; font-size:11.5px; color:var(--muted); line-height:1.8; padding-top:18px; }
+  footer b { color:var(--ink); }
+  .state { text-align:center; padding:90px 12px; }
+  .ripple { position:relative; width:64px; height:64px; margin:0 auto 22px; }
+  .ripple i { position:absolute; inset:0; border:2px solid var(--aqua); border-radius:50%; animation:rip 1.6s ease-out infinite; }
+  .ripple i:nth-child(2) { animation-delay:0.5s; }
+  @keyframes rip { 0% { transform:scale(0.4); opacity:1; } 100% { transform:scale(1.15); opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { .ripple i { animation:none; opacity:0.5; } }
+  .state h2 { font-family:Fraunces,serif; font-weight:600; font-size:22px; margin-bottom:8px; }
+  .state p { font-size:13.5px; color:var(--muted); line-height:1.7; max-width:40ch; margin:0 auto; }
+  .hidden { display:none; }
+  .demo-tag { position:fixed; top:10px; right:10px; font-size:10px; font-weight:700; letter-spacing:0.1em; background:var(--gold); color:var(--ink); border-radius:999px; padding:4px 10px; z-index:9; }
+  .toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:var(--paper); font-size:13px; font-weight:500; border-radius:999px; padding:10px 22px; opacity:0; transition:all .25s; pointer-events:none; z-index:10; max-width:90vw; }
+  .toast.on { opacity:1; transform:translateX(-50%) translateY(0); }
+  @media (max-width: 760px) { .lanes { grid-template-columns:1fr; } .grid2 { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <span class="logo">
+      <svg width="18" height="18" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="#0E7C71" stroke-width="2.5"/><circle cx="16" cy="16" r="6" fill="#2FD0BC"/></svg>
+      bri<em>well</em>
+    </span>
+    <small>Brand Partner Hub</small>
+  </header>
+
+  <div id="loading" class="state">
+    <div class="ripple"><i></i><i></i></div>
+    <h2>허브를 여는 중…</h2>
+    <p>파트너 데이터를 불러오고 있습니다.</p>
+  </div>
+
+  <div id="error" class="state hidden">
+    <h2 id="err-title">링크가 유효하지 않습니다</h2>
+    <p id="err-body">이 링크는 더 이상 활성 상태가 아닙니다. Briwell 담당자에게 새 링크를 요청해 주세요.</p>
+  </div>
+
+  <div id="view" class="hidden">
+    <div class="card">
+      <h1><em id="company">—</em> 파트너님, 반갑습니다.</h1>
+      <div class="sub">카탈로그·제품 사진·성분 자료를 올리면 AI가 제품 초안을 만들고,
+        파트너님 확인 → Briwell 운영팀 승인을 거쳐 캠페인 카탈로그에 등록됩니다.
+        올린 원본은 그대로 보존됩니다.</div>
+    </div>
+
+    <div class="card">
+      <div class="k">1 · 자료 올리기 — 세 가지로 나눠서</div>
+      <div class="lanes">
+        <div class="lane">
+          <b>제품 사진</b>
+          <small>JPG · PNG · WEBP<br>흰 배경컷과 연출컷</small>
+          <input type="file" id="file-photo" accept=".jpg,.jpeg,.png,.webp" multiple>
+          <button class="btn" data-lane="photo">사진 선택</button>
+        </div>
+        <div class="lane">
+          <b>카탈로그 PDF</b>
+          <small>PDF<br>제품 소개서·브로슈어</small>
+          <input type="file" id="file-pdf" accept=".pdf" multiple>
+          <button class="btn" data-lane="pdf">PDF 선택</button>
+        </div>
+        <div class="lane">
+          <b>자료 (성분·스펙)</b>
+          <small>CSV · XLSX<br>전성분표·가격·규격</small>
+          <input type="file" id="file-data" accept=".csv,.xlsx" multiple>
+          <button class="btn" data-lane="data">자료 선택</button>
+        </div>
+      </div>
+      <div id="upload-note" class="note" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="k">2 · 올린 파일에서 AI 초안 만들기</div>
+      <div id="uploads"><div class="empty">아직 올린 파일이 없습니다 — 위에서 자료를 올려 주세요.</div></div>
+      <div class="actions">
+        <button class="btn aqua" id="extract-btn" disabled>선택한 파일로 AI 초안 생성</button>
+      </div>
+      <div class="note" style="margin-top:8px;">AI가 만든 초안은 <b>파트너님이 확인·수정한 뒤 제출</b>해야
+        검수 대상이 됩니다. 잘못 읽은 내용은 자유롭게 고쳐 주세요.</div>
+    </div>
+
+    <div class="card" id="drafts-card">
+      <div class="k">3 · 제품 초안 확인 · 제출</div>
+      <div id="drafts"><div class="empty">아직 초안이 없습니다 — 파일을 선택해 AI 초안을 만들어 보세요.</div></div>
+    </div>
+
+    <footer>이 링크는 귀사 전용입니다 — 외부에 공유하지 마세요. 링크 재발급·문의는
+      <b>Briwell 담당자에게 직접</b> 연락해 주세요.<br>
+      <span id="footer-disclaimer"></span></footer>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  var qs = new URLSearchParams(location.search);
+  var DEMO = qs.get("demo") === "1";
+  var TOKEN = qs.get("t") || qs.get("token") || "";
+  var API = (qs.get("api") || "http://127.0.0.1:8030").replace(/\/$/, "");
+
+  var CATEGORY_KO = {
+    sunscreen: "선스크린", calming_serum: "카밍 세럼", cleanser: "클렌저",
+    sheet_mask: "시트 마스크", cushion_foundation: "쿠션 파운데이션"
+  };
+  var STATUS_KO = {
+    ai_draft: { text: "AI 초안 — 확인 필요", cls: "warn" },
+    partner_confirmed: { text: "제출됨 — Briwell 검수 중", cls: "mut" },
+    approved: { text: "승인 — 카탈로그 등록", cls: "ok" },
+    rejected: { text: "반려 — 담당자 안내 확인", cls: "bad" }
+  };
+  var GRADE_KO = {
+    no_flag: { text: "신호 없음", cls: "ok" },
+    restricted_candidate: { text: "제한 후보", cls: "warn" },
+    blocked_candidate: { text: "금지 후보", cls: "bad" }
+  };
+  var KIND_KO = { photo: "사진", pdf: "PDF", data: "자료" };
+
+  var state = { hub: null, busy: false };
+
+  var $ = function (id) { return document.getElementById(id); };
+  function show(id) {
+    ["loading", "error", "view"].forEach(function (s) { $(s).classList.add("hidden"); });
+    $(id).classList.remove("hidden");
+  }
+  function esc(text) {
+    return String(text == null ? "" : text).replace(/[&<>"']/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+  }
+  var toastTimer = null;
+  function toast(message) {
+    var el = $("toast");
+    el.textContent = message;
+    el.classList.add("on");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove("on"); }, 2600);
+  }
+  function fmtBytes(n) {
+    if (n > 1000000) return (n / 1000000).toFixed(1) + "MB";
+    if (n > 1000) return Math.round(n / 1000) + "KB";
+    return n + "B";
+  }
+  function fail(title, body) {
+    $("err-title").textContent = title;
+    $("err-body").textContent = body;
+    show("error");
+  }
+
+  function api(path, options) {
+    return fetch(API + path + (path.indexOf("?") >= 0 ? "&" : "?") + "token=" + encodeURIComponent(TOKEN), options)
+      .then(function (res) {
+        return res.text().then(function (text) {
+          var body = null;
+          try { body = text ? JSON.parse(text) : null; } catch (e) { body = null; }
+          if (!res.ok) throw { status: res.status, body: body };
+          return body;
+        });
+      });
+  }
+
+  function loadHub() {
+    if (DEMO) { render(demoHub()); return; }
+    api("/partner-hub/me")
+      .then(function (body) { render(body.hub); })
+      .catch(function (e) {
+        if (e && e.status === 404) {
+          fail("링크가 유효하지 않습니다", "이 링크는 더 이상 활성 상태가 아닙니다. Briwell 담당자에게 새 링크를 요청해 주세요.");
+        } else {
+          fail("허브 점검 중", "잠시 후 다시 시도해 주세요. 올려주신 자료는 안전하게 보관되어 있습니다.");
+        }
+      });
+  }
+
+  function render(hub) {
+    state.hub = hub;
+    $("company").textContent = hub.partner.company_name || "파트너";
+    $("footer-disclaimer").textContent = hub.disclaimer || "";
+    renderUploads(hub.uploads || []);
+    renderDrafts(hub.drafts || []);
+    show("view");
+  }
+
+  function renderUploads(uploads) {
+    if (!uploads.length) {
+      $("uploads").innerHTML = '<div class="empty">아직 올린 파일이 없습니다 — 위에서 자료를 올려 주세요.</div>';
+      $("extract-btn").disabled = true;
+      return;
+    }
+    var rows = uploads.map(function (u) {
+      var used = u.status === "extracted";
+      return '<tr><td><input type="checkbox" class="pick" value="' + esc(u.id) + '"' + (used ? "" : " checked") + '></td>' +
+        '<td>' + esc(u.original_filename) + '</td>' +
+        '<td><span class="chip mut">' + (KIND_KO[u.kind] || esc(u.kind)) + '</span></td>' +
+        '<td>' + fmtBytes(u.byte_size) + '</td>' +
+        '<td>' + (used ? '<span class="chip ok">초안 생성됨</span>' : '<span class="chip warn">대기</span>') + '</td></tr>';
+    }).join("");
+    $("uploads").innerHTML = '<table><thead><tr><th></th><th>파일</th><th>구분</th><th>크기</th><th>상태</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    syncExtractButton();
+    Array.prototype.forEach.call(document.querySelectorAll(".pick"), function (el) {
+      el.addEventListener("change", syncExtractButton);
+    });
+  }
+
+  function syncExtractButton() {
+    var any = document.querySelectorAll(".pick:checked").length > 0;
+    $("extract-btn").disabled = !any || state.busy;
+  }
+
+  function renderDrafts(drafts) {
+    if (!drafts.length) {
+      $("drafts").innerHTML = '<div class="empty">아직 초안이 없습니다 — 파일을 선택해 AI 초안을 만들어 보세요.</div>';
+      return;
+    }
+    $("drafts").innerHTML = drafts.map(draftCard).join("");
+    drafts.forEach(function (d) { bindDraft(d); });
+  }
+
+  function draftCard(d) {
+    var draft = d.draft || {};
+    var status = STATUS_KO[d.status] || { text: d.status, cls: "mut" };
+    var editable = d.status === "ai_draft" || d.status === "partner_confirmed";
+    var score = d.completeness && typeof d.completeness.score === "number" ? d.completeness.score : null;
+    var conf = d.ai_meta && d.ai_meta.field_confidence;
+    var reg = d.regulatory_flags;
+
+    var regHtml = "";
+    if (reg && reg.by_country) {
+      regHtml = '<div class="reg-row">' + Object.keys(reg.by_country).map(function (cc) {
+        var grade = GRADE_KO[reg.by_country[cc].grade] || { text: reg.by_country[cc].grade, cls: "mut" };
+        return '<span class="chip ' + grade.cls + '">' + cc + " · " + grade.text + "</span>";
+      }).join("") + "</div>";
+      if (reg.flags && reg.flags.length) {
+        regHtml += '<div class="issues">' + reg.flags.map(function (f) {
+          return '<div class="adv">· ' + esc(f.ingredient) + " — " + esc(f.detail) + " <small>(" + esc(f.source_ref) + ")</small></div>";
+        }).join("") + "</div>";
+      }
+      regHtml += '<div class="disclaimer">' + esc(reg.disclaimer || "") + "</div>";
+    }
+
+    var confNote = conf ? '<div class="note">AI 확신도 — 제품명 ' + pct(conf.product_name) +
+      " · 카테고리 " + pct(conf.product_category) + " · 성분 " + pct(conf.ingredients_raw) +
+      " — 낮은 항목일수록 꼭 확인해 주세요.</div>" : "";
+
+    return '<div class="draft" data-id="' + esc(d.id) + '" style="border-top:1px solid var(--line); padding-top:16px; margin-top:16px;">' +
+      '<div class="draft-head">' +
+        '<span class="draft-title">' + esc(draft.product_name || "(제품명 없음)") + "</span>" +
+        '<span class="chip ' + status.cls + '">' + status.text + "</span>" +
+      "</div>" +
+      (score !== null
+        ? '<div class="score-row"><span class="note">판매 준비 완성도</span><span class="score">' + score + '<small style="font-size:13px;color:var(--muted);">/100</small></span></div>' +
+          '<div class="bar"><i style="width:' + score + '%"></i></div>'
+        : "") +
+      confNote +
+      '<div class="grid2" style="margin-top:12px;">' +
+        field(d.id, "product_name", "제품명", draft.product_name, editable) +
+        field(d.id, "brand_name", "브랜드명", draft.brand_name, editable) +
+        field(d.id, "product_category", "카테고리 (sunscreen · calming_serum · cleanser · sheet_mask · cushion_foundation)", draft.product_category, editable, "cat-list") +
+        field(d.id, "size", "용량 · 규격", draft.size, editable) +
+      "</div>" +
+      '<div class="field"><span>전성분 (INCI — 한 줄에 하나)</span>' +
+        '<textarea data-field="ingredients_raw" data-draft="' + esc(d.id) + '"' + (editable ? "" : " disabled") + ">" +
+        esc((draft.ingredients_raw || []).join("\n")) + "</textarea></div>" +
+      '<div class="field"><span>클레임 후보 (AI 발견 — 확정 전에는 카탈로그에 실리지 않음)</span>' +
+        '<div class="note">' + esc((draft.claims_candidates || []).join(" · ") || "없음") + "</div></div>" +
+      '<div class="field"><span>확정 클레임 (한 줄에 하나 — Briwell 검수 대상)</span>' +
+        '<textarea data-field="key_claims_allowed" data-draft="' + esc(d.id) + '" style="min-height:60px;"' + (editable ? "" : " disabled") + ">" +
+        esc((draft.key_claims_allowed || []).join("\n")) + "</textarea></div>" +
+      '<div id="issues-' + esc(d.id) + '" class="issues"></div>' +
+      regHtml +
+      (editable
+        ? '<div class="actions">' +
+            '<button class="btn ghost" data-save="' + esc(d.id) + '">저장</button>' +
+            '<button class="btn aqua" data-submit="' + esc(d.id) + '">Briwell에 제출</button>' +
+          "</div>"
+        : "") +
+      "</div>";
+  }
+
+  function pct(v) { return typeof v === "number" ? Math.round(v * 100) + "%" : "—"; }
+
+  function field(draftId, name, label, value, editable, listId) {
+    return '<div class="field"><span>' + esc(label) + "</span>" +
+      '<input data-field="' + name + '" data-draft="' + esc(draftId) + '" value="' + esc(value || "") + '"' +
+      (editable ? "" : " disabled") + (listId ? ' list="' + listId + '"' : "") + "></div>";
+  }
+
+  function bindDraft(d) {
+    var save = document.querySelector('[data-save="' + d.id + '"]');
+    var submit = document.querySelector('[data-submit="' + d.id + '"]');
+    if (save) save.addEventListener("click", function () { pushDraft(d.id, "save"); });
+    if (submit) submit.addEventListener("click", function () { pushDraft(d.id, "submit"); });
+  }
+
+  function gatherDraft(draftId) {
+    var out = {};
+    Array.prototype.forEach.call(
+      document.querySelectorAll('[data-draft="' + draftId + '"]'),
+      function (el) {
+        var name = el.getAttribute("data-field");
+        if (name === "ingredients_raw" || name === "key_claims_allowed") {
+          out[name] = el.value.split(/\r?\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+        } else {
+          out[name] = el.value.trim();
+        }
+      }
+    );
+    return out;
+  }
+
+  function pushDraft(draftId, action) {
+    if (DEMO) { toast("데모 모드에서는 저장되지 않습니다"); return; }
+    if (state.busy) return;
+    state.busy = true;
+    api("/partner-hub/drafts/" + encodeURIComponent(draftId), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ draft: gatherDraft(draftId), action: action })
+    }).then(function (body) {
+      state.busy = false;
+      var v = body.pipeline && body.pipeline.validation;
+      renderIssues(draftId, v);
+      toast(action === "submit" ? "제출 완료 — Briwell 검수 후 연락드립니다" : "저장 완료");
+      loadHub();
+    }).catch(function (e) {
+      state.busy = false;
+      if (e && e.status === 422 && e.body && e.body.detail && e.body.detail.issues) {
+        renderIssues(draftId, { blocking: e.body.detail.issues, advisory: [] });
+        toast("제출 불가 — 필수 항목을 확인해 주세요");
+      } else {
+        toast("저장 실패 — 잠시 후 다시 시도해 주세요");
+      }
+    });
+  }
+
+  function renderIssues(draftId, validation) {
+    var mount = $("issues-" + draftId);
+    if (!mount || !validation) return;
+    var html = [];
+    (validation.blocking || []).forEach(function (issue) {
+      html.push('<div class="blk">✕ ' + esc(issue.message) + "</div>");
+    });
+    (validation.advisory || []).forEach(function (issue) {
+      html.push('<div class="adv">△ ' + esc(issue.message) + "</div>");
+    });
+    mount.innerHTML = html.join("");
+  }
+
+  // --- uploads -------------------------------------------------------------
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-lane]"), function (btn) {
+    var lane = btn.getAttribute("data-lane");
+    var input = $("file-" + lane);
+    btn.addEventListener("click", function () { input.click(); });
+    input.addEventListener("change", function () {
+      if (input.files.length) uploadFiles(lane, Array.prototype.slice.call(input.files));
+      input.value = "";
+    });
+  });
+
+  function uploadFiles(kind, files) {
+    if (DEMO) { toast("데모 모드에서는 업로드되지 않습니다"); return; }
+    var note = $("upload-note");
+    var done = 0, failed = [];
+    note.textContent = "업로드 중… (0/" + files.length + ")";
+    var chain = Promise.resolve();
+    files.forEach(function (file) {
+      chain = chain.then(function () {
+        var form = new FormData();
+        form.append("file", file, file.name);
+        return api("/partner-hub/uploads?kind=" + encodeURIComponent(kind), { method: "POST", body: form })
+          .then(function () { done += 1; note.textContent = "업로드 중… (" + done + "/" + files.length + ")"; })
+          .catch(function (e) {
+            var reason = e && e.body && e.body.detail && e.body.detail.message ? e.body.detail.message : "업로드 실패";
+            failed.push(file.name + ": " + reason);
+          });
+      });
+    });
+    chain.then(function () {
+      note.textContent = failed.length
+        ? "완료 " + done + "건 · 거부 " + failed.length + "건 — " + failed.join(" / ")
+        : "업로드 완료 (" + done + "건) — 아래에서 파일을 선택해 AI 초안을 만들어 주세요.";
+      loadHub();
+    });
+  }
+
+  $("extract-btn").addEventListener("click", function () {
+    if (DEMO) { toast("데모 모드에서는 실행되지 않습니다"); return; }
+    var ids = Array.prototype.map.call(document.querySelectorAll(".pick:checked"), function (el) { return el.value; });
+    if (!ids.length || state.busy) return;
+    state.busy = true;
+    $("extract-btn").disabled = true;
+    api("/partner-hub/uploads/extract", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ upload_ids: ids })
+    }).then(function (body) {
+      state.busy = false;
+      var mode = body.draft && body.draft.ai_meta && body.draft.ai_meta.mode;
+      toast(mode === "dry_run" ? "초안 생성 완료 (드라이런 샘플) — 내용을 확인해 주세요" : "AI 초안 생성 완료 — 내용을 확인해 주세요");
+      loadHub();
+    }).catch(function () {
+      state.busy = false;
+      syncExtractButton();
+      toast("초안 생성 실패 — 잠시 후 다시 시도해 주세요");
+    });
+  });
+
+  // --- demo fixture ----------------------------------------------------------
+
+  function demoHub() {
+    return {
+      partner: { company_name: "파넬" },
+      disclaimer: "규제 신호는 참고용 사전 스크리닝이며 법률 자문이 아닙니다. 수입·판매 전 반드시 각국 인허가 전문가 검토가 필요합니다.",
+      uploads: [
+        { id: "u1", kind: "pdf", original_filename: "cicamanide_catalog_2026.pdf", byte_size: 2400000, status: "extracted", uploaded_at: "2026-07-12T09:00:00Z" },
+        { id: "u2", kind: "photo", original_filename: "serum_white_bg.jpg", byte_size: 890000, status: "extracted", uploaded_at: "2026-07-12T09:01:00Z" },
+        { id: "u3", kind: "data", original_filename: "inci_list.csv", byte_size: 4100, status: "uploaded", uploaded_at: "2026-07-12T09:02:00Z" }
+      ],
+      drafts: [{
+        id: "d1",
+        draft: {
+          product_name: "시카마니드 수분 진정 세럼",
+          brand_name: "파넬",
+          product_category: "calming_serum",
+          size: "50ml",
+          ingredients_raw: ["Water", "Butylene Glycol", "Niacinamide", "Centella Asiatica Extract", "Madecassoside", "Panthenol", "Sodium Hyaluronate", "Carbomer", "Phenoxyethanol"],
+          key_claims_allowed: [],
+          claims_candidates: ["진정 케어", "수분 보습", "저자극 테스트 완료"]
+        },
+        ai_meta: { mode: "dry_run", prompt_version: "partner_extract_v1", field_confidence: { product_name: 0.88, product_category: 0.84, ingredients_raw: 0.9 } },
+        completeness: { score: 78 },
+        regulatory_flags: {
+          by_country: { MX: { grade: "no_flag" }, PE: { grade: "no_flag" }, EC: { grade: "no_flag" } },
+          flags: [],
+          disclaimer: "규제 신호는 참고용 사전 스크리닝이며 법률 자문이 아닙니다. 수입·판매 전 반드시 각국 인허가 전문가 검토가 필요합니다."
+        },
+        status: "ai_draft",
+        updated_at: "2026-07-12T09:05:00Z"
+      }]
+    };
+  }
+
+  if (DEMO) {
+    document.body.insertAdjacentHTML("beforeend", '<span class="demo-tag">DEMO</span>');
+    loadHub();
+    return;
+  }
+  if (!TOKEN) {
+    fail("링크가 완전하지 않습니다", "받으신 링크를 그대로 열어 주세요 (개인 키가 포함되어 있어야 합니다).");
+    return;
+  }
+  loadHub();
+})();
+</script>
+<datalist id="cat-list">
+  <option value="sunscreen"><option value="calming_serum"><option value="cleanser">
+  <option value="sheet_mask"><option value="cushion_foundation">
+</datalist>
+</body>
+</html>

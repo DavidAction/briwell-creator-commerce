@@ -44,6 +44,16 @@ def test_portal_token_revoke_preflight_allows_delete() -> None:
     assert "DELETE" in response.headers["access-control-allow-methods"]
 
 
+def test_consumer_surface_dev_origins_allowed() -> None:
+    # The creator portal (8072) and brand partner hub (8073) are separate
+    # local pages; if their origins drop out of the dev CORS defaults, both
+    # consumer surfaces fail with opaque network errors in local testing.
+    for origin in ("http://localhost:8072", "http://localhost:8073"):
+        response = client.get("/health", headers={"Origin": origin})
+        assert response.status_code == 200
+        assert response.headers["access-control-allow-origin"] == origin
+
+
 def test_list_products_placeholder() -> None:
     response = client.get("/products")
     assert response.status_code == 200

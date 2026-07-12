@@ -22,6 +22,7 @@ const requiredViews = [
   "view-review",
   "view-tracking",
   "view-settlement",
+  "view-partners",
 ];
 
 const requiredEndpoints = [
@@ -52,6 +53,8 @@ const requiredEndpoints = [
   "/commerce/discount-codes/issue",
   "/providers/creator-provided/import",
   "/portal/tokens",
+  "/partners",
+  "/partners/review-queue",
 ];
 
 // --- Phase 3 elevation: currency-explicit revenue + Shopify discount issuance ---
@@ -178,6 +181,34 @@ assert(
   files.app.includes('${base.includes("?") ? "&" : "?"}t=${encodeURIComponent(token)}'),
   "portal link must embed the token as the t query param"
 );
+
+// --- Brand Partner Hub operator view (briefing 0.0.20) ---
+assert(files.html.includes("파트너 허브"), "partner hub nav item missing");
+assert(files.html.includes("브랜드 파트너 등록"), "partner registration panel missing");
+assert(files.html.includes("허브 링크 발급"), "hub link issuance panel missing");
+assert(files.html.includes("제품 초안 검수 큐"), "partner review queue panel missing");
+assert(files.html.includes('id="createPartnerButton" data-write-action'), "create-partner button must carry the write-action badge");
+assert(files.html.includes('id="issueHubTokenButton" data-write-action'), "hub token issue button must carry the write-action badge");
+assert(files.html.includes('id="revokeHubTokenButton" data-write-action'), "hub token revoke button must carry the write-action badge");
+assert(files.html.includes('id="approveDraftButton" data-write-action'), "approve button must carry the write-action badge");
+assert(files.html.includes('id="rejectDraftButton" data-write-action'), "reject button must carry the write-action badge");
+assert(!files.html.includes('id="loadReviewQueueButton" data-write-action'), "review-queue load is a read and must not carry the write badge");
+assert(files.html.includes('id="reviewQueueTable"'), "review queue table mount missing");
+["createPartner", "issueHubToken", "revokeHubTokens", "fetchPartnerReviewQueue", "reviewPartnerDraft"].forEach((method) => {
+  assert(files.client.includes(method), `${method} API client method missing`);
+});
+["async function createPartner", "async function loadPartnerReviewQueue", "async function reviewPartnerDraft", "function renderPartnerReviewQueue"].forEach((fn) => {
+  assert(files.app.includes(fn), `${fn} missing`);
+});
+// The human gate is explicit in the operator UI, and regulatory signals are
+// labeled as non-legal-advice reference information.
+assert(files.html.includes("인간 승인 게이트"), "human approval gate copy missing");
+assert(files.html.includes("법률 자문 아님"), "not-legal-advice copy missing from review panel");
+// Partner-supplied strings (company/product names) must render escaped.
+assert(files.app.includes("escapeHtml(item.company_name"), "review queue must escape partner company names");
+assert(files.app.includes("escapeHtml(draft.product_name"), "review queue must escape partner product names");
+// Same token honesty rules as the creator portal panel.
+assert(files.app.includes("실제 허브 링크로 동작하지 않습니다"), "DB-off hub token must be flagged as non-working");
 
 // --- OIDC bearer token wiring (production API auth; docs/DEPLOY_RENDER.md step 5) ---
 assert(files.html.includes('id="bearerTokenInput"'), "bearer token input missing from settings drawer");

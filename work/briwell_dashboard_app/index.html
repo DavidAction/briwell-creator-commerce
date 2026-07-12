@@ -54,6 +54,10 @@
           <span>계약·정산</span>
           <small>계약 및 지급</small>
         </button>
+        <button class="nav-item" data-view="partners">
+          <span>파트너 허브</span>
+          <small>브랜드사 검수</small>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -851,12 +855,85 @@
           </section>
         </div>
       </section>
+
+      <section class="view" id="view-partners">
+        <div class="content-grid">
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>브랜드 파트너 등록</h2>
+                <p class="panel-subtitle">클라이언트가 된 브랜드사를 허브에 등록 · 내부 메모는 파트너에게 절대 노출되지 않음</p>
+              </div>
+              <span class="badge teal">브랜드 파트너 허브</span>
+            </div>
+            <div class="stacked-form">
+              <label><span>회사명</span><input id="partnerCompanyName" placeholder="파넬"></label>
+              <label><span>담당자 이름 (선택)</span><input id="partnerContactName" placeholder="김담당"></label>
+              <label><span>담당자 이메일 (선택)</span><input id="partnerContactEmail" placeholder="contact@brand.co.kr"></label>
+              <label><span>내부 메모 (선택 · 운영자 전용)</span><input id="partnerInternalMemo" placeholder="계약 조건, 유의사항"></label>
+              <button class="button primary" id="createPartnerButton" data-write-action>파트너 등록</button>
+            </div>
+            <div id="createPartnerResult" class="result-box"></div>
+          </section>
+
+          <section class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <h2>허브 링크 발급</h2>
+                <p class="panel-subtitle">파트너 전용 업로드 링크 · 재발급하면 이전 허브 링크는 즉시 무효(회전) · 폐기는 킬스위치</p>
+              </div>
+              <span class="badge blue">토큰 접근</span>
+            </div>
+            <div class="stacked-form">
+              <label><span>파트너 ID</span><input id="hubPartnerId" placeholder="등록 결과의 partner id"></label>
+              <label>
+                <span>허브 페이지 주소 (선택)</span>
+                <input id="hubPageBase" placeholder="https://partners.briwell.co/">
+                <small class="field-hint">프로덕션 주소 확정 전에는 로컬 허브 주소를 입력하세요. 비우면 토큰만 표시됩니다.</small>
+              </label>
+              <div class="button-row">
+                <button class="button primary" id="issueHubTokenButton" data-write-action>허브 링크 발급 · 회전</button>
+                <button class="button danger" id="revokeHubTokenButton" data-write-action>링크 폐기</button>
+              </div>
+            </div>
+            <div id="hubTokenResult" class="result-box"></div>
+          </section>
+
+          <section class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <h2>제품 초안 검수 큐</h2>
+                <p class="panel-subtitle">파트너가 제출한 초안을 승인하면 제품 카탈로그에 등록됩니다 · 규제 신호는 참고용이며 법률 자문 아님</p>
+              </div>
+              <span class="badge amber">인간 승인 게이트</span>
+            </div>
+            <div class="button-row">
+              <button class="button" id="loadReviewQueueButton">검수 큐 불러오기</button>
+            </div>
+            <div class="table-wrap" style="margin-top:12px;">
+              <table>
+                <thead><tr><th></th><th>회사</th><th>제품</th><th>카테고리</th><th>완성도</th><th>규제 신호</th><th>제출일</th></tr></thead>
+                <tbody id="reviewQueueTable"><tr><td colspan="7" class="muted">아직 불러오지 않았습니다.</td></tr></tbody>
+              </table>
+            </div>
+            <div class="form-grid" style="margin-top:12px;">
+              <label><span>선택된 초안 ID</span><input id="reviewDraftId" readonly placeholder="큐에서 행을 선택하세요"></label>
+              <label><span>사유 (반려 시 필수 권장)</span><input id="reviewReason" placeholder="예: 성분표 재확인 필요"></label>
+            </div>
+            <div class="button-row">
+              <button class="button success" id="approveDraftButton" data-write-action>승인 → 카탈로그 등록</button>
+              <button class="button danger" id="rejectDraftButton" data-write-action>반려</button>
+            </div>
+            <div id="reviewDraftResult" class="result-box"></div>
+          </section>
+        </div>
+      </section>
     </main>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./api-client.js?v=20260712a"></script>
-  <script src="./app.js?v=20260712a"></script>
+  <script src="./api-client.js?v=20260712b"></script>
+  <script src="./app.js?v=20260712b"></script>
   <script>
     // PWA: register the app-shell service worker (no-op where unsupported).
     if ("serviceWorker" in navigator) {

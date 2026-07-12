@@ -20,6 +20,11 @@ REQUIRED_TABLES = {
     "creator_profile_enrichment",
     "recent_posts_screen_result",
     "outreach_crm_event",
+    "brand_partner",
+    "brand_partner_token",
+    "partner_upload",
+    "partner_product_draft",
+    "partner_review_decision",
 }
 
 REQUIRED_ENUMS = {

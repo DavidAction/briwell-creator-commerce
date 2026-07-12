@@ -8,15 +8,27 @@ Read this block first, then `PROJECT_BRIEFING_KO.md` (Korean master briefing; la
 
 **Repo is fully synced.** Local clone and `origin/main` match; every change below is committed and pushed. On a new machine: `git clone` → `powershell -ExecutionPolicy Bypass -File scripts\setup_windows.ps1` → done. See `docs/USE_ON_OTHER_COMPUTER.md`. Commits auto-push via the post-commit hook.
 
-**Latest verified state (re-run 2026-07-12):** backend `379 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
+**Latest verified state (re-run 2026-07-12):** backend `427 passed, 26 skipped`; dashboard `node tests\smoke.mjs` passes.
 
 **What shipped most recently (newest first):**
--7. Vendor portal plan v0 (briefing 0.0.19, NO CODE YET): brand clients upload
+-8. Brand Partner Hub Phase 1 (briefing 0.0.20): David approved the 0.0.19 plan
+   (name = Brand Partner Hub; uploads split into photo/pdf/data lanes). Migration
+   010 + app/partners/ pipeline (extract -> INCI normalize -> validate -> regulatory
+   signal -> completeness) + dual-surface router (/partners RBAC operator side,
+   /partner-hub token-gated partner side) + self-contained KO hub app
+   (work/briwell_partner_hub_app, The Well) + dashboard 파트너 허브 view. AI is
+   dry-run gated (PARTNER_AI_* dual gate); INCI dictionary and MX/PE/EC rule seeds
+   live in code (app/partners/ingredient_data.py); regulatory output always carries
+   the not-legal-advice disclaimer. Self-verification caught missing local CORS
+   origins for portal(8072)/hub(8073) in defaults + .env + .env.example (fixed,
+   regression-tested). Tests 379->427. Remaining: golden set from a real vendor
+   catalog before opening live AI; hub page origin in CORS_ALLOWED_ORIGINS at deploy.
+-7. Vendor portal plan v0 (briefing 0.0.19): brand clients upload
    catalogs/ingredients, AI structures them (extract -> INCI normalize -> validate ->
    regulatory signal -> completeness score), operator approves into product_catalog.
    Full plan + global benchmarking (Akeneo SDM, Salsify, UMMA, CosIng, COFEPRIS/
-   DIGEMID/Decision 833) in outputs/briwell_vendor_portal_plan_v0.md. Awaiting
-   David's decisions on the 7 points in its §9 before Phase 1 implementation.
+   DIGEMID/Decision 833) in outputs/briwell_vendor_portal_plan_v0.md. Decisions
+   made 2026-07-12; implemented as -8 above.
 -6. Dashboard portal-link panel + CORS DELETE fix (briefing 0.0.18): the settlement
    screen now issues/rotates and revokes portal links (write-confirm gated), assembles
    the `?t=` personal link with a copy button, and refuses to fabricate tokens offline
