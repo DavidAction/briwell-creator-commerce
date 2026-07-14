@@ -31,6 +31,15 @@ P4 and P8 are the David-blocked two) is **done** — see briefings
 0.0.22–0.0.23.
 
 **What shipped most recently (newest first):**
+-6. Final-3 theme deepening + IR board (briefing 0.0.18): the picked surfaces (rank-1
+   fandom, rank-6 playground, rank-8 The Well) gained theme-native "Asi ganamos
+   juntas/juntos" revenue-circuit sections (Tu parte / Nuestra parte; "solo ganamos
+   cuando tu ganas") and portal-preview phone mockups; Korean IR screen board at
+   work/briwell_landing_page/ir/ (BM circuit, portal+console screens, 3 live touchpoint
+   previews; also 07_IR jpg in the share package). NEW BRAND RULE: "briwell" is one
+   word - never letter-spaced or split (six violations fixed). Backend suite 480
+   passed / 26 skipped. Deferred: ranked-homepage PDF + share zip regeneration blocked
+   by a viewer file lock on the PDF - rerun after closing it.
 -12. Adversarial re-review round (briefing 0.0.24): all 0.0.22–23 artifacts
    re-audited on David's instruction; 7 findings fixed with regression tests
    (fuzzy matcher first-char typo regression, whole-part DTD/entity scan,
