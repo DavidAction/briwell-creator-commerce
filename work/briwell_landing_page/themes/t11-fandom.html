@@ -150,6 +150,71 @@
     </div>
   </section>
 
+  <section>
+    <div class="kicker">El ciclo del debut</div>
+    <h2>Así ganamos <em style="font-style:normal;color:var(--pink)">juntas</em></h2>
+    <p class="ssub">Nosotras ponemos el pozo: productos de Seúl, tienda, envíos y el sistema.
+      Tú pones el contenido. El dinero fluye en círculo — y solo ganamos si tú ganas.</p>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px" class="loop-grid">
+      <div class="loop-n"><b>01</b><h3>Seúl te llena</h3><p>Productos originales + tu código exclusivo.</p></div>
+      <div class="loop-n"><b>02</b><h3>Tú creas</h3><p>Contenido a tu estilo, a tu ritmo.</p></div>
+      <div class="loop-n"><b>03</b><h3>Tus fans compran</h3><p>Cada venta con tu código queda registrada al momento.</p></div>
+      <div class="loop-n"><b>04</b><h3>La comisión fluye</h3><p>Tu parte se acumula, visible siempre. Y el ciclo se repite.</p></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:26px" class="split-grid">
+      <div class="split-card"><span class="rare" style="position:static">TU PARTE ★</span><p>Comisión por cada venta con tu código — acordada por escrito antes de empezar. Sin perseguir pagos: la tienda la operamos nosotras.</p></div>
+      <div class="split-card"><span class="rare holo" style="position:static">NUESTRA PARTE ★</span><p>El margen del producto. Por eso no te pedimos nada: <b>solo ganamos cuando tú ganas.</b></p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">Tu panel de idol</div>
+    <h2>Tu comisión, <em style="font-style:normal;color:var(--pink)">siempre a la vista</em></h2>
+    <div style="display:grid; grid-template-columns:0.9fr 1.1fr; gap:44px; align-items:center" class="panel-grid">
+      <div class="pp-phone">
+        <div class="pp-top">briwell · tu panel 💗</div>
+        <div class="pp-k">TU COMISIÓN ACUMULADA</div>
+        <div class="pp-bal">$4,820 <small>MXN</small></div>
+        <div class="pp-code">GLOW10 <span>tu código</span></div>
+        <div class="pp-mov">Venta con tu código <b>+$310</b></div>
+        <div class="pp-mov">Venta con tu código <b>+$240</b></div>
+        <div class="pp-mov">Reembolso <b class="dn">−$180</b></div>
+        <div class="pp-cap">pantalla ilustrativa</div>
+      </div>
+      <div>
+        <div class="pk-item"><b>Enlace personal, sin contraseñas.</b> Tu portal se abre con un enlace que solo tú tienes.</div>
+        <div class="pk-item"><b>Registro al momento.</b> Cada venta y cada reembolso aparecen cuando ocurren — sin esperar reportes.</div>
+        <div class="pk-item"><b>El mismo panel que vemos nosotras.</b> Sin versiones maquilladas: un solo número, compartido.</div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .loop-n { background:#fff; border-radius:16px; padding:20px; box-shadow:0 12px 26px rgba(58,42,74,0.12); position:relative; }
+    .loop-n b { font-size:12px; font-weight:800; color:var(--pink); letter-spacing:0.1em; }
+    .loop-n h3 { font-size:16px; font-weight:800; margin:8px 0 5px; }
+    .loop-n p { font-size:12.5px; color:#6d5d85; line-height:1.55; }
+    .loop-n:not(:last-child)::after { content:'→'; position:absolute; right:-14px; top:50%; transform:translateY(-50%); color:var(--pink); font-weight:800; z-index:2; }
+    .split-card { background:#fff; border-radius:16px; padding:20px 22px; box-shadow:0 12px 26px rgba(58,42,74,0.12); }
+    .split-card p { font-size:13.5px; color:#6d5d85; line-height:1.65; margin-top:10px; }
+    .split-card p b { color:var(--ink); }
+    .pp-phone { background:#fff; border:5px solid var(--ink); border-radius:26px; padding:18px; max-width:290px; justify-self:center; width:100%; box-shadow:0 22px 44px rgba(58,42,74,0.24); position:relative; }
+    .pp-phone::after { content:''; position:absolute; inset:-5px; border-radius:26px; padding:5px; background:linear-gradient(130deg,#FFD3E8,#B9E8FF 40%,#FFE9B0 70%,#E3C8FF); -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude; opacity:0.9; pointer-events:none; }
+    .pp-top { font-weight:800; font-size:12px; margin-bottom:12px; }
+    .pp-k { font-size:9.5px; font-weight:800; letter-spacing:0.14em; color:var(--lav); }
+    .pp-bal { font-size:30px; font-weight:800; letter-spacing:-0.02em; margin:2px 0 10px; }
+    .pp-bal small { font-size:13px; color:var(--lav); }
+    .pp-code { font-family:ui-monospace,monospace; font-weight:700; font-size:15px; background:#FFF0F6; border-radius:10px; padding:9px 12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .pp-code span { font-family:Inter; font-size:10px; font-weight:700; color:var(--pink); }
+    .pp-mov { display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#6d5d85; border-top:1.5px solid #F3E8F0; padding:8px 2px; }
+    .pp-mov b { color:#127A4F; } .pp-mov b.dn { color:#B23B3B; }
+    .pp-cap { font-size:9px; color:var(--lav); text-align:center; margin-top:10px; letter-spacing:0.08em; }
+    .pk-item { font-size:14.5px; color:#6d5d85; line-height:1.65; background:#fff; border-radius:14px; padding:16px 20px; margin-bottom:12px; box-shadow:0 10px 22px rgba(58,42,74,0.1); }
+    .pk-item b { color:var(--ink); display:block; margin-bottom:3px; }
+    @media (max-width:920px) { .loop-grid { grid-template-columns:1fr 1fr !important; } .loop-n::after { display:none; } .split-grid, .panel-grid { grid-template-columns:1fr !important; } }
+    @media (max-width:480px) { .loop-grid { grid-template-columns:1fr !important; } }
+  </style>
+
   <section class="final" id="audicion">
     <span class="badge">LA AUDICIÓN CIERRA CUANDO SE LLENA EL LINE-UP</span>
     <h2>¿Lista para tu <em style="font-style:normal;color:var(--pink)">debut?</em></h2>

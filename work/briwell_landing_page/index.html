@@ -393,6 +393,76 @@
     </section>
 
     <section>
+      <div class="section-kicker">El circuito del agua</div>
+      <h2>Así ganamos <em>juntos</em></h2>
+      <p class="section-sub">Nosotros ponemos el pozo — productos de Seúl, tienda, envíos y el
+        sistema. Tú pones el contenido. El agua da la vuelta completa, y solo ganamos si tú ganas.</p>
+      <div class="circuit">
+        <div class="c-node"><span class="c-ring"><b>01</b></span><h3>Seúl te llena</h3><p>Productos originales y tu código exclusivo.</p></div>
+        <div class="c-node"><span class="c-ring"><b>02</b></span><h3>Tú creas</h3><p>Contenido a tu estilo, a tu ritmo.</p></div>
+        <div class="c-node"><span class="c-ring"><b>03</b></span><h3>Tu comunidad compra</h3><p>Cada venta con tu código, registrada al momento.</p></div>
+        <div class="c-node"><span class="c-ring"><b>04</b></span><h3>La comisión fluye</h3><p>Tu parte se acumula, visible siempre — y el agua vuelve a subir.</p></div>
+      </div>
+      <div class="c-split">
+        <div class="c-card"><b>Tu parte</b><p>Comisión por cada venta con tu código, acordada por escrito antes de empezar. La tienda, los envíos y los cobros los operamos nosotros.</p></div>
+        <div class="c-card gold"><b>Nuestra parte</b><p>El margen del producto. Por eso no te cobramos nada: <strong>solo ganamos cuando tú ganas.</strong></p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-kicker">Tu panel</div>
+      <h2>Tu comisión, <em>siempre a la vista</em></h2>
+      <div class="panel-grid">
+        <div class="pp-phone">
+          <div class="pp-top"><svg width="13" height="13" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="#0E7C71" stroke-width="3"/><circle cx="16" cy="16" r="6" fill="#2FD0BC"/></svg> briwell · tu panel</div>
+          <div class="pp-k">TU COMISIÓN ACUMULADA</div>
+          <div class="pp-bal">$4,820 <small>MXN</small></div>
+          <div class="pp-code">GLOW10 <span>tu código</span></div>
+          <div class="pp-mov">Venta con tu código <b>+$310</b></div>
+          <div class="pp-mov">Venta con tu código <b>+$240</b></div>
+          <div class="pp-mov">Reembolso <b class="dn">−$180</b></div>
+          <div class="pp-cap">pantalla ilustrativa</div>
+        </div>
+        <div class="pk-list">
+          <div class="pk-item"><b>Enlace personal, sin contraseñas.</b> Tu portal se abre con un enlace que solo tú tienes — y podemos renovarlo cuando quieras.</div>
+          <div class="pk-item"><b>Registro al momento.</b> Cada venta y cada reembolso aparecen cuando ocurren, no cuando alguien recuerda reportarlos.</div>
+          <div class="pk-item"><b>El mismo panel que vemos nosotros.</b> Del pozo se sirve todo el mundo con el mismo cántaro: un solo número, compartido.</div>
+        </div>
+      </div>
+    </section>
+
+    <style>
+      .circuit { display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
+      .c-node { text-align:center; padding:0 6px; position:relative; }
+      .c-node:not(:last-child)::after { content:'≈'; position:absolute; right:-16px; top:26px; color:var(--aqua); font-size:22px; }
+      .c-ring { display:flex; width:72px; height:72px; margin:0 auto 14px; border-radius:50%; border:2.5px solid var(--ink); align-items:center; justify-content:center; background:var(--card); box-shadow:0 0 0 7px rgba(47,208,188,0.14); }
+      .c-ring b { font-family:'Fraunces',serif; font-style:italic; font-size:17px; color:var(--aqua); }
+      .c-node h3 { font-family:'Fraunces',serif; font-size:18px; font-weight:600; margin-bottom:6px; }
+      .c-node p { font-size:13px; color:var(--muted); line-height:1.6; }
+      .c-split { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:40px; }
+      .c-card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:22px 26px; }
+      .c-card b { font-family:'Fraunces',serif; font-size:18px; font-weight:600; color:var(--aqua); }
+      .c-card.gold b { color:var(--gold); filter:brightness(0.82); }
+      .c-card p { font-size:14px; color:var(--muted); line-height:1.7; margin-top:8px; }
+      .c-card strong { color:var(--ink); }
+      .panel-grid { display:grid; grid-template-columns:0.9fr 1.1fr; gap:48px; align-items:center; }
+      .pp-phone { background:var(--card); border:1.5px solid var(--line); border-radius:26px; padding:20px; max-width:300px; width:100%; justify-self:center; box-shadow:0 26px 52px rgba(12,46,47,0.18), 0 0 0 8px rgba(47,208,188,0.1); }
+      .pp-top { font-family:'Fraunces',serif; font-weight:600; font-size:13px; margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+      .pp-k { font-size:9.5px; font-weight:600; letter-spacing:0.15em; color:var(--aqua); }
+      .pp-bal { font-family:'Fraunces',serif; font-weight:600; font-size:32px; margin:2px 0 12px; }
+      .pp-bal small { font-size:14px; color:var(--muted); font-family:Inter; font-weight:600; }
+      .pp-code { font-family:ui-monospace,Consolas,monospace; font-weight:700; font-size:15px; background:rgba(47,208,188,0.1); border-radius:10px; padding:9px 13px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+      .pp-code span { font-family:Inter; font-size:10px; font-weight:600; color:var(--aqua); }
+      .pp-mov { display:flex; justify-content:space-between; font-size:12.5px; font-weight:500; color:var(--muted); border-top:1px solid var(--line); padding:9px 2px; }
+      .pp-mov b { color:#127A4F; font-weight:700; } .pp-mov b.dn { color:#B23B3B; }
+      .pp-cap { font-size:9px; color:var(--muted); text-align:center; margin-top:10px; letter-spacing:0.1em; }
+      .pk-item { font-size:14.5px; color:var(--muted); line-height:1.7; border-left:2px solid var(--gold); padding:4px 0 4px 20px; margin-bottom:20px; }
+      .pk-item b { color:var(--ink); display:block; margin-bottom:3px; font-weight:600; }
+      @media (max-width:920px) { .circuit { grid-template-columns:1fr 1fr; } .c-node::after { display:none; } .c-split, .panel-grid { grid-template-columns:1fr; } }
+      @media (max-width:480px) { .circuit { grid-template-columns:1fr; } }
+    </style>
+
+    <section>
       <div class="deep">
         <div class="proof-grid">
           <div>

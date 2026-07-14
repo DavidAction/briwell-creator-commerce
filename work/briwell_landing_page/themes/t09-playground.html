@@ -98,6 +98,79 @@
     </div>
   </section>
 
+  <section>
+    <div class="kicker">La caja del club</div>
+    <h2>Así ganamos <span class="hl">juntas</span></h2>
+    <p class="ssub">Nosotras ponemos la tienda, los envíos y el sistema. Tú pones el contenido.
+      Y la caja es de cristal: <span class="scb" style="font-size:20px">solo ganamos si tú ganas!</span></p>
+    <div class="loop-row">
+      <div class="loop-s" style="transform:rotate(-1.5deg)"><b>01</b><h3>Seúl te llena</h3><p>productos + tu código propio</p></div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-s" style="transform:rotate(1deg); background:var(--blue)"><b>02</b><h3>Tú creas</h3><p>a tu estilo, a tu ritmo</p></div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-s" style="transform:rotate(-1deg)"><b>03</b><h3>El club compra</h3><p>cada venta registrada al momento</p></div>
+      <span class="loop-arrow">→</span>
+      <div class="loop-s" style="transform:rotate(1.5deg); background:var(--yel)"><b>04</b><h3>Cobras</h3><p>tu comisión, visible siempre</p></div>
+    </div>
+    <div class="split-row">
+      <div class="split-note"><b>TU PARTE ★</b><p>Comisión por cada venta con tu código, acordada por escrito. La tienda la operamos nosotras — tú nunca persigues pagos.</p></div>
+      <div class="split-note" style="background:var(--blue); transform:rotate(1deg)"><b>NUESTRA PARTE ★</b><p>El margen del producto. Por eso el trato es limpio: <u>ganamos solo cuando tú ganas.</u></p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="kicker">La libreta de cuentas</div>
+    <h2>Tu comisión, <span class="hl">a la vista</span></h2>
+    <div class="panel-grid">
+      <div class="pp-wrap">
+        <span class="tape" style="top:-16px"></span>
+        <div class="pp-phone">
+          <div class="pp-top">BRIWELL<b style="color:var(--red)">!</b> · tu panel</div>
+          <div class="pp-k">TU COMISIÓN ACUMULADA</div>
+          <div class="pp-bal">$4,820 <small>MXN</small></div>
+          <div class="pp-code">GLOW10 <span>tu código</span></div>
+          <div class="pp-mov">Venta con tu código <b>+$310</b></div>
+          <div class="pp-mov">Venta con tu código <b>+$240</b></div>
+          <div class="pp-mov">Reembolso <b class="dn">−$180</b></div>
+          <div class="pp-cap">pantalla ilustrativa</div>
+        </div>
+      </div>
+      <div>
+        <div class="pk-line"><b>Enlace personal, sin contraseñas.</b> Tu portal se abre con un enlace que solo tú tienes.</div>
+        <div class="pk-line"><b>Registro al momento.</b> Ventas y reembolsos aparecen cuando ocurren.</div>
+        <div class="pk-line"><b>El mismo panel que vemos nosotras.</b> Un solo número, compartido. <span class="scb" style="font-size:19px">cero cajas negras!</span></div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .loop-row { display:flex; align-items:stretch; gap:14px; flex-wrap:wrap; }
+    .loop-s { flex:1 1 180px; background:#fff; border:2.5px solid var(--ink); border-radius:14px; padding:16px 18px; box-shadow:4px 4px 0 var(--ink); }
+    .loop-s b { font-family:'Archivo Black'; font-size:12px; }
+    .loop-s h3 { font-size:15.5px; font-weight:800; margin:6px 0 4px; }
+    .loop-s p { font-size:12.5px; color:#5d5950; line-height:1.5; }
+    .loop-arrow { font-family:Caveat; font-weight:700; font-size:30px; color:var(--red); align-self:center; }
+    .split-row { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:30px; }
+    .split-note { background:var(--yel); border:2.5px solid var(--ink); padding:20px 22px; box-shadow:5px 5px 0 var(--ink); transform:rotate(-1deg); }
+    .split-note b { font-family:'Archivo Black'; font-size:13px; }
+    .split-note p { font-size:13.5px; line-height:1.6; margin-top:8px; color:#3d3a33; }
+    .panel-grid { display:grid; grid-template-columns:0.9fr 1.1fr; gap:44px; align-items:center; }
+    .pp-wrap { position:relative; justify-self:center; }
+    .pp-phone { background:#fff; border:2.5px solid var(--ink); border-radius:22px; padding:18px; width:280px; box-shadow:6px 6px 0 var(--ink); transform:rotate(-1.2deg); }
+    .pp-top { font-family:'Archivo Black'; font-size:12px; margin-bottom:12px; }
+    .pp-k { font-size:9.5px; font-weight:800; letter-spacing:0.12em; color:#8a857a; }
+    .pp-bal { font-family:'Archivo Black'; font-size:28px; margin:2px 0 10px; }
+    .pp-bal small { font-size:13px; color:#8a857a; font-family:Inter; font-weight:700; }
+    .pp-code { font-family:ui-monospace,monospace; font-weight:700; font-size:15px; background:var(--yel); border:2px solid var(--ink); border-radius:10px; padding:8px 12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .pp-code span { font-family:Inter; font-size:10px; font-weight:800; }
+    .pp-mov { display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#5d5950; border-top:2px dashed rgba(34,32,27,0.25); padding:8px 2px; }
+    .pp-mov b { color:#127A4F; } .pp-mov b.dn { color:var(--red); }
+    .pp-cap { font-size:9px; color:#8a857a; text-align:center; margin-top:10px; letter-spacing:0.08em; }
+    .pk-line { font-size:14.5px; color:#5d5950; line-height:1.65; background:#fff; border:2px solid var(--ink); border-radius:12px; padding:14px 18px; margin-bottom:12px; box-shadow:3px 3px 0 var(--ink); }
+    .pk-line b { color:var(--ink); display:block; margin-bottom:2px; }
+    @media (max-width:920px) { .split-row, .panel-grid { grid-template-columns:1fr; } .loop-arrow { display:none; } }
+  </style>
+
   <section class="final" id="club">
     <h2>¿Entras al <span class="hl">club?</span></h2>
     <p class="ssub" style="margin:12px auto 30px">Cupos limitados por país — primera generación MX · PE · EC.</p>
